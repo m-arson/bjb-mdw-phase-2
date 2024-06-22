@@ -1,0 +1,25 @@
+/*EATE FUNCTION Main() RETURNS BOOLE*/
+	BEGIN
+		DECLARE mti CHARACTER CAST(InputRoot.DFDL.isomsg.MTI AS CHARACTER);
+
+		IF mti = '0810' OR mti = '0800' THEN
+			--------------- PREPARED FOR INPUT LOGGING NM----------------------------
+			--------------- PREPARED FOR INPUT LOGGING NM----------------------------
+		ELSE
+			DECLARE tmpId CHARACTER LEFT(LEFT(mti,2) || '00' || CAST(InputRoot.DFDL.isomsg.Field011 AS CHARACTER) || CAST(InputRoot.DFDL.isomsg.Field037 AS CHARACTER) || COALESCE(CAST(InputRoot.DFDL.isomsg.Field018 AS CHARACTER), '') || SPACE(24), 24);
+			--------------- PREPARED FOR INPUT LOGGING TRANSACTION----------------------------
+			DECLARE uid CHARACTER BASE64ENCODE(tmpId);
+			--------------- PREPARED FOR INPUT LOGGING TRANSACTION----------------------------
+			DECLARE correlId BLOB CAST(tmpId AS BLOB CCSID 819);
+			SET OutputRoot.MQMD.CorrelId = CAST(InputLocalEnvironment.TCPIP.Input.ConnectionDetails.ReplyId AS BLOB);
+
+
+			SET OutputRoot.XMLNSC.isomsg = InputRoot.DFDL.isomsg;
+			--------------- PREPARED FOR OUTPUT LOGGING TRANSACTION----------------------------;
+			--------------- PREPARED FOR INPUT LOGGING TRANSACTION----------------------------
+			PROPAGATE TO TERMINAL 'out';
+
+		END IF;
+
+		RETURN FALSE;
+	END;

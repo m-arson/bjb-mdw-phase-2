@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ecore:EPackage xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:ComIbmCompute.msgnode="ComIbmCompute.msgnode" xmlns:ComIbmMQInput.msgnode="ComIbmMQInput.msgnode" xmlns:ComIbmMQOutput.msgnode="ComIbmMQOutput.msgnode" xmlns:ComIbmScheduler.msgnode="ComIbmScheduler.msgnode" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" xmlns:eflow="http://www.ibm.com/wbi/2005/eflow" xmlns:id_co_bankbjb_mdw_lib_sf_SF_ENDPOINT.subflow="id/co/bankbjb/mdw/lib/sf/SF_ENDPOINT.subflow" xmlns:id_co_bankbjb_mdw_lib_sf_SF_EXCEPTION.subflow="id/co/bankbjb/mdw/lib/sf/SF_EXCEPTION.subflow"
+    xmlns:utility="http://www.ibm.com/wbi/2005/eflow_utility" nsURI="id/co/bankbjb/mdw/core/services/MF_TX_MDW_ITA_MULTIPOSTING.msgflow" nsPrefix="id_co_bankbjb_mdw_core_services_MF_TX_MDW_ITA_MULTIPOSTING.msgflow">
+  <eClassifiers xmi:type="eflow:FCMComposite" name="FCMComposite_1" nodeLayoutStyle="SQUARE">
+    <eSuperTypes href="http://www.ibm.com/wbi/2005/eflow#//FCMBlock"/>
+    <eStructuralFeatures xmi:type="ecore:EAttribute" xmi:id="Property.SOURCE_SYSTEM" name="SOURCE_SYSTEM" lowerBound="1" defaultValueLiteral="MDW">
+      <eType xmi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    </eStructuralFeatures>
+    <eStructuralFeatures xmi:type="ecore:EAttribute" xmi:id="Property.TARGET_SYSTEM" name="TARGET_SYSTEM" lowerBound="1" defaultValueLiteral="CORE">
+      <eType xmi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    </eStructuralFeatures>
+    <eStructuralFeatures xmi:type="ecore:EAttribute" xmi:id="Property.DB_SCHEMA" name="DB_SCHEMA" lowerBound="1" defaultValueLiteral="MDWSCHEMA">
+      <eType xmi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    </eStructuralFeatures>
+    <eStructuralFeatures xmi:type="ecore:EAttribute" xmi:id="Property.Q_EXPIRY" name="Q_EXPIRY" lowerBound="1" defaultValueLiteral="864000">
+      <eType xmi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EInt"/>
+    </eStructuralFeatures>
+    <eStructuralFeatures xmi:type="ecore:EAttribute" xmi:id="Property.SERVICE_NAME" name="SERVICE_NAME" lowerBound="1" defaultValueLiteral="ITA_MULTIPOST">
+      <eType xmi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    </eStructuralFeatures>
+    <eStructuralFeatures xmi:type="ecore:EAttribute" xmi:id="Property.TIMEOUT_SERVICE" name="TIMEOUT_SERVICE" lowerBound="1" defaultValueLiteral="30">
+      <eType xmi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EInt"/>
+    </eStructuralFeatures>
+    <translation xmi:type="utility:TranslatableString" key="MF_TX_MDW_ITA_MULTIPOSTING" bundleName="id/co/bankbjb/mdw/core/services/MF_TX_MDW_ITA_MULTIPOSTING" pluginId="BJB_MDW_SERVICE_CORE_SRVC_PHASE2"/>
+    <colorGraphic16 xmi:type="utility:GIFFileGraphic" resourceName="platform:/plugin/BJB_MDW_SERVICE_CORE_SRVC_PHASE2/icons/full/obj16/MF_TX_MDW_ITA_MULTIPOSTING.gif"/>
+    <colorGraphic32 xmi:type="utility:GIFFileGraphic" resourceName="platform:/plugin/BJB_MDW_SERVICE_CORE_SRVC_PHASE2/icons/full/obj30/MF_TX_MDW_ITA_MULTIPOSTING.gif"/>
+    <composition>
+      <nodes xmi:type="ComIbmMQOutput.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_22" location="534,17" queueName="LOGGING.QL" transactionMode="no" policyUrl="{COMMON_POLICY}:QM_GENERAL">
+        <translation xmi:type="utility:ConstantString" string="LOGGING.QL"/>
+      </nodes>
+      <nodes xmi:type="ComIbmCompute.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_23" location="376,76" computeExpression="esql://routine/id.co.bankbjb.mdw.core.services#MF_TX_MDW_ITA_MULTIPOSTING_Mapping_Res_Core.Main" computeMode="destinationAndMessage">
+        <translation xmi:type="utility:ConstantString" string="Mapping Res Core"/>
+      </nodes>
+      <nodes xmi:type="id_co_bankbjb_mdw_lib_sf_SF_ENDPOINT.subflow:FCMComposite_1" xmi:id="FCMComposite_1_24" location="250,79">
+        <translation xmi:type="utility:ConstantString" string="SF_ENDPOINT"/>
+      </nodes>
+      <nodes xmi:type="ComIbmMQOutput.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_25" location="538,77" destinationMode="list" transactionMode="no" policyUrl="{COMMON_POLICY}:QM_CHANNELSERVICE">
+        <translation xmi:type="utility:ConstantString" string="ServiceQ Out"/>
+      </nodes>
+      <nodes xmi:type="id_co_bankbjb_mdw_lib_sf_SF_EXCEPTION.subflow:FCMComposite_1" xmi:id="FCMComposite_1_26" location="122,157">
+        <translation xmi:type="utility:ConstantString" string="SF_EXCEPTION"/>
+      </nodes>
+      <nodes xmi:type="ComIbmCompute.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_27" location="115,79" dataSource="BJBDB" computeExpression="esql://routine/id.co.bankbjb.mdw.core.services#MF_TX_MDW_ITA_MULTIPOSTING_Mapping_Req_Core.Main" computeMode="destinationAndMessage">
+        <translation xmi:type="utility:ConstantString" string="Mapping Req Core"/>
+      </nodes>
+      <nodes xmi:type="ComIbmMQInput.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_28" location="23,80" queueName="TX_MDW_ITA_MULTIPOST_REQ.QL" messageDomainProperty="JSON" transactionMode="no" policyUrl="{COMMON_POLICY}:QM_CHANNELSERVICE">
+        <translation xmi:type="utility:ConstantString" string="ServiceQ In"/>
+      </nodes>
+      <nodes xmi:type="ComIbmScheduler.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_1" location="425,253" scheduleType="calendar" cronExp="00 * * * *" timeZone="Asia/Jakarta">
+        <translation xmi:type="utility:ConstantString" string="Scheduler"/>
+      </nodes>
+      <nodes xmi:type="ComIbmMQInput.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_2" location="428,185" queueName="NOTIF.QL" browse="true" componentLevel="node" additionalInstances="1" policyUrl="{COMMON_POLICY}:QM_GATEWAY">
+        <translation xmi:type="utility:ConstantString" string="NOTIF.QL"/>
+      </nodes>
+      <nodes xmi:type="ComIbmCompute.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_3" location="530,186" dataSource="BJBDB" computeExpression="esql://routine/id.co.bankbjb.mdw.core.services#MF_TX_MDW_ITA_MULTIPOSTING_Reload_Cache.Main">
+        <translation xmi:type="utility:ConstantString" string="Reload Cache"/>
+      </nodes>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_28" targetNode="FCMComposite_1_25" sourceNode="FCMComposite_1_23" sourceTerminalName="OutTerminal.out" targetTerminalName="InTerminal.in"/>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_29" targetNode="FCMComposite_1_26" sourceNode="FCMComposite_1_28" sourceTerminalName="OutTerminal.catch" targetTerminalName="InTerminal.Input">
+        <bendPoints>27,68,-82,-9</bendPoints>
+      </connections>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_30" targetNode="FCMComposite_1_26" sourceNode="FCMComposite_1_28" sourceTerminalName="OutTerminal.failure" targetTerminalName="InTerminal.Input">
+        <bendPoints>44,-18,-65,-95</bendPoints>
+        <bendPoints>44,68,-65,-9</bendPoints>
+      </connections>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_31" targetNode="FCMComposite_1_25" sourceNode="FCMComposite_1_27" sourceTerminalName="OutTerminal.out2" targetTerminalName="InTerminal.in">
+        <bendPoints>79,38,-329,41</bendPoints>
+        <bendPoints>326,42,-81,40</bendPoints>
+      </connections>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_32" targetNode="FCMComposite_1_27" sourceNode="FCMComposite_1_28" sourceTerminalName="OutTerminal.out" targetTerminalName="InTerminal.in"/>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_33" targetNode="FCMComposite_1_24" sourceNode="FCMComposite_1_27" sourceTerminalName="OutTerminal.out" targetTerminalName="InTerminal.Input"/>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_34" targetNode="FCMComposite_1_22" sourceNode="FCMComposite_1_23" sourceTerminalName="OutTerminal.out1" targetTerminalName="InTerminal.in">
+        <bendPoints>31,-68,-113,-10</bendPoints>
+      </connections>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_35" targetNode="FCMComposite_1_22" sourceNode="FCMComposite_1_27" sourceTerminalName="OutTerminal.out1" targetTerminalName="InTerminal.in">
+        <bendPoints>95,-73,-310,-9</bendPoints>
+      </connections>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_36" targetNode="FCMComposite_1_23" sourceNode="FCMComposite_1_24" sourceTerminalName="OutTerminal.Output" targetTerminalName="InTerminal.in"/>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_1" targetNode="FCMComposite_1_3" sourceNode="FCMComposite_1_2" sourceTerminalName="OutTerminal.out" targetTerminalName="InTerminal.in"/>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_2" targetNode="FCMComposite_1_3" sourceNode="FCMComposite_1_1" sourceTerminalName="OutTerminal.out" targetTerminalName="InTerminal.in"/>
+    </composition>
+    <propertyOrganizer>
+      <propertyDescriptor groupName="Group.Basic" configurable="true" userDefined="true" describedAttribute="Property.SOURCE_SYSTEM">
+        <propertyName xmi:type="utility:TranslatableString" key="Property.SOURCE_SYSTEM" bundleName="id/co/bankbjb/mdw/core/services/MF_TX_MDW_ITA_MULTIPOSTING" pluginId="BJB_MDW_SERVICE_CORE_SRVC_PHASE2"/>
+        <propertyDescriptor groupName="Group.Basic" configurable="true" userDefined="true" describedAttribute="Property.TARGET_SYSTEM">
+          <propertyName xmi:type="utility:TranslatableString" key="Property.TARGET_SYSTEM" bundleName="id/co/bankbjb/mdw/core/services/MF_TX_MDW_ITA_MULTIPOSTING" pluginId="BJB_MDW_SERVICE_CORE_SRVC_PHASE2"/>
+          <propertyDescriptor groupName="Group.Basic" configurable="true" userDefined="true" describedAttribute="Property.DB_SCHEMA">
+            <propertyName xmi:type="utility:TranslatableString" key="Property.DB_SCHEMA" bundleName="id/co/bankbjb/mdw/core/services/MF_TX_MDW_ITA_MULTIPOSTING" pluginId="BJB_MDW_SERVICE_CORE_SRVC_PHASE2"/>
+            <propertyDescriptor groupName="Group.Basic" configurable="true" userDefined="true" describedAttribute="Property.Q_EXPIRY">
+              <propertyName xmi:type="utility:TranslatableString" key="Property.Q_EXPIRY" bundleName="id/co/bankbjb/mdw/core/services/MF_TX_MDW_ITA_MULTIPOSTING" pluginId="BJB_MDW_SERVICE_CORE_SRVC_PHASE2"/>
+              <propertyDescriptor groupName="Group.Basic" configurable="true" userDefined="true" describedAttribute="Property.SERVICE_NAME">
+                <propertyName xmi:type="utility:TranslatableString" key="Property.SERVICE_NAME" bundleName="id/co/bankbjb/mdw/core/services/MF_TX_MDW_ITA_MULTIPOSTING" pluginId="BJB_MDW_SERVICE_CORE_SRVC_PHASE2"/>
+                <propertyDescriptor groupName="Group.Basic" configurable="true" userDefined="true" describedAttribute="Property.TIMEOUT_SERVICE">
+                  <propertyName xmi:type="utility:TranslatableString" key="Property.TIMEOUT_SERVICE" bundleName="id/co/bankbjb/mdw/core/services/MF_TX_MDW_ITA_MULTIPOSTING" pluginId="BJB_MDW_SERVICE_CORE_SRVC_PHASE2"/>
+                </propertyDescriptor>
+              </propertyDescriptor>
+            </propertyDescriptor>
+          </propertyDescriptor>
+        </propertyDescriptor>
+      </propertyDescriptor>
+    </propertyOrganizer>
+    <stickyBoard/>
+  </eClassifiers>
+</ecore:EPackage>

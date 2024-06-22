@@ -1,0 +1,8 @@
+/*EATE FUNCTION Main() RETURNS BOOLE*/
+	BEGIN
+		
+		SET OutputRoot.MQMD.CorrelId = Environment.Variables.correlId;
+		SET OutputRoot.JSON.Data.RC = '0091';
+		
+		RETURN TRUE;
+	END;

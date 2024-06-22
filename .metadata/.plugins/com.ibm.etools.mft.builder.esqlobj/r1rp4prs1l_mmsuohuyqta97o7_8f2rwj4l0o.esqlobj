@@ -1,0 +1,17 @@
+CREATE COMPUTE MODULE MF_MAIN_Compute
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		
+		SET SESSION.Data[] = NULL;
+		
+		SET SESSION.Data[1].Name = 'Name1';
+		SET SESSION.Data[2].Gender = 'L';
+		
+		SET SESSION.Data[1].Name = 'Name1';
+		SET SESSION.Data[2].Gender = 'L';
+		
+		SET OutputRoot.JSON.Data = SESSION.Data;
+		
+		RETURN TRUE;
+	END;
+END MODULE;

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<section name="Workbench">
+	<section name="ProjectInterchangeImportWizard">
+		<list key="PROJ_INTER_IMPORT_interchange_import">
+			<item value="C:\Users\Arson Marianus\Downloads\SAMSAT_10JUNI2024.zip"/>
+			<item value="C:\Users\Arson Marianus\Downloads\BJB_MDW_CORESRVC_24052024.zip"/>
+		</list>
+	</section>
+	<section name="ProjectInterchangeZipFileExportWizard">
+		<list key="PROJ_INTER_EXPORT_interchange">
+			<item value="C:\Users\Arson Marianus\Desktop\BJB_MDW_SERVICE_CORE_PHASE2.zip"/>
+			<item value="D:/BJB_MDW_SERVICE_CORE_PHASE2.zip"/>
+			<item value="D:\BJB_MDW_SERVICE_CORE_PHASE2.zip"/>
+		</list>
+	</section>
+</section>

@@ -1,0 +1,49 @@
+/*EATE FUNCTION Main() RETURNS BOOLE*/
+	BEGIN
+		
+		-------------------- CHECK IF IT ECHO MESSAGE --------------------
+		IF InputLocalEnvironment.TCPIP.Input.ConnectionDetails.ReplyId = 'ECHO'
+		THEN
+			CREATE LASTCHILD OF OutputRoot DOMAIN 'JSON' PARSE(InputRoot.BLOB.BLOB);
+			SET OutputRoot.JSON.Data.FC = 'CORE-ECHO';
+			SET OutputRoot.JSON.Data.ConnectionDetails = InputLocalEnvironment.TCPIP.Input.ConnectionDetails;
+			CALL PrepareLogMessage(OutputRoot, ApplicationLabel, MessageFlowLabel, NodeLabel, 'CORE-ECHO', 'CORE-ECHO', InputExceptionList, InputLocalEnvironment, InputRoot);
+			PROPAGATE TO TERMINAL 'out1' DELETE NONE;
+			DELETE FIELD OutputRoot.BLOB;
+			RETURN FALSE;
+		END IF;
+		-------------------- CHECK IF IT ECHO MESSAGE --------------------
+		
+		-------------------- GET AND SET UUID AND CORREL ID --------------------
+		CALL Split(InputLocalEnvironment.TCPIP.Input.ConnectionDetails.ReplyId, Environment, '|');
+		DECLARE correlId BLOB CAST(Environment.Split[1] AS BLOB CCSID 819);
+		DECLARE replyToQ CHARACTER Environment.Split[2];
+		SET InputLocalEnvironment.UUID = Environment.Split[3];
+		SET OutputLocalEnvironment.UUID = InputLocalEnvironment.UUID;
+		-------------------- GET AND SET UUID AND CORREL ID --------------------
+		
+		-------------------- LOGGING INPUT --------------------
+		CALL PrepareLogMessage(OutputRoot, ApplicationLabel, MessageFlowLabel, NodeLabel, 'input', 'debug', InputExceptionList, InputLocalEnvironment, InputRoot);
+		PROPAGATE TO TERMINAL 'out1' DELETE NONE;
+		DELETE FIELD OutputRoot.BLOB;
+		-------------------- LOGGING INPUT --------------------
+		
+		-------------------- PARSING OUTPUT MESSAGE TO JSON --------------------
+		SET OutputRoot.MQMD.MsgId = correlId;
+		SET OutputRoot.MQMD.ReplyToQ = replyToQ;
+		CREATE LASTCHILD OF OutputRoot DOMAIN 'JSON' PARSE(InputRoot.BLOB.BLOB);
+		-------------------- PARSING OUTPUT MESSAGE TO JSON --------------------
+		
+		-------------------- LOGGING OUTPUT --------------------
+		CALL PrepareLogMessage(OutputRoot, ApplicationLabel, MessageFlowLabel, NodeLabel, 'output', 'debug', OutputExceptionList, OutputLocalEnvironment, OutputRoot);
+		PROPAGATE TO TERMINAL 'out1' DELETE NONE;
+		DELETE FIELD OutputRoot.BLOB;
+		-------------------- LOGGING OUTPUT --------------------
+		
+		-------------------- REPARSING OUTPUT MESSAGE --------------------
+		SET OutputRoot.MQMD.Expiry = Q_EXPIRY;
+		CREATE LASTCHILD OF OutputRoot DOMAIN 'JSON' PARSE(InputRoot.BLOB.BLOB);
+		-------------------- REPARSING OUTPUT MESSAGE --------------------
+		
+		RETURN TRUE;
+	END;

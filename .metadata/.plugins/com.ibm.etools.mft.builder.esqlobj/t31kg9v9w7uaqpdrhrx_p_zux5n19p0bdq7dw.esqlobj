@@ -1,0 +1,47 @@
+CREATE COMPUTE MODULE MF_TX_JSON_PAY_PKB_Posting_Log
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		DECLARE oriMsgRef REFERENCE TO Environment.Variables.inMessage;
+		DECLARE iRef REFERENCE TO InputRoot.JSON.Data;
+		
+		CALL GeneratePostingMessage(oriMsgRef, iRef, OutputRoot);
+		
+		RETURN TRUE;
+	END;
+	CREATE PROCEDURE GeneratePostingMessage(IN oriMsgRef REFERENCE, IN iRef REFERENCE, IN oRoot REFERENCE)
+	BEGIN
+		IF FIELDNAME(oRoot.JSON) THEN
+			DELETE FIELD oRoot.JSON;
+		END IF;
+		
+		CREATE LASTCHILD OF oRoot DOMAIN 'JSON';
+		CREATE FIELD oRoot.JSON.Data IDENTITY (JSON.Object)Data;
+		
+		DECLARE ts, st CHARACTER ST;
+		SET ts = CAST(CURRENT_TIMESTAMP AS CHARACTER FORMAT 'yyyyMMddHHMMss');
+		SET st = ST;
+		
+		X: BEGIN ATOMIC READ WRITE
+			SET ST = ST + 1;
+		END X;
+		
+		DECLARE oRef REFERENCE TO oRoot.JSON.Data;
+		
+		SET oRef.CC = '0001';
+		SET oRef.ST = COALESCE(SUBSTRING(ts FROM 8 FOR 6) || SUBSTRING('00000' || st FROM LENGTH(st)+1), '');
+		SET oRef.BRANCHCD = '0024';
+		SET oRef.SPPW = 'BJB2013';
+		SET oRef.SPPU = 'UABS';
+		SET oRef.MT = '9200';
+		
+		SET oRef.MTI = '';
+		
+		SET oRef.DT = CAST(CURRENT_TIMESTAMP AS CHARACTER FORMAT 'yyyyMMddHHmmss');
+		SET oRef.PCC = '5';
+		SET oRef.PC = '001001';
+		SET oRef.MC = '90023';
+		SET oRef.FC = 'PKB';
+		SET oRef.CID = iRef.CHANNEL_ID;
+		
+	END;
+END MODULE;

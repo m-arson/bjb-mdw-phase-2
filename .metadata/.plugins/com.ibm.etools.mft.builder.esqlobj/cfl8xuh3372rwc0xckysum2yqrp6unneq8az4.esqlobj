@@ -1,0 +1,9 @@
+CREATE COMPUTE MODULE MF_TCP_PKB_ADAPTER_Timeout_Backend_Handling
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		SET OutputRoot.MQMD.CorrelId = Environment.Variables.correlId;
+		SET OutputRoot.JSON.Data.RC = '68';
+		
+		RETURN TRUE;
+	END;
+END MODULE;

@@ -1,0 +1,12 @@
+
+
+CREATE COMPUTE MODULE MF_CLIENT_Compute
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		CREATE LASTCHILD OF OutputRoot DOMAIN 'JSON' PARSE(InputRoot.BLOB.BLOB);
+		
+		SET OutputLocalEnvironment.Destination.HTTP.RequestIdentifier = CAST(InputLocalEnvironment.TCPIP.Input.ConnectionDetails.ReplyId AS BLOB);
+		
+		RETURN TRUE;
+	END;
+END MODULE;

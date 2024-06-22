@@ -1,0 +1,26 @@
+/*EATE FUNCTION Main() RETURNS BOOLE*/
+	BEGIN
+		
+		-- Keep the UUID
+		SET InputLocalEnvironment.UUID = Environment.Variables.uuid;
+		SET OutputLocalEnvironment.UUID = Environment.Variables.uuid;
+		
+		
+		CALL PrepareLogMessage(OutputRoot, ApplicationLabel, MessageFlowLabel, NodeLabel, 'input', 'debug', InputExceptionList, InputLocalEnvironment, InputRoot);
+		PROPAGATE TO TERMINAL 'out1' DELETE NONE;
+		DELETE FIELD OutputRoot.BLOB;
+		
+		IF Environment.Variables.type = 'ECHO' THEN
+			RETURN FALSE;
+		END IF;
+		
+		SET OutputRoot.MQMD.CorrelId = Environment.Variables.correlId;
+		SET OutputLocalEnvironment.MQ.GET.QueueName = 'PKB_JABAR_TMP.QL';
+		SET OutputLocalEnvironment.MQ.GET.MQGMO.WaitInterval = Environment.Variables.timeout;
+		
+		CALL PrepareLogMessage(OutputRoot, ApplicationLabel, MessageFlowLabel, NodeLabel, 'output', 'debug', OutputExceptionList, OutputLocalEnvironment, OutputRoot);
+		PROPAGATE TO TERMINAL 'out1' DELETE NONE;
+		DELETE FIELD OutputRoot.BLOB;
+		
+		RETURN TRUE;
+	END;

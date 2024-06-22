@@ -1,0 +1,22 @@
+/*EATE FUNCTION Main() RETURNS BOOLE*/
+	BEGIN
+	
+		-- Keep the UUID
+		SET OutputLocalEnvironment.UUID = InputLocalEnvironment.UUID;
+		
+		-- Logging Input
+		CALL PrepareLogMessage(OutputRoot, ApplicationLabel, MessageFlowLabel, NodeLabel, 'input', 'debug', InputExceptionList, InputLocalEnvironment, InputRoot);
+		PROPAGATE TO LABEL 'LOGGING' DELETE NONE;
+		DELETE FIELD OutputRoot.BLOB;
+		
+		
+		SET OutputRoot.JSON.Data = InputRoot.JSON.Data;
+		
+		-- Logging output
+		CALL PrepareLogMessage(OutputRoot, ApplicationLabel, MessageFlowLabel, NodeLabel, 'output', 'debug', OutputExceptionList, OutputLocalEnvironment, OutputRoot);
+		PROPAGATE TO LABEL 'LOGGING' DELETE NONE;
+		DELETE FIELD OutputRoot.BLOB;
+
+
+		RETURN TRUE;
+	END;

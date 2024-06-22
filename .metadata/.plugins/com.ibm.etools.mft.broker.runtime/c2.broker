@@ -1,0 +1,2 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<IntegrationNodeConnectionParameters Version="11.0.0" host="192.168.239.59" integrationNodeName="BILLERSERVICE" listenerPort="4426" userName="aceAdmin" xmlns="http://www.ibm.com/xmlns/prod/ace/11"/>

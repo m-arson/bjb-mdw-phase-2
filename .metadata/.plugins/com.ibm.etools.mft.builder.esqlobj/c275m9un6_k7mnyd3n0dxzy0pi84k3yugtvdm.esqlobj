@@ -1,0 +1,12 @@
+CREATE PROCEDURE PopulateSecondaryBitmap(INOUT DFDLPointer REFERENCE)
+	BEGIN
+		DECLARE J INTEGER 65;
+		DECLARE IndexChar1 CHAR;
+		DECLARE IndexChar2 CHAR;
+		WHILE J < 129 DO
+			CALL GenerateThreeDigitIndex(J, IndexChar1);
+			CALL GenerateThreeDigitIndex(J+3, IndexChar2);
+			CREATE LASTCHILD OF DFDLPointer NAME ('Bits' || IndexChar1 || 'to' || IndexChar2) VALUE '0';
+			SET J = J + 4;
+		END WHILE;
+	END;

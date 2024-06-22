@@ -1,0 +1,28 @@
+CREATE PROCEDURE PrepareLogMessage(IN outRoot REFERENCE, IN appName CHARACTER, IN mfLabel CHARACTER, IN nodeLabel CHARACTER, IN type_ CHARACTER, IN level CHARACTER, IN localException REFERENCE, IN localEnv REFERENCE, IN inRoot REFERENCE)
+BEGIN
+	DECLARE inRef ROW;
+	SET inRef = inRoot;
+	
+	IF EXISTS(outRoot.DFDL.*[]) THEN DELETE FIELD outRoot.DFDL; END IF;
+	IF EXISTS(outRoot.XMLNSC.*[]) THEN DELETE FIELD outRoot.XMLNSC; END IF;	
+	IF EXISTS(outRoot.BLOB.*[]) THEN DELETE FIELD outRoot.BLOB; END IF;
+	IF EXISTS(outRoot.JSON.*[]) THEN DELETE FIELD outRoot.JSON; END IF;
+
+	DECLARE buffer ROW;
+	CREATE LASTCHILD OF buffer DOMAIN 'JSON';
+	CREATE FIELD buffer.JSON.Data IDENTITY(JSON.Object)Data;
+	DECLARE bRef REFERENCE TO buffer.JSON.Data;
+	
+	SET bRef.appName = appName;
+	SET bRef.mfLabel = mfLabel;
+	SET bRef.nodeLabel = nodeLabel;
+	SET bRef.type = type_;
+	SET bRef.level = level;
+	SET bRef.ExceptionList = localException;
+	SET bRef.LocalEnvironment = localEnv;
+	SET bRef.Root = inRef;
+	SET bRef.Timestamp = CAST(CURRENT_TIMESTAMP AS CHARACTER FORMAT 'I');
+	
+	CREATE LASTCHILD OF outRoot DOMAIN 'BLOB' NAME 'BLOB';
+	SET outRoot.BLOB.BLOB = CAST(ASBITSTREAM(bRef) AS BLOB);
+END;

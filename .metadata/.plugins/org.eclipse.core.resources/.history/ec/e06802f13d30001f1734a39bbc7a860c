@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ecore:EPackage xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:ComIbmCompute.msgnode="ComIbmCompute.msgnode" xmlns:ComIbmLabel.msgnode="ComIbmLabel.msgnode" xmlns:ComIbmMQGet.msgnode="ComIbmMQGet.msgnode" xmlns:ComIbmMQOutput.msgnode="ComIbmMQOutput.msgnode" xmlns:ComIbmWSInput.msgnode="ComIbmWSInput.msgnode" xmlns:ComIbmWSReply.msgnode="ComIbmWSReply.msgnode" xmlns:SF_DUPLICATE_CHECK.subflow="SF_DUPLICATE_CHECK.subflow" xmlns:SF_LOGGING.subflow="SF_LOGGING.subflow" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore"
+    xmlns:eflow="http://www.ibm.com/wbi/2005/eflow" xmlns:utility="http://www.ibm.com/wbi/2005/eflow_utility" nsURI="MF_MAIN_REST_SAMSAT_SRVC.msgflow" nsPrefix="MF_MAIN_REST_SAMSAT_SRVC.msgflow">
+  <eClassifiers xmi:type="eflow:FCMComposite" name="FCMComposite_1" nodeLayoutStyle="SQUARE">
+    <eSuperTypes href="http://www.ibm.com/wbi/2005/eflow#//FCMBlock"/>
+    <eStructuralFeatures xmi:type="ecore:EAttribute" xmi:id="Property.TIMEOUT_MDW" name="TIMEOUT_MDW" lowerBound="1" defaultValueLiteral="30">
+      <eType xmi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EInt"/>
+    </eStructuralFeatures>
+    <eStructuralFeatures xmi:type="ecore:EAttribute" xmi:id="Property.DB_SCHEMA" name="DB_SCHEMA" lowerBound="1" defaultValueLiteral="MDWSCHEMA">
+      <eType xmi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    </eStructuralFeatures>
+    <eStructuralFeatures xmi:type="ecore:EAttribute" xmi:id="Property.DUPLICATE_TIMEOUT" name="DUPLICATE_TIMEOUT" lowerBound="1" defaultValueLiteral="600">
+      <eType xmi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EInt"/>
+    </eStructuralFeatures>
+    <eStructuralFeatures xmi:type="ecore:EAttribute" xmi:id="Property.Q_EXPIRY" name="Q_EXPIRY" lowerBound="1" defaultValueLiteral="864000">
+      <eType xmi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EInt"/>
+    </eStructuralFeatures>
+    <eStructuralFeatures xmi:type="ecore:EAttribute" xmi:id="Property.TARGET_SYSTEM" name="TARGET_SYSTEM" lowerBound="1" defaultValueLiteral="PKB">
+      <eType xmi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    </eStructuralFeatures>
+    <eStructuralFeatures xmi:type="ecore:EAttribute" xmi:id="Property.SOURCE_SYSTEM" name="SOURCE_SYSTEM" lowerBound="1" defaultValueLiteral="REST_SAMSAT">
+      <eType xmi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    </eStructuralFeatures>
+    <translation xmi:type="utility:TranslatableString" key="MF_MAIN_REST_SAMSAT_SRVC" bundleName="MF_MAIN_REST_SAMSAT_SRVC" pluginId="BJB_MDW_CONNECTOR_REST_SAMSAT"/>
+    <colorGraphic16 xmi:type="utility:GIFFileGraphic" resourceName="platform:/plugin/BJB_MDW_CONNECTOR_REST_SAMSAT/icons/full/obj16/MF_MAIN_REST_SAMSAT_SRVC.gif"/>
+    <colorGraphic32 xmi:type="utility:GIFFileGraphic" resourceName="platform:/plugin/BJB_MDW_CONNECTOR_REST_SAMSAT/icons/full/obj30/MF_MAIN_REST_SAMSAT_SRVC.gif"/>
+    <composition>
+      <nodes xmi:type="ComIbmWSInput.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_1" location="-225,18" URLSpecifier="/samsat" messageDomainProperty="JSON">
+        <translation xmi:type="utility:ConstantString" string="HTTP IN"/>
+      </nodes>
+      <nodes xmi:type="ComIbmCompute.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_2" location="-107,14" dataSource="BJBDB" computeExpression="esql://routine/#MF_MAIN_REST_SAMSAT_SRVC_Process_Req_Message.Main" computeMode="destinationAndMessage">
+        <translation xmi:type="utility:ConstantString" string="Process Req Message"/>
+      </nodes>
+      <nodes xmi:type="ComIbmMQOutput.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_3" location="289,13" queueName="TOBEOVERIDEN" destinationMode="list" policyUrl="{COMMON_POLICY}:QM_CHANNELSERVICE">
+        <translation xmi:type="utility:ConstantString" string="SAMSAT SRVC REQ"/>
+      </nodes>
+      <nodes xmi:type="ComIbmMQGet.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_4" location="426,17" queueName="TOBEOVERIDEN" messageDomainProperty="JSON" getWithCorrelID="true" policyUrl="{COMMON_POLICY}:QM_CHANNELSERVICE">
+        <translation xmi:type="utility:ConstantString" string="SAMSAT SRVC RES"/>
+      </nodes>
+      <nodes xmi:type="ComIbmCompute.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_5" location="558,-33" computeExpression="esql://routine/#MF_MAIN_REST_SAMSAT_SRVC_Process_Resp_Message.Main" computeMode="destinationAndMessage">
+        <translation xmi:type="utility:ConstantString" string="Process Resp Message"/>
+      </nodes>
+      <nodes xmi:type="ComIbmWSReply.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_6" location="822,177">
+        <translation xmi:type="utility:ConstantString" string="HTTP Reply"/>
+      </nodes>
+      <nodes xmi:type="ComIbmCompute.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_7" location="532,69" computeExpression="esql://routine/#MF_MAIN_REST_SAMSAT_SRVC_Handling_Timeout_Middleware.Main" computeMode="destinationAndMessage">
+        <translation xmi:type="utility:ConstantString" string="Handling Timeout Middleware"/>
+      </nodes>
+      <nodes xmi:type="ComIbmCompute.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_9" location="951,181" computeExpression="esql://routine/#MF_MAIN_REST_SAMSAT_SRVC_HTTP_Reply_Logging.Main" computeMode="destinationAndMessage">
+        <translation xmi:type="utility:ConstantString" string="HTTP Reply Logging"/>
+      </nodes>
+      <nodes xmi:type="SF_DUPLICATE_CHECK.subflow:FCMComposite_1" xmi:id="FCMComposite_1_10" location="11,14">
+        <translation xmi:type="utility:ConstantString" string="SF_DUPLICATE_CHECK"/>
+      </nodes>
+      <nodes xmi:type="ComIbmCompute.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_11" location="169,104" computeExpression="esql://routine/#MF_MAIN_REST_SAMSAT_SRVC_Duplicate_Handling.Main" computeMode="destinationAndMessage">
+        <translation xmi:type="utility:ConstantString" string="Duplicate Handling"/>
+      </nodes>
+      <nodes xmi:type="ComIbmCompute.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_12" location="183,11" computeExpression="esql://routine/#MF_MAIN_REST_SAMSAT_SRVC_Route.Main" computeMode="destinationAndMessage">
+        <translation xmi:type="utility:ConstantString" string="Route"/>
+      </nodes>
+      <nodes xmi:type="ComIbmCompute.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_13" location="-83,174" computeExpression="esql://routine/#MF_MAIN_REST_SAMSAT_SRVC_Exception_Handling.Main" computeMode="destinationAndMessage">
+        <translation xmi:type="utility:ConstantString" string="Exception Handling"/>
+      </nodes>
+      <nodes xmi:type="SF_LOGGING.subflow:FCMComposite_1" xmi:id="FCMComposite_1_14" location="438,258">
+        <translation xmi:type="utility:ConstantString" string="SF_LOGGING"/>
+      </nodes>
+      <nodes xmi:type="ComIbmLabel.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_16" location="332,259" labelName="LOGGING">
+        <translation xmi:type="utility:ConstantString" string="LOGGING"/>
+      </nodes>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_1" targetNode="FCMComposite_1_2" sourceNode="FCMComposite_1_1" sourceTerminalName="OutTerminal.out" targetTerminalName="InTerminal.in"/>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_3" targetNode="FCMComposite_1_4" sourceNode="FCMComposite_1_3" sourceTerminalName="OutTerminal.out" targetTerminalName="InTerminal.in"/>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_4" targetNode="FCMComposite_1_5" sourceNode="FCMComposite_1_4" sourceTerminalName="OutTerminal.out" targetTerminalName="InTerminal.in"/>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_6" targetNode="FCMComposite_1_7" sourceNode="FCMComposite_1_4" sourceTerminalName="OutTerminal.noMessage" targetTerminalName="InTerminal.in"/>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_7" targetNode="FCMComposite_1_6" sourceNode="FCMComposite_1_7" sourceTerminalName="OutTerminal.out" targetTerminalName="InTerminal.in"/>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_11" targetNode="FCMComposite_1_9" sourceNode="FCMComposite_1_6" sourceTerminalName="OutTerminal.out" targetTerminalName="InTerminal.in"/>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_2" targetNode="FCMComposite_1_10" sourceNode="FCMComposite_1_2" sourceTerminalName="OutTerminal.out" targetTerminalName="InTerminal.Input"/>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_13" targetNode="FCMComposite_1_11" sourceNode="FCMComposite_1_10" sourceTerminalName="OutTerminal.Output1" targetTerminalName="InTerminal.in"/>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_14" targetNode="FCMComposite_1_12" sourceNode="FCMComposite_1_10" sourceTerminalName="OutTerminal.Output" targetTerminalName="InTerminal.in"/>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_15" targetNode="FCMComposite_1_3" sourceNode="FCMComposite_1_12" sourceTerminalName="OutTerminal.out" targetTerminalName="InTerminal.in"/>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_20" targetNode="FCMComposite_1_6" sourceNode="FCMComposite_1_11" sourceTerminalName="OutTerminal.out" targetTerminalName="InTerminal.in"/>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_21" targetNode="FCMComposite_1_6" sourceNode="FCMComposite_1_13" sourceTerminalName="OutTerminal.out" targetTerminalName="InTerminal.in"/>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_32" targetNode="FCMComposite_1_6" sourceNode="FCMComposite_1_5" sourceTerminalName="OutTerminal.out" targetTerminalName="InTerminal.in"/>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_33" targetNode="FCMComposite_1_14" sourceNode="FCMComposite_1_16" sourceTerminalName="OutTerminal.out" targetTerminalName="InTerminal.Input"/>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_5" targetNode="FCMComposite_1_13" sourceNode="FCMComposite_1_1" sourceTerminalName="OutTerminal.failure" targetTerminalName="InTerminal.in"/>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_8" targetNode="FCMComposite_1_13" sourceNode="FCMComposite_1_1" sourceTerminalName="OutTerminal.catch" targetTerminalName="InTerminal.in"/>
+    </composition>
+    <propertyOrganizer>
+      <propertyDescriptor groupName="Group.Basic" configurable="true" userDefined="true" describedAttribute="Property.TIMEOUT_MDW">
+        <propertyName xmi:type="utility:TranslatableString" key="Property.TIMEOUT_MDW" bundleName="MF_MAIN_REST_SAMSAT_SRVC" pluginId="BJB_MDW_CONNECTOR_REST_SAMSAT"/>
+        <propertyDescriptor groupName="Group.Basic" configurable="true" userDefined="true" describedAttribute="Property.DB_SCHEMA">
+          <propertyName xmi:type="utility:TranslatableString" key="Property.DB_SCHEMA" bundleName="MF_MAIN_REST_SAMSAT_SRVC" pluginId="BJB_MDW_CONNECTOR_REST_SAMSAT"/>
+          <propertyDescriptor groupName="Group.Basic" configurable="true" userDefined="true" describedAttribute="Property.DUPLICATE_TIMEOUT">
+            <propertyName xmi:type="utility:TranslatableString" key="Property.DUPLICATE_TIMEOUT" bundleName="MF_MAIN_REST_SAMSAT_SRVC" pluginId="BJB_MDW_CONNECTOR_REST_SAMSAT"/>
+            <propertyDescriptor groupName="Group.Basic" configurable="true" userDefined="true" describedAttribute="Property.Q_EXPIRY">
+              <propertyName xmi:type="utility:TranslatableString" key="Property.Q_EXPIRY" bundleName="MF_MAIN_REST_SAMSAT_SRVC" pluginId="BJB_MDW_CONNECTOR_REST_SAMSAT"/>
+              <propertyDescriptor groupName="Group.Basic" configurable="true" userDefined="true" describedAttribute="Property.TARGET_SYSTEM">
+                <propertyName xmi:type="utility:TranslatableString" key="Property.TARGET_SYSTEM" bundleName="MF_MAIN_REST_SAMSAT_SRVC" pluginId="BJB_MDW_CONNECTOR_REST_SAMSAT"/>
+                <propertyDescriptor groupName="Group.Basic" configurable="true" userDefined="true" describedAttribute="Property.SOURCE_SYSTEM">
+                  <propertyName xmi:type="utility:TranslatableString" key="Property.SOURCE_SYSTEM" bundleName="MF_MAIN_REST_SAMSAT_SRVC" pluginId="BJB_MDW_CONNECTOR_REST_SAMSAT"/>
+                </propertyDescriptor>
+              </propertyDescriptor>
+            </propertyDescriptor>
+          </propertyDescriptor>
+        </propertyDescriptor>
+      </propertyDescriptor>
+    </propertyOrganizer>
+    <stickyBoard/>
+  </eClassifiers>
+</ecore:EPackage>

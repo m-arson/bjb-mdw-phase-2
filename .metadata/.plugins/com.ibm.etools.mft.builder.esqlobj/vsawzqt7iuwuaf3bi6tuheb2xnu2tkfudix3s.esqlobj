@@ -1,0 +1,18 @@
+CREATE PROCEDURE GetSessionIndex(IN IP CHARACTER, IN S REFERENCE) RETURNS INTEGER
+	BEGIN
+		DECLARE I, L INTEGER;
+		SET I = 1;
+		SET L = GetSessionLength(S);
+		
+		IF L = 0 THEN
+			RETURN 1;
+		ELSE
+			WHILE I <= L DO
+				IF S.Data[I].IP = IP THEN
+					RETURN I;
+				END IF;
+				SET I = I + 1;
+			END WHILE;
+		END IF;
+		RETURN I;
+	END;

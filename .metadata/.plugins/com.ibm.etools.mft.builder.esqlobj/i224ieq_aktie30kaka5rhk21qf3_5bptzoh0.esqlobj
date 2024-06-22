@@ -1,0 +1,9 @@
+/*EATE FUNCTION Main() RETURNS BOOLE*/
+	BEGIN
+		
+		IF SESSION IS NULL THEN
+			DECLARE tcpIn REFERENCE TO InputLocalEnvironment.TCPIP.Input.ConnectionDetails;
+		END IF;
+		
+		RETURN TRUE;
+	END;

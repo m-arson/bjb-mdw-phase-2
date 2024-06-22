@@ -1,0 +1,29 @@
+/*EATE FUNCTION Main() RETURNS BOOLE*/
+	BEGIN
+		-- Keep the UUID
+		SET OutputLocalEnvironment.UUID = InputLocalEnvironment.UUID;
+		
+		-- Composing response message
+		DECLARE outRow, errorMap ROW;
+		CREATE LASTCHILD OF outRow DOMAIN 'JSON';
+		
+		CALL GetErrorDetails(T_ERROR_MAP, errorMap, 'MDW_TIMEOUT', SOURCE_SYSTEM, TARGET_SYSTEM);
+		
+		SET OutputRoot.JSON.Data = Environment.Variables.details.inMessage;
+		SET OutputRoot.JSON.Data.RESPONSE_CODE = errorMap.Field.RC;
+		SET OutputRoot.JSON.Data.RESPONSE_MESSAGE = errorMap.Field.MESSAGE;
+		
+		SET outRow.JSON.(JSON.Object)Data = OutputRoot.JSON.Data;
+		
+		-- Logging Exception
+		CALL PrepareLogMessage(OutputRoot, ApplicationLabel, MessageFlowLabel, NodeLabel, 'exception', 'error', InputExceptionList, InputLocalEnvironment, OutputRoot);
+		PROPAGATE TO LABEL 'LOGGING' DELETE NONE;
+		DELETE FIELD OutputRoot.BLOB;
+		
+		-- Reassing response value
+		SET OutputRoot.HTTPReplyHeader."X-Original-HTTP-Status-Code" = errorMap.Field.HTTP_STATUS;
+		CREATE LASTCHILD OF OutputRoot DOMAIN 'JSON';
+		SET OutputRoot.JSON.(JSON.Object)Data = outRow.JSON.Data;
+		
+		RETURN TRUE;
+	END;

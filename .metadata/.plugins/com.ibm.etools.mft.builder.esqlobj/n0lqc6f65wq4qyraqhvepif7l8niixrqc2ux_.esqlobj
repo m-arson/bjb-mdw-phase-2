@@ -1,0 +1,27 @@
+/*EATE FUNCTION Main() RETURNS BOOLE*/
+	BEGIN
+		
+		-- Keep the UUID
+		SET InputLocalEnvironment.UUID = Environment.Variables.Uuid;
+		SET OutputLocalEnvironment.UUID = Environment.Variables.Uuid;
+		
+		-- Logging Input
+		CALL PrepareLogMessage(OutputRoot, ApplicationLabel, MessageFlowLabel, NodeLabel, 'input', 'debug', InputExceptionList, InputLocalEnvironment, InputRoot);
+		PROPAGATE TO LABEL 'LOGGING' DELETE NONE;
+		DELETE FIELD OutputRoot.BLOB;
+		
+		IF Environment.Variables.REQ_TYPE IN ('ECHO', 'SIGN_ON') THEN
+			DELETE FIELD Environment.Variables.REQ_TYPE;
+			RETURN FALSE;
+		END IF;
+		
+		SET OutputRoot.MQMD.CorrelId = Environment.Variables.CorrelId;
+		SET OutputLocalEnvironment.MQ.GET.QueueName = TMP_ADAPTER_Q;
+		SET OutputLocalEnvironment.MQ.GET.MQGMO.WaitInterval = Environment.Variables.Timeout;
+		
+		CALL PrepareLogMessage(OutputRoot, ApplicationLabel, MessageFlowLabel, NodeLabel, 'output', 'debug', OutputExceptionList, OutputLocalEnvironment, OutputRoot);
+		PROPAGATE TO LABEL 'LOGGING' DELETE NONE;
+		DELETE FIELD OutputRoot.BLOB;
+		
+		RETURN TRUE;
+	END;

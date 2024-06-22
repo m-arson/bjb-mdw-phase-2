@@ -1,0 +1,11 @@
+/*EATE FUNCTION Main() RETURNS BOOLE*/
+	BEGIN
+		
+		-- Keep the UUID
+		SET OutputLocalEnvironment.UUID = Environment.Variables.uuid;
+		
+		SET OutputRoot.MQMD.CorrelId = Environment.Variables.correlId;
+		SET OutputRoot.XMLNSC.isomsg.Field039 = '68';
+		
+		RETURN TRUE;
+	END;

@@ -1,0 +1,15 @@
+CREATE COMPUTE MODULE MF_TCP_PKB_ADAPTER_echo_handler
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		DECLARE dtime CHARACTER CAST(CURRENT_TIMESTAMP AS CHARACTER FORMAT 'yyyymmddHHMMssSSS');
+		
+		SET OutputRoot.XMLNSC.isomsg.MTI = '0800';
+		SET OutputRoot.XMLNSC.isomsg.Field007 = SUBSTRING(dtime FROM 5 FOR 10);
+		SET OutputRoot.XMLNSC.isomsg.Field011 = RIGHT(dtime,6);
+		SET OutputRoot.XMLNSC.isomsg.Field070 = '301';
+		
+		SET OutputLocalEnvironment.Variables.type = 'ECHO';
+		
+		RETURN TRUE;
+	END;
+END MODULE;

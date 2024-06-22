@@ -1,0 +1,53 @@
+BROKER SCHEMA id.co.bankbjb.mdw.core.services
+PATH id.co.bankbjb.mdw.lib;
+
+CREATE COMPUTE MODULE MF_TX_MDW_INQ_LOAN_EXCEPTION_HANDLING
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		-- Keep the UUID
+		SET OutputLocalEnvironment.UUID = InputLocalEnvironment.UUID;
+		
+		-- Logging Input
+		SET OutputRoot.MQRFH2.usr.vs.log4jConfig = ApplicationLabel;
+		CALL LogInputInfo(InputExceptionList, InputLocalEnvironment, InputRoot, OutputRoot);
+		PROPAGATE TO TERMINAL 'out1' DELETE NONE;
+		DELETE FIELD OutputRoot.MQRFH2;
+		DELETE FIELD OutputRoot.BLOB;
+		
+		IF FIELDTYPE(InputRoot.JSON.Data) IS NOT NULL THEN
+			CREATE LASTCHILD OF OutputRoot DOMAIN 'JSON';
+			CREATE FIELD OutputRoot.JSON.Data IDENTITY (JSON.Object) Data;
+			SET OutputRoot.JSON.Data = InputRoot.JSON.Data;
+		ELSEIF FIELDTYPE(InputRoot.BLOB.BLOB) IS NOT NULL THEN
+			SET OutputRoot.BLOB.BLOB = InputRoot.BLOB.BLOB;
+		END IF;
+		
+		SET OutputLocalEnvironment.Destination.MQDestinationList.DestinationData[1].queueName = SERVICE_PARAM.TxQueueRes;
+		SET OutputRoot.MQMD.CorrelId = CAST(Environment.Variables.details.correlId AS BLOB);
+		
+		-- Logging output
+		SET OutputRoot.MQRFH2.usr.vs.log4jConfig = ApplicationLabel;
+		CALL LogOutputDebug(OutputExceptionList, OutputLocalEnvironment, OutputRoot, OutputRoot);
+		PROPAGATE TO TERMINAL 'out1' DELETE NONE;
+		DELETE FIELD OutputRoot.MQRFH2;
+		DELETE FIELD OutputRoot.BLOB;
+		
+		-- Reassign the value
+		SET OutputRoot.MQRFH2.usr.vs.uuid = InputLocalEnvironment.UUID;
+		IF Environment.errReff = 'BIGDATA'
+		THEN
+			CREATE LASTCHILD OF OutputRoot DOMAIN 'JSON';
+			CREATE FIELD OutputRoot.JSON.Data IDENTITY (JSON.Object)Data;
+			SET OutputRoot.JSON.Data = Environment.Variables.inMessage;
+			CREATE LASTCHILD OF OutputRoot.JSON.Data NAME 'RESPONSE_CODE' VALUE '0004';
+			CREATE LASTCHILD OF OutputRoot.JSON.Data NAME 'RESPONSE_MESSAGE' VALUE
+				CAST(REPLACE(InputRoot.BLOB.BLOB, X'0D0A', X'00') AS CHARACTER CCSID 819);
+			CREATE LASTCHILD OF OutputRoot.JSON.Data NAME 'RESPONSE_TIME' VALUE
+				CAST(CURRENT_TIMESTAMP AS CHARACTER FORMAT 'yyyyMMddHHmmss');
+			RETURN TRUE;
+		END IF;
+		
+		CREATE LASTCHILD OF OutputRoot DOMAIN 'JSON' PARSE(InputRoot.BLOB.BLOB);
+		RETURN TRUE;
+	END;
+END MODULE;

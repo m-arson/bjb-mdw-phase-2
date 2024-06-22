@@ -1,0 +1,194 @@
+CREATE COMPUTE MODULE MF_TX_JSON_PAY_PKB_Calc_Amt_and_Call_AB
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		
+		-- Keep Input Data and Other Propeties
+		SET Environment.Variables.details = InputRoot.MQRFH2.usr.vs.details;
+		SET Environment.Variables.details.correlId = InputRoot.MQMD.CorrelId;
+		SET Environment.Variables.details.timeoutMDW = TIMEOUT_SERVICE;
+		SET Environment.Variables.details.qExpiry = Q_EXPIRY;
+		SET Environment.Variables.inMessage = InputRoot.JSON.Data;
+		
+		-- Set flow UUID
+		 SET InputLocalEnvironment.UUID = Environment.Variables.details.uuid;
+		 SET OutputLocalEnvironment.UUID = InputLocalEnvironment.UUID;
+		
+		-- Declare Input Reference
+		DECLARE iRef REFERENCE TO Environment.Variables.inMessage;
+		
+		-- Declare and sanity amount
+		DECLARE c_fee, t_pkb, t_swd, bblc_pkb, bblc_swd, bblc_c_fee, t_id CHARACTER;
+		SET c_fee = COALESCE(TRIM(iRef.CHARGE_FEE), '0');
+		SET t_pkb = SanityAndTotalIntToChar(iRef.TOTAL_PKB, iRef.TOTAL_PENALTY_PKB, 'ADD');
+		SET t_swd = SanityAndTotalIntToChar(iRef.TOTAL_SWD, iRef.TOTAL_PENALTY_SWD, 'ADD');
+		
+		SET Environment.Variables.ADAPTER_PROPS.TOTAL_PAY = SanityAndTotalIntToChar(iRef.TOTAL_PAY, c_fee, 'SUB');
+		
+		-- Set buffer balance
+		SET bblc_pkb = '000101BFJA800';
+		SET bblc_swd = '0001017375800';
+		SET bblc_c_fee = '0001907524360';
+		
+		-- Set DEBIT and CREDIT CODE
+		SET t_id = LEFT(TRIM(iRef.USER_ID), 4);
+		CASE iRef.CHANNEL
+			WHEN '6010' THEN
+				SET iRef.DEBIT_CODE = '019';
+				SET iRef.CREDIT_CODE = '519';
+				SET iRef.REF_1 = 'TLR-' || t_id || iRef.REF_TRX;
+			WHEN '6011' THEN
+				SET iRef.DEBIT_CODE = '426';
+				SET iRef.CREDIT_CODE = '926';
+				SET iRef.REF_1 = 'ATM-' || t_id || iRef.REF_TRX;
+			WHEN '6025' THEN
+				SET iRef.DEBIT_CODE = '445';
+				SET iRef.CREDIT_CODE = '945';
+				SET iRef.REF_1 = 'SAM-' || t_id || iRef.REF_TRX;
+			WHEN '6012' THEN
+				SET iRef.DEBIT_CODE = '437';
+				SET iRef.CREDIT_CODE = '937';
+				SET iRef.REF_1 = 'EDC-' || t_id || iRef.REF_TRX;
+			WHEN '6016' THEN
+				SET iRef.DEBIT_CODE = '436';
+				SET iRef.CREDIT_CODE = '936';
+				SET iRef.REF_1 = 'SMS-' || t_id || iRef.REF_TRX;
+			WHEN '6014' THEN
+				SET iRef.DEBIT_CODE = '435';
+				SET iRef.CREDIT_CODE = '935';
+				SET iRef.REF_1 = 'NET-' || t_id || iRef.REF_TRX;
+			WHEN '6017' THEN
+				IF t_id = '7790' THEN
+					SET iRef.DEBIT_CODE = '447';
+					SET iRef.CREDIT_CODE = '947';
+					SET iRef.REF_1 = 'MBL-' || t_id || iRef.REF_TRX;
+				ELSEIF t_id = '7777' THEN
+					SET iRef.DEBIT_CODE = '424';
+					SET iRef.CREDIT_CODE = '924';
+					SET iRef.REF_1 = 'MBL-' || t_id || iRef.REF_TRX;
+				ELSEIF t_id = '7789' THEN
+					SET iRef.DEBIT_CODE = '235';
+					SET iRef.CREDIT_CODE = '735';
+					SET iRef.REF_1 = 'MBL-' || t_id || iRef.REF_TRX;
+				END IF;
+		END CASE;
+		
+		-- Propagating output
+		IF iRef.CHANNEL = '6010' THEN
+			
+			-- Generating ITA Multipost Message
+			DECLARE msg1, msg2, msg3 CHARACTER;
+			IF c_fee = '0' THEN
+				SET msg1 = GenerateItaString(iRef, t_pkb, bblc_pkb);
+				SET msg2 = GenerateItaString(iRef, t_swd, bblc_swd);
+				SET msg3 = NULL;
+			ELSE
+				SET msg1 = GenerateItaString(iRef, c_fee, bblc_c_fee);
+				SET msg2 = GenerateItaString(iRef, t_pkb, bblc_pkb);
+				SET msg3 = GenerateItaString(iRef, t_swd, bblc_swd);
+			END IF;
+			
+			-- Set Output Message & Propagate to ITA MULTIPOSTING Queue
+			SET OutputRoot.MQMD.CorrelId = InputRoot.MQMD.CorrelId;
+			SET OutputRoot.MQMD.Expiry = Q_EXPIRY;
+			SET OutputRoot.MQRFH2.usr.vs.details.uuid = Environment.Variables.details.uuid;
+			
+			CREATE LASTCHILD OF OutputRoot DOMAIN 'JSON';
+			CREATE FIELD OutputRoot.JSON.Data IDENTITY (JSON.Object)Data;
+			DECLARE oRef REFERENCE TO OutputRoot.JSON.Data;
+			
+			SET oRef.REF_NO = iRef.REF_NO;
+			SET oRef.REQUEST_TIME = iRef.REQUEST_TIME;
+			SET oRef.MODULE_CODE = iRef.MODULE_CODE;
+			SET oRef.CHANNEL_ID = iRef.CHANNEL_ID;
+			SET oRef.MESSAGE1 = msg1;
+			SET oRef.MESSAGE2 = msg2;
+			
+			IF oRef.MESSAGE IS NOT NULL THEN
+				SET oRef.MESSAGE3 = msg3;
+			END IF;
+			
+			DECLARE destReqQ, destResQ CHARACTER;
+			DECLARE waitTime INTEGER;
+			
+			SET destReqQ = SUBSTRING(Environment.Variables.details.dbParam.TxQueue2 BEFORE '|');
+			SET destResQ = SUBSTRING(Environment.Variables.details.dbParam.TxQueue2 AFTER '|');
+			SET waitTime = TIMEOUT_SERVICE * 1000;
+			
+			SET OutputLocalEnvironment.Destination.MQ.DestinationData[1].queueName = destReqQ;
+			SET OutputLocalEnvironment.MQ.GET.QueueName = destResQ;
+			SET OutputLocalEnvironment.MQ.GET.MQGMO.WaitInterval = waitTime;
+			
+			PROPAGATE TO TERMINAL 'out2';
+		ELSE
+			
+			DECLARE destReqQ, destResQ CHARACTER;
+			DECLARE waitTime INTEGER;
+			
+			SET destReqQ = SUBSTRING(Environment.Variables.details.dbParam.TxQueue1 BEFORE '|');
+			SET destResQ = SUBSTRING(Environment.Variables.details.dbParam.TxQueue1 AFTER '|');
+			SET waitTime = 0; --TIMEOUT_SERVICE * 1000;
+			
+			SET OutputRoot.MQMD.CorrelId = InputRoot.MQMD.CorrelId;
+			SET OutputRoot.MQMD.Expiry = Q_EXPIRY;
+			SET OutputRoot.MQRFH2.usr.vs.details.uuid = Environment.Variables.details.uuid;
+			
+			-- Create output AB Message Request & Send to AB Queue
+			CREATE LASTCHILD OF OutputRoot DOMAIN 'JSON';
+			CREATE FIELD OutputRoot.JSON.Data IDENTITY (JSON.Object)Data;
+			DECLARE oRef REFERENCE TO OutputRoot.JSON.Data;
+			
+    		SET oRef.REF_NO = iRef.REF_NO;
+    		SET oRef.REQUEST_TIME = CAST(CURRENT_TIMESTAMP AS CHARACTER FORMAT 'yyyyMMddHHmmss');
+    		SET oRef.MODULE_CODE = iRef.MODULE_CODE;
+			SET oRef.CHANNEL_ID = iRef.CHANNEL_ID;
+			SET oRef.ACC_NUM = iRef.SENDER_ACCOUNT;
+			
+			SET OutputLocalEnvironment.Destination.MQ.DestinationData[1].queueName = destReqQ;
+			SET OutputLocalEnvironment.MQ.GET.QueueName = destResQ;
+			SET OutputLocalEnvironment.MQ.GET.MQGMO.WaitInterval = waitTime;
+			
+			PROPAGATE TO TERMINAL 'out';
+		END IF;
+			
+		RETURN FALSE;
+	END;
+	
+	CREATE FUNCTION GenerateItaString (IN iRef REFERENCE, IN amount CHARACTER, IN bblc CHARACTER) RETURNS CHARACTER
+	BEGIN
+		DECLARE outBuf, docRef CHARACTER;
+		SET docRef = iRef.CHANNEL || '-' || iRef.USER_ID || '-' || iRef.REF_TRX;
+		SET outBuf = SPACE(38) ||
+					 CAST(CURRENT_TIMESTAMP AS CHARACTER FORMAT 'yyMMddHHmmssSSSSSS') ||
+					 SPACE(8) || 
+					 LEFT(iRef.SENDER_ACCOUNT || SPACE(20), 20) ||
+					 SPACE(33) ||
+					 bblc ||
+					 RIGHT(REPLICATE('0', 15) || amount, 15) ||
+					 LEFT(iRef.REF_TRX || SPACE(16), 16) ||
+					 docRef ||
+					 docRef || 
+					 LEFT(iRef.NARATIVE || SPACE(35), 35) ||
+					 LEFT(iRef.NARATIVE2 || SPACE(35), 35) ||
+					 SPACE(226) ||
+					 iRef.DEBIT_CODE ||
+					 iRef.CREDIT_CODE;
+		RETURN outBuf;
+	END;
+	
+	CREATE FUNCTION SanityAndTotalIntToChar(IN nc1 CHARACTER, IN nc2 CHARACTER, IN op CHARACTER) RETURNS CHARACTER
+	BEGIN
+		DECLARE ni1, ni2, o INTEGER;
+		
+		SET ni1 = CAST(COALESCE(TRIM(nc1), '0') AS INTEGER);
+		SET ni2 = CAST(COALESCE(TRIM(nc2), '0') AS INTEGER);
+		
+		CASE op
+			WHEN 'ADD' THEN
+				SET o = ni1 + ni2;
+			WHEN 'SUB' THEN
+				SET o = ni1 - ni2;
+		END CASE;
+		
+		RETURN CAST(o AS CHARACTER);
+	END;
+END MODULE;

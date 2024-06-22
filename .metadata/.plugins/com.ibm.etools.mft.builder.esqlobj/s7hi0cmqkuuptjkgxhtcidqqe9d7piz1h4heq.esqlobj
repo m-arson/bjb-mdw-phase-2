@@ -1,0 +1,52 @@
+CREATE COMPUTE MODULE MF_MAIN_Compute
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		
+		DECLARE sessionIndex INTEGER;
+		DECLARE iRef REFERENCE TO InputRoot.JSON.Data;
+		SET sessionIndex = GetSessionIndex(iRef.IP, SESSION);
+		
+		IF sessionIndex > 0 THEN
+			SET SESSION.Data[sessionIndex].IP = iRef.IP;
+			SET SESSION.Data[sessionIndex].Port = iRef.Port;
+		END IF;
+		
+		CREATE LASTCHILD OF OutputRoot DOMAIN 'JSON';
+		CREATE FIELD OutputRoot.JSON.Data IDENTITY (JSON.Array)Data;
+		
+		SET OutputRoot.JSON.Data.Item[] = SESSION.Data[];
+		
+		RETURN TRUE;
+	END;
+	
+	CREATE FUNCTION GetSessionLength(IN S REFERENCE) RETURNS INTEGER
+	BEGIN
+		IF S = NULL THEN
+			RETURN 0;
+		ELSE
+			DECLARE L INTEGER;
+			SET L = CARDINALITY(S.Data[]);
+			RETURN L;	
+		END IF;
+	END;
+	
+	CREATE PROCEDURE GetSessionIndex(IN IP CHARACTER, IN S REFERENCE) RETURNS INTEGER
+	BEGIN
+		DECLARE I, L INTEGER;
+		SET I = 1;
+		SET L = GetSessionLength(S);
+		
+		IF L = 0 THEN
+			RETURN 1;
+		ELSE
+			WHILE I < L DO
+				IF S.Data[I].IP = IP THEN
+					RETURN I;
+				END IF;
+				SET I = I + 1;
+			END WHILE;
+		END IF;
+		RETURN 1;
+	END;
+	
+END MODULE;

@@ -1,0 +1,25 @@
+/*EATE FUNCTION Main() RETURNS BOOLE*/
+	BEGIN
+		
+		DECLARE BIPNumber INTEGER;
+		DECLARE BIPMessage, rc, rcMessage CHARACTER;
+		DECLARE errorMap ROW;
+		
+		CALL GetLastExceptionDetail(InputExceptionList, BIPNumber, BIPMessage);
+		
+		IF BIPNumber IN (2488, 2230) THEN
+			SET rc = '0096';
+			SET rcMessage = 'Failed to connect to database';
+		ELSEIF BIPNumber = 2677 THEN
+			CALL GetErrorDetails(T_ERROR_MAP, errorMap, 'QUEUE_DOWN', SOURCE_SYSTEM, TARGET_SYSTEM);
+		ELSEIF BIPNumber IN (2666, 4630, 2667) THEN
+			CALL GetErrorDetails(T_ERROR_MAP, errorMap, 'INVALID_QUEUE', SOURCE_SYSTEM, TARGET_SYSTEM);
+		ELSE
+			CALL GetErrorDetails(T_ERROR_MAP, errorMap, '*', SOURCE_SYSTEM, TARGET_SYSTEM);
+		END IF;
+		
+		SET OutputRoot.JSON.Data.RESPONSE_CODE = COALESCE(errorMap.Field.RC, rc);
+		SET OutputRoot.JSON.Data.RESPONSE_MESSAGE = COALESCE(errorMap.Field.MESSAGE, rcMessage);
+		
+		RETURN TRUE;
+	END;

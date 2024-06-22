@@ -1,0 +1,16 @@
+/*EATE FUNCTION Main() RETURNS BOOLE*/
+	BEGIN
+		
+		
+		CREATE LASTCHILD OF OutputRoot DOMAIN 'JSON';
+		CREATE FIELD OutputRoot.JSON.Data IDENTITY (JSON.Object)Data;
+		
+		SET OutputRoot.JSON.Data.(JSON.Array)Sessions.Item[] = (SELECT * FROM SESSION.Data[]);
+		SET OutputRoot.JSON.Data.ReqMessage = InputRoot.DFDL.isomsg;
+		SET OutputRoot.JSON.Data.ResMessage = InputRoot.DFDL.isomsg;
+		SET OutputRoot.JSON.Data.ResMessage.MTI = LEFT(InputRoot.DFDL.isomsg.MTI, 2) || '10';
+		
+		CREATE LASTCHILD OF OutputRoot DOMAIN 'BLOB' NAME 'BLOB';
+		SET OutputRoot.BLOB.BLOB = CAST(ASBITSTREAM(OutputRoot.JSON.Data CCSID 1208) AS BLOB CCSID 819);
+		DELETE FIELD OutputRoot.JSON;
+	END;

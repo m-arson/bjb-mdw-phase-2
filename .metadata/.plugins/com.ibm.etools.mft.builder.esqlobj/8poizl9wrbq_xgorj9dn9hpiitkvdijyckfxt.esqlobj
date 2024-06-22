@@ -1,0 +1,9 @@
+/*EATE FUNCTION Main() RETURNS BOOLE*/
+	BEGIN
+		X: BEGIN ATOMIC READ WRITE
+			SET Environment.Variables.(JSON.Array)SESSION.Item[] = SESSION.Data[];
+		END X;
+		
+		SET OutputRoot.BLOB.BLOB = CAST(ASBITSTREAM(Environment.Variables.SESSION CCSID 1208) AS BLOB);
+		RETURN TRUE;
+	END;

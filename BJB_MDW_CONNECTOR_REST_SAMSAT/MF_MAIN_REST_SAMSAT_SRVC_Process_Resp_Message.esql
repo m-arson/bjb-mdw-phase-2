@@ -1,0 +1,31 @@
+
+PATH id.co.bankbjb.mdw.lib;
+
+CREATE COMPUTE MODULE MF_MAIN_REST_SAMSAT_SRVC_Process_Resp_Message
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+	
+		-- Keep the UUID
+		SET OutputLocalEnvironment.UUID = InputLocalEnvironment.UUID;
+		
+		-- Logging Input
+		CALL PrepareLogMessage(OutputRoot, ApplicationLabel, MessageFlowLabel, NodeLabel, 'input', 'debug', InputExceptionList, InputLocalEnvironment, InputRoot);
+		PROPAGATE TO LABEL 'LOGGING' DELETE NONE;
+		DELETE FIELD OutputRoot.BLOB;
+		
+		SET OutputRoot.JSON.Data = InputRoot.JSON.Data;
+		
+		-- Logging output
+		CALL PrepareLogMessage(OutputRoot, ApplicationLabel, MessageFlowLabel, NodeLabel, 'output', 'info', OutputExceptionList, OutputLocalEnvironment, OutputRoot);
+		PROPAGATE TO LABEL 'LOGGING' DELETE NONE;
+		DELETE FIELD OutputRoot.BLOB;
+
+
+		CREATE LASTCHILD OF OutputRoot DOMAIN 'JSON';
+		CREATE FIELD OutputRoot.JSON.Data IDENTITY (JSON.Object)Data;
+		
+		SET OutputRoot.JSON.Data = InputRoot.JSON.Data;
+
+		RETURN TRUE;
+	END;
+END MODULE;

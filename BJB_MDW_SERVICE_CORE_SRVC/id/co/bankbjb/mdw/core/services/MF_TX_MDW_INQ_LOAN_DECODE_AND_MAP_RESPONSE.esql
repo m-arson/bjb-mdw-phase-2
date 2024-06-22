@@ -1,0 +1,113 @@
+BROKER SCHEMA id.co.bankbjb.mdw.core.services
+PATH id.co.bankbjb.mdw.lib;
+
+CREATE COMPUTE MODULE MF_TX_MDW_INQ_LOAN_DECODE_AND_MAP_RESPONSE
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		
+		-- Keep the UUID
+		SET OutputLocalEnvironment.UUID = InputLocalEnvironment.UUID;
+		
+		-- Logging Input
+		SET OutputRoot.MQRFH2.usr.vs.log4jConfig = ApplicationLabel;
+		CALL LogInputInfo(InputExceptionList, InputLocalEnvironment, InputRoot, OutputRoot);
+		PROPAGATE TO TERMINAL 'out1' DELETE NONE;
+		DELETE FIELD OutputRoot.MQRFH2;
+		DELETE FIELD OutputRoot.BLOB;
+		
+		DECLARE outRef, outData ROW;
+		DECLARE inBuff, outBuff ROW;
+	
+		CREATE LASTCHILD OF inBuff DOMAIN 'JSON';
+		CREATE FIELD inBuff.JSON.Data IDENTITY (JSON.Object) Data;
+		CREATE LASTCHILD OF outBuff DOMAIN 'JSON';
+		CREATE FIELD outBuff.JSON.Data IDENTITY (JSON.Object) Data;
+		
+		CREATE LASTCHILD OF outRef DOMAIN 'XMLNSC' PARSE(InputRoot.BLOB.BLOB);
+		CREATE FIELD inBuff.JSON.Data.Row.key IDENTITY key VALUE CAST(BASE64DECODE(outRef.XMLNSC.CellSet.Row.key) AS CHARACTER CCSID 1208);
+		CREATE FIELD inBuff.JSON.Data.Row.Cell IDENTITY (JSON.Array)Cell;
+		
+		DECLARE I INTEGER 1;
+		DECLARE J INTEGER CARDINALITY(outRef.XMLNSC.CellSet.Row.Cell[]);
+		DECLARE buffer ROW;
+		WHILE I <= J DO
+			CREATE FIELD inBuff.JSON.Data.Row.Cell.Item[I];
+			SET inBuff.JSON.Data.Row.Cell.Item[I].column = CAST(BASE64DECODE(outRef.XMLNSC.CellSet.Row.Cell[I].(XMLNSC.Attribute)column) AS CHARACTER CCSID 1208);
+			-- SET OutputRoot.JSON.Data.Row.Cell.Item[I].timestamp = outRef.XMLNSC.CellSet.Row.Cell[I].(XMLNSC.Attribute)timestamp;
+			CALL Split(inBuff.JSON.Data.Row.Cell.Item[I].column, Environment, ':');
+			
+			IF Environment.Split[2] IN ('product_ownership', 'salmon_ownership', 'transaction_3month')
+			THEN
+				DECLARE outII CHARACTER CAST(BASE64DECODE(outRef.XMLNSC.CellSet.Row.Cell[I]) AS CHARACTER CCSID 1208);
+				DECLARE buff ROW;
+				CREATE LASTCHILD OF buff DOMAIN 'JSON' PARSE(outII CCSID 1208);
+				SET outBuff.JSON.Data.data.{Environment.Split[2]} = buff.JSON.Data;
+			ELSE
+				SET outBuff.JSON.Data.data.{Environment.Split[2]} = COALESCE(CAST(BASE64DECODE(outRef.XMLNSC.CellSet.Row.Cell[I]) AS CHARACTER CCSID 1208), '');
+			END IF;
+			
+			DELETE FIELD Environment.Split;
+			
+			SET I = I + 1;
+		END WHILE;
+		
+		CREATE LASTCHILD OF outData DOMAIN 'JSON';
+		CREATE FIELD outData.JSON.Data IDENTITY (JSON.Object)Data;
+		SET outData.JSON.Data = outBuff.JSON.Data;
+		
+		SET OutputLocalEnvironment.Destination.MQDestinationList.DestinationData[1].queueName = SERVICE_PARAM.TxQueueRes;
+		SET OutputRoot.MQMD.CorrelId = CAST(Environment.Variables.details.correlId AS BLOB);
+		
+		-- Logging output
+		SET OutputRoot.MQRFH2.usr.vs.log4jConfig = ApplicationLabel;
+		CALL LogOutputDebug(OutputExceptionList, OutputLocalEnvironment, outBuff, OutputRoot);
+		PROPAGATE TO TERMINAL 'out1' DELETE NONE;
+		DELETE FIELD OutputRoot.MQRFH2;
+		DELETE FIELD OutputRoot.BLOB;
+		
+		-- Reassign the value
+		SET OutputRoot.MQRFH2.usr.vs.uuid = InputLocalEnvironment.UUID;
+		CREATE LASTCHILD OF OutputRoot DOMAIN 'JSON';
+		CREATE FIELD OutputRoot.JSON.Data IDENTITY (JSON.Object)Data;
+		SET OutputRoot.JSON.Data = outData.JSON.Data;
+
+		DECLARE tx3m_inx INTEGER 1;
+		DECLARE sown_inx INTEGER 1;
+		DECLARE pown_inx INTEGER 1;
+		DECLARE tx3m_total INTEGER CARDINALITY(OutputRoot.JSON.Data.data.transaction_3month.*[]);
+		DECLARE sown_total INTEGER CARDINALITY(OutputRoot.JSON.Data.data.salmon_ownership.*[]);
+		DECLARE pown_total INTEGER CARDINALITY(OutputRoot.JSON.Data.data.product_ownership.*[]);
+
+		WHILE tx3m_inx <= tx3m_total DO
+			SET OutputRoot.JSON.Data.data.transaction_3month.Item[tx3m_inx].total_amount = CAST(OutputRoot.JSON.Data.data.transaction_3month.Item[tx3m_inx].total_amount AS DECIMAL);
+			SET tx3m_inx = tx3m_inx + 1;
+		END WHILE;
+		
+		WHILE sown_inx <= sown_total DO
+			SET OutputRoot.JSON.Data.data.salmon_ownership.Item[sown_inx].angsuran = CAST(OutputRoot.JSON.Data.data.salmon_ownership.Item[sown_inx].angsuran AS DECIMAL);
+			SET sown_inx = sown_inx + 1;
+		END WHILE;
+		
+		WHILE pown_inx <= pown_total DO
+			SET OutputRoot.JSON.Data.data.product_ownership.Item[pown_inx].balance_product = CAST(OutputRoot.JSON.Data.data.product_ownership.Item[pown_inx].balance_product AS DECIMAL);
+			SET pown_inx = pown_inx + 1;
+		END WHILE;
+
+
+		SET I = 1;
+		SET J = CARDINALITY(Environment.Variables.inMessage.*[]);
+		DECLARE K INTEGER CARDINALITY(OutputRoot.JSON.Data.*[]);
+		
+		WHILE I < J DO
+			SET OutputRoot.JSON.Data.*[I+K] = Environment.Variables.inMessage.*[I];
+			SET I = I + 1;
+		END WHILE;
+		
+		CREATE LASTCHILD OF OutputRoot.JSON.Data NAME 'RESPONSE_CODE' VALUE '0000';
+		CREATE LASTCHILD OF OutputRoot.JSON.Data NAME 'RESPONSE_MESSAGE' VALUE 'success';
+		CREATE LASTCHILD OF OutputRoot.JSON.Data NAME 'RESPONSE_TIME' VALUE
+				CAST(CURRENT_TIMESTAMP AS CHARACTER FORMAT 'yyyyMMddHHmmss');
+			
+		RETURN TRUE;
+	END;
+END MODULE;

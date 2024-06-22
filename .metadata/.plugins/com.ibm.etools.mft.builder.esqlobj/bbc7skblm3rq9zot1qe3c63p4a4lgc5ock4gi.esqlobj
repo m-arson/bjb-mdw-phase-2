@@ -1,0 +1,14 @@
+/*EATE FUNCTION Main() RETURNS BOOLE*/
+	BEGIN
+		
+		-- Keep the UUID
+		SET OutputLocalEnvironment.UUID = InputLocalEnvironment.UUID;
+		
+		-- Set Correl ID Output
+		SET OutputRoot.MQMD.CorrelId = CAST(Environment.Variables.details.correlId AS BLOB);
+		
+		DECLARE iRef REFERENCE TO InputRoot.JSON.Data;
+		DECLARE oriMsgRef REFERENCE TO Environment.Variables.inMessage;
+		
+		RETURN TRUE;
+	END;

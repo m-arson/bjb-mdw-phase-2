@@ -1,0 +1,8 @@
+/*EATE FUNCTION Main() RETURNS BOOLE*/
+	BEGIN
+		X: BEGIN ATOMIC READ
+			SET Environment.Variables.SESSION = SESSION.Data[];
+		END X;
+		
+		SET OutputRoot.BLOB.BLOB = CAST()
+		RETURN TRUE;

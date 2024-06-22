@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ecore:EPackage xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:ComIbmCompute.msgnode="ComIbmCompute.msgnode" xmlns:ComIbmMQGet.msgnode="ComIbmMQGet.msgnode" xmlns:ComIbmMQInput.msgnode="ComIbmMQInput.msgnode" xmlns:ComIbmMQOutput.msgnode="ComIbmMQOutput.msgnode" xmlns:ComIbmTCPIPServerInput.msgnode="ComIbmTCPIPServerInput.msgnode" xmlns:ComIbmTCPIPServerOutput.msgnode="ComIbmTCPIPServerOutput.msgnode" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" xmlns:eflow="http://www.ibm.com/wbi/2005/eflow"
+    xmlns:utility="http://www.ibm.com/wbi/2005/eflow_utility" nsURI="MF_MAIN.msgflow" nsPrefix="MF_MAIN.msgflow">
+  <eClassifiers xmi:type="eflow:FCMComposite" name="FCMComposite_1" nodeLayoutStyle="SQUARE">
+    <eSuperTypes href="http://www.ibm.com/wbi/2005/eflow#//FCMBlock"/>
+    <translation xmi:type="utility:TranslatableString" key="MF_MAIN" bundleName="MF_MAIN" pluginId="SIMPLE_TMP"/>
+    <colorGraphic16 xmi:type="utility:GIFFileGraphic" resourceName="platform:/plugin/SIMPLE_TMP/icons/full/obj16/MF_MAIN.gif"/>
+    <colorGraphic32 xmi:type="utility:GIFFileGraphic" resourceName="platform:/plugin/SIMPLE_TMP/icons/full/obj30/MF_MAIN.gif"/>
+    <composition>
+      <nodes xmi:type="ComIbmCompute.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_3" location="196,208" computeExpression="esql://routine/#MF_MAIN_Manage_Session.Main" computeMode="destinationAndMessage">
+        <translation xmi:type="utility:ConstantString" string="Manage Session"/>
+      </nodes>
+      <nodes xmi:type="ComIbmTCPIPServerInput.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_1" location="-37,100" connectionDetails="1515" messageDomainProperty="DFDL" messageTypeProperty="{http://www.ibm.com/dfdl/ISO8583STD}:ISO8583STD" recordDetection="parsedRecordSequence">
+        <translation xmi:type="utility:ConstantString" string="TCP In"/>
+      </nodes>
+      <nodes xmi:type="ComIbmTCPIPServerOutput.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_2" location="644,106" connectionDetails="1515" recordDefinition="delimited">
+        <translation xmi:type="utility:ConstantString" string="TCP Out"/>
+      </nodes>
+      <nodes xmi:type="ComIbmCompute.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_4" location="143,101" computeExpression="esql://routine/#MF_MAIN_Route_Message.Main" computeMode="destinationAndMessage">
+        <translation xmi:type="utility:ConstantString" string="Route Message"/>
+      </nodes>
+      <nodes xmi:type="ComIbmCompute.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_11" location="70,168" computeExpression="esql://routine/#MF_MAIN_Remove_Session.Main" computeMode="destinationAndMessage">
+        <translation xmi:type="utility:ConstantString" string="Remove Session"/>
+      </nodes>
+      <nodes xmi:type="ComIbmCompute.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_14" location="357,-6" computeExpression="esql://routine/#MF_MAIN_Transform_Service_Req_Msg.Main">
+        <translation xmi:type="utility:ConstantString" string="Transform Service Req Msg"/>
+      </nodes>
+      <nodes xmi:type="ComIbmMQOutput.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_17" location="291,59" queueName="RES_Q">
+        <translation xmi:type="utility:ConstantString" string="Response to Service"/>
+      </nodes>
+      <nodes xmi:type="ComIbmMQInput.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_18" location="225,-6" queueName="REQ_Q">
+        <translation xmi:type="utility:ConstantString" string="Request from Service"/>
+      </nodes>
+      <nodes xmi:type="ComIbmCompute.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_19" location="98,27" computeExpression="esql://routine/#MF_MAIN_Exception_Handling.Main">
+        <translation xmi:type="utility:ConstantString" string="Exception Handling"/>
+      </nodes>
+      <nodes xmi:type="ComIbmMQOutput.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_20" location="602,-16" queueName="TMP_UUID.QL">
+        <translation xmi:type="utility:ConstantString" string="Put TMP_UUID.QL"/>
+      </nodes>
+      <nodes xmi:type="ComIbmMQGet.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_21" location="289,148" rotation="RIGHT_TO_LEFT" queueName="TMP_UUID.QL">
+        <translation xmi:type="utility:ConstantString" string="Get TMP_UUID.QL"/>
+      </nodes>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_13" targetNode="FCMComposite_1_2" sourceNode="FCMComposite_1_14" sourceTerminalName="OutTerminal.out" targetTerminalName="InTerminal.in">
+        <bendPoints>109,-9,-138,-121</bendPoints>
+      </connections>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_18" targetNode="FCMComposite_1_2" sourceNode="FCMComposite_1_11" sourceTerminalName="OutTerminal.out" targetTerminalName="InTerminal.close">
+        <bendPoints>137,-9,-426,53</bendPoints>
+        <bendPoints>184,38,-379,100</bendPoints>
+        <bendPoints>426,38,-137,100</bendPoints>
+      </connections>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_4" targetNode="FCMComposite_1_2" sourceNode="FCMComposite_1_3" sourceTerminalName="OutTerminal.out" targetTerminalName="InTerminal.close">
+        <bendPoints>295,-9,-142,93</bendPoints>
+        <bendPoints>394,-108,-43,-6</bendPoints>
+      </connections>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_20" targetNode="FCMComposite_1_3" sourceNode="FCMComposite_1_1" sourceTerminalName="OutTerminal.open" targetTerminalName="InTerminal.in">
+        <bendPoints>112,-9,-138,-117</bendPoints>
+      </connections>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_21" targetNode="FCMComposite_1_4" sourceNode="FCMComposite_1_1" sourceTerminalName="OutTerminal.out" targetTerminalName="InTerminal.in"/>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_22" targetNode="FCMComposite_1_11" sourceNode="FCMComposite_1_1" sourceTerminalName="OutTerminal.close" targetTerminalName="InTerminal.in"/>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_25" targetNode="FCMComposite_1_2" sourceNode="FCMComposite_1_4" sourceTerminalName="OutTerminal.out" targetTerminalName="InTerminal.in"/>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_26" targetNode="FCMComposite_1_17" sourceNode="FCMComposite_1_4" sourceTerminalName="OutTerminal.out2" targetTerminalName="InTerminal.in">
+        <bendPoints>73,-52,-87,-10</bendPoints>
+      </connections>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_27" targetNode="FCMComposite_1_14" sourceNode="FCMComposite_1_18" sourceTerminalName="OutTerminal.out" targetTerminalName="InTerminal.in"/>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_28" targetNode="FCMComposite_1_19" sourceNode="FCMComposite_1_1" sourceTerminalName="OutTerminal.catch" targetTerminalName="InTerminal.in">
+        <bendPoints>37,-9,-125,64</bendPoints>
+        <bendPoints>111,-83,-51,-10</bendPoints>
+      </connections>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_29" targetNode="FCMComposite_1_19" sourceNode="FCMComposite_1_1" sourceTerminalName="OutTerminal.failure" targetTerminalName="InTerminal.in">
+        <bendPoints>100,-83,-62,-10</bendPoints>
+      </connections>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_30" targetNode="FCMComposite_1_20" sourceNode="FCMComposite_1_14" sourceTerminalName="OutTerminal.out2" targetTerminalName="InTerminal.in">
+        <bendPoints>42,-20,-179,-10</bendPoints>
+      </connections>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_31" targetNode="FCMComposite_1_21" sourceNode="FCMComposite_1_4" sourceTerminalName="OutTerminal.out3" targetTerminalName="InTerminal.in">
+        <bendPoints>47,7,-106,-40</bendPoints>
+        <bendPoints>184,7,31,-40</bendPoints>
+      </connections>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_32" targetNode="FCMComposite_1_4" sourceNode="FCMComposite_1_21" sourceTerminalName="OutTerminal.out" targetTerminalName="InTerminal.in">
+        <bendPoints>-201,-14,-48,33</bendPoints>
+        <bendPoints>-244,-57,-91,-10</bendPoints>
+      </connections>
+    </composition>
+    <propertyOrganizer/>
+    <stickyBoard/>
+  </eClassifiers>
+</ecore:EPackage>

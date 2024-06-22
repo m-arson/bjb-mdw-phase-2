@@ -1,0 +1,7 @@
+CREATE COMPUTE MODULE SF_EXCEPTION_Exception_Handling
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		CALL PrepareLogMessage(OutputRoot, ApplicationLabel, MessageFlowLabel, NodeLabel, 'exception', 'error', InputExceptionList, InputLocalEnvironment, InputRoot);
+		RETURN TRUE;
+	END;
+END MODULE;

@@ -1,0 +1,109 @@
+
+
+PATH id.co.bankbjb.mdw.lib;
+
+CREATE COMPUTE MODULE MF_TX_JSON_INQ_PKB_GetRes_from_Adapter_and_MapMessage
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		-- Keep the UUID
+		SET OutputLocalEnvironment.UUID = InputLocalEnvironment.UUID;
+		
+		------------------------- PREPARE FOR INPUT LOGGING ---------------------------------
+		CALL PrepareLogMessage(OutputRoot, ApplicationLabel, MessageFlowLabel, NodeLabel, 'input', 'debug', InputExceptionList, InputLocalEnvironment, InputRoot);
+		PROPAGATE TO TERMINAL 'out1' DELETE NONE;
+		DELETE FIELD OutputRoot.BLOB;
+		----------------------- PREPARE FOR INPUT LOGGING ---------------------------------
+
+		SET OutputRoot.MQMD.CorrelId = CAST(Environment.Variables.details.correlId AS BLOB);
+		SET OutputLocalEnvironment.Destination.MQDestinationList.DestinationData[1].queueName = PKB_INQ_JSON_PARAM.TxQueueRes;
+
+		DECLARE outData, errorMap ROW;
+		DECLARE httpStatus CHARACTER;
+		CREATE LASTCHILD OF outData DOMAIN 'JSON';
+		DECLARE inRef REFERENCE TO InputRoot.XMLNSC.isomsg;
+		CREATE LASTCHILD OF OutputRoot DOMAIN 'JSON';
+		CREATE FIELD OutputRoot.JSON.Data IDENTITY (JSON.Object)Data;
+		DECLARE outRef REFERENCE TO OutputRoot.JSON.Data;
+
+		DECLARE iLen INTEGER CARDINALITY(inRef.*[]);
+
+		IF (iLen = 1) THEN
+			CALL GetResponseProperties(T_ERROR_MAP, errorMap, inRef.Field039, iLen);
+			SET outRef = Environment.Variables.inMessage;
+			SET outRef.RESPONSE_CODE = errorMap.Field.RC;
+			SET outRef.RESPONSE_MESSAGE = errorMap.Field.MESSAGE;
+			SET httpStatus = errorMap.Field.HTTP_STATUS;
+		ELSE
+			CALL GetResponseProperties(T_ERROR_MAP, errorMap, inRef.Field039, iLen);
+			
+			IF errorMap.Field IS NULL THEN
+				SET outRef = Environment.Variables.inMessage;
+				CALL GetResponseProperties(T_ERROR_MAP, errorMap, '99', iLen);
+			ELSE
+				DECLARE tmp61 CHARACTER CAST(InputRoot.XMLNSC.isomsg.Field061 AS CHARACTER);
+				DECLARE f61 CHARACTER REPLACE(tmp61, CAST(X'0A' AS CHARACTER CCSID 1208),' ');
+	
+				SET outRef = Environment.Variables.inMessage;
+				SET outRef.CHASSIS_NO = TRIM(SUBSTRING(f61 FROM 17 FOR 25));
+				SET outRef.ENGINE_NO = TRIM(SUBSTRING(f61 FROM 42 FOR 25));
+				SET outRef.IDENTITY_NO = TRIM(SUBSTRING(f61 FROM 67 FOR 18));
+				SET outRef.OWNER_NAME = TRIM(SUBSTRING(f61 FROM 85 FOR 25));
+				SET outRef.OWNER_ADDRESS = TRIM(SUBSTRING(f61 FROM 110 FOR 40));
+				SET outRef.POLICE_NO = TRIM(SUBSTRING(f61 FROM 150 FOR 9));
+				SET outRef.PLATE_COLOR = TRIM(SUBSTRING(f61 FROM 159 FOR 6));
+				SET outRef.OWNED_TO = SUBSTRING(f61 FROM 165 FOR 3);
+				SET outRef.VEHICLE_TYPE = TRIM(SUBSTRING(f61 FROM 168 FOR 15));
+				SET outRef.VEHICLE_BRAND_NAME = TRIM(SUBSTRING(f61 FROM 183 FOR 15));
+				SET outRef.VEHICLE_MODEL_NAME = TRIM(SUBSTRING(f61 FROM 198 FOR 30));
+				SET outRef.YEAR_MADE = SUBSTRING(f61 FROM 228 FOR 4);
+				SET outRef.OLD_TAX_END_DATE = SUBSTRING(f61 FROM 232 FOR 8);
+				SET outRef.NEW_TAX_END_DATE = COALESCE(SUBSTRING(f61 FROM 240 FOR 8), '');
+				SET outRef.TOTAL_PKB = CAST(CAST(SUBSTRING(f61 FROM 272 FOR 12) AS INTEGER) AS CHARACTER);
+				SET outRef.TOTAL_PENALTY_PKB = CAST(CAST(SUBSTRING(f61 FROM 284 FOR 12) AS INTEGER) AS CHARACTER);
+				SET outRef.TOTAL_SWD = CAST(CAST(SUBSTRING(f61 FROM 296 FOR 12) AS INTEGER) AS CHARACTER);
+				SET outRef.TOTAL_PENALTY_SWD = CAST(CAST(SUBSTRING(f61 FROM 308 FOR 12) AS INTEGER) AS CHARACTER);
+				SET outRef.TOTAL_PAY = CAST(CAST(SUBSTRING(f61 FROM 344 FOR 12) AS INTEGER) AS CHARACTER);
+				SET outRef.DESCRIPTION = TRIM(SUBSTRING(f61 FROM 356 FOR 90));
+				SET outRef.RESERVED = TRIM(SUBSTRING(f61 FROM 446 FOR 5));
+			END IF;
+			
+			SET outRef.RESPONSE_CODE = errorMap.Field.RC;
+			SET outRef.RESPONSE_MESSAGE = errorMap.Field.MESSAGE;
+			SET httpStatus = errorMap.HTTP_STATUS;
+		END IF;
+
+		CREATE LASTCHILD OF outRef NAME 'RESPONSE_TIME' VALUE CAST(CURRENT_TIMESTAMP AS CHARACTER FORMAT 'yyyyMMddHHmmss');
+		SET outData.JSON.(JSON.Object)Data = outRef;
+		
+		-------------------------- PREPARED OUTPUT LOGGING ----------------------
+		CALL PrepareLogMessage(OutputRoot, ApplicationLabel, MessageFlowLabel, NodeLabel, 'output', 'info', OutputExceptionList, OutputLocalEnvironment, OutputRoot);
+		PROPAGATE TO TERMINAL 'out1' DELETE NONE;
+		DELETE FIELD OutputRoot.BLOB;
+		-------------------------- PREPARED OUTPUT LOGGING ----------------------
+
+		SET OutputRoot.MQRFH2.usr.vs.httpStatus = httpStatus;
+		CREATE LASTCHILD OF OutputRoot DOMAIN 'JSON';
+		SET OutputRoot.JSON.(JSON.Object)Data = outData.JSON.Data;
+
+		RETURN TRUE;
+	END;
+	
+	CREATE PROCEDURE GetResponseProperties(IN tError REFERENCE, IN errorMap REFERENCE, IN rc CHARACTER, IN len INTEGER)
+	BEGIN
+		
+		CREATE FIELD errorMap.Field;
+		
+		IF rc = '68' AND len = 1 THEN
+			SET errorMap.Field = THE(
+					SELECT T.RC, T.MESSAGE, T.HTTP_STATUS
+					FROM tError.Field[] AS T
+					WHERE T.F039 = rc AND T."""SourceSystem""" = 'REST_SAMSAT'); -- AND T.MESSAGE_ID = 'MDW0068');
+		ELSE
+			SET errorMap.Field = THE(
+					SELECT T.RC, T.MESSAGE, T.HTTP_STATUS
+					FROM tError.Field[] AS T
+					WHERE T.F039 = rc AND T."""SourceSystem""" = 'REST_SAMSAT'); -- AND T.MESSAGE_ID <> 'MDW0068');
+		END IF;
+	END;
+	
+END MODULE;

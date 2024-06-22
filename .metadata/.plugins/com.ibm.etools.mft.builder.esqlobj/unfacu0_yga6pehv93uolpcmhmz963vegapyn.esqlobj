@@ -1,0 +1,3 @@
+CREATE PROCEDURE encryptAES(IN data CHARACTER, IN key CHARACTER) RETURNS CHARACTER
+	LANGUAGE JAVA
+	EXTERNAL NAME "id.co.bankbjb.mdw.mdwjava.Crypto.encryptAES";

@@ -1,0 +1,16 @@
+BROKER SCHEMA id.co.bankbjb.mdw.core.services
+PATH id.co.bankbjb.mdw.lib;
+
+CREATE COMPUTE MODULE MF_TX_MDW_INQ_LOAN_Compute
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		
+		DECLARE inMessage ROW;
+		CREATE LASTCHILD OF inMessage DOMAIN 'JSON' PARSE(InputRoot.BLOB.BLOB);
+		
+		SET OutputLocalEnvironment.Destination.MQDestinationList.DestinationData[1].queueName = SERVICE_PARAM.TxQueueRes;
+		SET OutputRoot.MQMD.CorrelId = CAST(Environment.Variables.details.correlId AS BLOB);
+		SET OutputRoot.JSON.Data = inMessage.JSON.Data;
+		RETURN TRUE;
+	END;
+END MODULE;

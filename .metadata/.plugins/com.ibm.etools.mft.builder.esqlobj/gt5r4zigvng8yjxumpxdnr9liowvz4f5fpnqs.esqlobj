@@ -1,0 +1,87 @@
+CREATE COMPUTE MODULE MF_MAIN_REST_SAMSAT_SRVC_Process_Req_Message
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		-------------------- SET UUID --------------------
+		DECLARE uuid CHARACTER;
+		IF FIELDNAME(InputRoot.HTTPInputHeader."X-Uuid") IS NOT NULL AND TRIM(InputRoot.HTTPInputHeader."X-Uuid") <> ''
+			THEN
+			SET InputLocalEnvironment.UUID = InputRoot.HTTPInputHeader."X-Uuid";
+		ELSE
+			SET uuid = RIGHT(TRIM(
+			REPLICATE('0', 24) ||
+			InputRoot.JSON.Data.CHANNEL_ID ||
+			COALESCE(InputRoot.JSON.Data.MODULE_CODE, '') ||
+			InputRoot.JSON.Data.REF_NO ||
+			InputRoot.JSON.Data.REQUEST_TIME
+			), 24);
+			SET InputLocalEnvironment.UUID = BASE64ENCODE(uuid);
+		END IF;
+		SET OutputLocalEnvironment.UUID = InputLocalEnvironment.UUID;
+		------------------------------- SET UUID --------------------------------
+		
+		-------------------- KEEP THE INPUT MESSAGE --------------------
+		SET Environment.Variables.details.(JSON.Object)inMessage = InputRoot.JSON.Data;
+		-------------------- KEEP THE INPUT MESSAGE --------------------
+		
+		-------------------- CHECK AND LOAD TABLE PARAMETER --------------------
+		IF NOT EXISTS(SAMSAT.Field[]) THEN
+			SET Environment.Variables.PARAMS[] = (
+			SELECT * FROM Database.{'T_PARAMETER'} AS T WHERE T."""SourceSystem""" = SERVICE_NAME);
+
+			DECLARE I, J INTEGER;
+			SET I = 1;
+			SET J = CARDINALITY(Environment.Variables.PARAMS[]);
+
+			WHILE I <= J DO
+				SET ATM.Field[I] = Environment.Variables.PARAMS[I];
+				SET I = I + 1;
+			END WHILE;
+		END IF;
+		-------------------- CHECK AND LOAD TABLE PARAMETER --------------------
+		
+		-------------- PREPARE FOR INPUT LOGGING -------------------------------------
+
+		-------------- PREPARE FOR INPUT LOGGING -------------------------------------
+		
+		-------------- GET SERVICE BY SERVICE NAME -------------------------------------
+		DECLARE sName CHARACTER CAST(InputRoot.JSON.Data.TRXTYPE AS CHARACTER) || '_' || CAST(InputRoot.JSON.Data.PEMDA_ID AS CHARACTER);
+		DECLARE mFormat CHARACTER 'JSON';
+		SET Environment.Variables.Service = THE(SELECT T FROM SAMSAT.Field[] AS T WHERE T.ServiceName = sName AND T.MessageFormat = mFormat);
+		-------------- GET SERVICE BY SERVICE NAME -------------------------------------
+		
+		------------------------------ Route to Service -----------------------------------------------------
+		DECLARE destReqQ CHARACTER SUBSTRING(Environment.Variables.Service.TxQueue BEFORE '|');
+		DECLARE destResQ CHARACTER SUBSTRING(Environment.Variables.Service.TxQueue AFTER '|');
+		
+		SET OutputRoot.MQMD.CorrelId = uuid;
+		
+		SET OutputRoot.MQRFH2.usr.vs.details = Environment.Variables.Service;
+		SET OutputRoot.MQRFH2.usr.vs.details.uuid = InputLocalEnvironment.UUID;
+		SET OutputRoot.JSON.Data = InputRoot.JSON.Data;
+		
+		SET OutputLocalEnvironment.MQ.GET.QueueName = destResQ;
+		SET OutputLocalEnvironment.MQ.GET.MQGMO.WaitInterval = TIMEOUT_MDW;
+		SET OutputLocalEnvironment.Destination.MQ.DestinationData[1].queueName = destReqQ;
+		------------------------------ Route to Service -----------------------------------------------------
+		
+		-------------- PREPARE FOR OUTPUT LOGGING -------------------------------------
+
+		-------------- PREPARE FOR OUTPUT LOGGING -------------------------------------
+
+		RETURN TRUE;
+	END;
+
+	CREATE PROCEDURE CopyMessageHeaders() BEGIN
+		DECLARE I INTEGER 1;
+		DECLARE J INTEGER;
+		SET J = CARDINALITY(InputRoot.*[]);
+		WHILE I < J DO
+			SET OutputRoot.*[I] = InputRoot.*[I];
+			SET I = I + 1;
+		END WHILE;
+	END;
+
+	CREATE PROCEDURE CopyEntireMessage() BEGIN
+		SET OutputRoot = InputRoot;
+	END;
+END MODULE;

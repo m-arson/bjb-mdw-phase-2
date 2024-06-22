@@ -1,0 +1,40 @@
+CREATE COMPUTE MODULE MF_TCP_PKB_ADAPTER_Cannot_Put_Hadling
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		
+		SET InputLocalEnvironment.UUID = Environment.Variables.UUID;
+			SET OutputLocalEnvironment.UUID = InputLocalEnvironment.UUID;
+			
+			CALL PrepareLogMessage(OutputRoot, ApplicationLabel, MessageFlowLabel, NodeLabel, 'input', 'debug', InputExceptionList, InputLocalEnvironment, InputRoot);
+			PROPAGATE TO TERMINAL 'out1' DELETE NONE;
+			DELETE FIELD OutputRoot.BLOB;
+			
+			SET OutputRoot.MQMD.CorrelId = Environment.Variables.CorrelId;
+			SET OutputRoot.MQMD.ReplyToQ = Environment.Variables.ReplyToQ;
+			
+			CREATE LASTCHILD OF OutputRoot DOMAIN 'JSON';
+			CREATE FIELD OutputRoot.JSON.Data IDENTITY (JSON.Object)Data;
+			
+			SET OutputRoot.JSON.Data = Environment.Variables.inputData;
+			CREATE FIELD OutputRoot.JSON.Data.RC NAME 'RC' VALUE '0091';
+			CREATE FIELD OutputRoot.JSON.Data.RCMSG."0".MESSAGE NAME 'MESSAGE' VALUE 'Cannot put to core';
+			
+			DECLARE outData ROW;
+			CREATE LASTCHILD OF outData DOMAIN 'JSON';
+			CREATE FIELD outData.JSON.Data IDENTITY (JSON.Object)Data;
+			SET outData.JSON.Data = OutputRoot.JSON.Data;
+			
+			SET OutputLocalEnvironment.Destination.MQDestinationList.DestinationData[1].queueName = Environment.Variables.ReplyToQ;
+			
+			CALL PrepareLogMessage(OutputRoot, ApplicationLabel, MessageFlowLabel, NodeLabel, 'output', 'info', OutputExceptionList, OutputLocalEnvironment, OutputRoot);
+			PROPAGATE TO TERMINAL 'out1' DELETE NONE;
+			DELETE FIELD OutputRoot.BLOB;
+			
+			SET OutputRoot.MQMD.Expiry = Q_EXPIRY;
+			CREATE LASTCHILD OF OutputRoot DOMAIN 'JSON';
+			CREATE FIELD OutputRoot.JSON.Data IDENTITY (JSON.Object)Data;
+			SET OutputRoot.JSON.Data = outData.JSON.Data;
+		
+		RETURN TRUE;
+	END;
+END MODULE;

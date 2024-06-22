@@ -1,0 +1,5 @@
+/*EATE FUNCTION Main() RETURNS BOOLE*/
+	BEGIN
+		CALL PrepareLogMessage(OutputRoot, ApplicationLabel, MessageFlowLabel, NodeLabel, 'exception', 'error', InputExceptionList, InputLocalEnvironment, InputRoot);
+		RETURN TRUE;
+	END;

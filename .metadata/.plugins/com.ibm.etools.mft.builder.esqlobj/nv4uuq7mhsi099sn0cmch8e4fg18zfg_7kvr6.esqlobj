@@ -1,0 +1,5 @@
+/*EATE FUNCTION Main() RETURNS BOOLE*/
+	BEGIN
+		SET OutputRoot.JSON.Data.RC = '0068';
+		RETURN TRUE;
+	END;

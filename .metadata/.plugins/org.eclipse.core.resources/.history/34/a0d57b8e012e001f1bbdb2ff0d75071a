@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ecore:EPackage xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:ComIbmCompute.msgnode="ComIbmCompute.msgnode" xmlns:ComIbmLabel.msgnode="ComIbmLabel.msgnode" xmlns:ComIbmMQGet.msgnode="ComIbmMQGet.msgnode" xmlns:ComIbmMQInput.msgnode="ComIbmMQInput.msgnode" xmlns:ComIbmMQOutput.msgnode="ComIbmMQOutput.msgnode" xmlns:ComIbmTCPIPClientInput.msgnode="ComIbmTCPIPClientInput.msgnode" xmlns:ComIbmTCPIPClientOutput.msgnode="ComIbmTCPIPClientOutput.msgnode" xmlns:ComIbmTimeoutNotification.msgnode="ComIbmTimeoutNotification.msgnode"
+    xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" xmlns:eflow="http://www.ibm.com/wbi/2005/eflow" xmlns:utility="http://www.ibm.com/wbi/2005/eflow_utility" nsURI="MF_TCP_PKC_ADAPTER.msgflow" nsPrefix="MF_TCP_PKC_ADAPTER.msgflow">
+  <eClassifiers xmi:type="eflow:FCMComposite" name="FCMComposite_1" nodeLayoutStyle="SQUARE">
+    <eSuperTypes href="http://www.ibm.com/wbi/2005/eflow#//FCMBlock"/>
+    <translation xmi:type="utility:TranslatableString" key="MF_TCP_PKC_ADAPTER" bundleName="MF_TCP_PKC_ADAPTER" pluginId="BJB_MDW_ADAPTER_SAMSAT_JABAR"/>
+    <colorGraphic16 xmi:type="utility:GIFFileGraphic" resourceName="platform:/plugin/BJB_MDW_ADAPTER_SAMSAT_JABAR/icons/full/obj16/MF_TCP_PKC_ADAPTER.gif"/>
+    <colorGraphic32 xmi:type="utility:GIFFileGraphic" resourceName="platform:/plugin/BJB_MDW_ADAPTER_SAMSAT_JABAR/icons/full/obj30/MF_TCP_PKC_ADAPTER.gif"/>
+    <composition>
+      <nodes xmi:type="ComIbmCompute.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_1" location="495,186" computeExpression="esql://routine/#MF_TCP_PKB_ADAPTER_Process_Response.Main">
+        <translation xmi:type="utility:ConstantString" string="Process Response"/>
+      </nodes>
+      <nodes xmi:type="ComIbmCompute.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_2" location="216,-43" computeExpression="esql://routine/#MF_TCP_PKB_ADAPTER_echo_handler.Main" computeMode="destinationAndMessage">
+        <translation xmi:type="utility:ConstantString" string="Echo Handler"/>
+      </nodes>
+      <nodes xmi:type="ComIbmCompute.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_3" location="938,117" computeExpression="esql://routine/#MF_TCP_PKB_ADAPTER_Timeout_Backend_Handling.Main">
+        <translation xmi:type="utility:ConstantString" string="Timeout Backend Handling"/>
+      </nodes>
+      <nodes xmi:type="ComIbmMQGet.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_4" location="766,23" queueName="PKB_JABAR_TMP.QL" messageDomainProperty="XMLNSC" waitInterval="15000" getWithCorrelID="true" policyUrl="{COMMON_POLICY}:QM_BILLERSERVICE">
+        <translation xmi:type="utility:ConstantString" string="Put PKB JABAR ADAPTER TMP"/>
+      </nodes>
+      <nodes xmi:type="ComIbmMQOutput.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_5" location="1125,19" queueName="PKB_JABAR_RES.QL" policyUrl="{COMMON_POLICY}:QM_BILLERSERVICE">
+        <translation xmi:type="utility:ConstantString" string="PKB JABAR ADAPTER RES"/>
+      </nodes>
+      <nodes xmi:type="ComIbmTCPIPClientInput.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_6" location="325,184" connectionDetails="192.168.226.4:22222" messageDomainProperty="DFDL" messageSetProperty="{MDW_ACE_SLIB}" messageTypeProperty="{}:isomsg" recordDetection="parsedRecordSequence">
+        <translation xmi:type="utility:ConstantString" string="PKC JABAR TCP RES"/>
+      </nodes>
+      <nodes xmi:type="ComIbmCompute.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_7" location="931,18" computeExpression="esql://routine/#MF_TCP_PKB_ADAPTER_Backend_Response_Handling.Main">
+        <translation xmi:type="utility:ConstantString" string="Backend Response Handling"/>
+      </nodes>
+      <nodes xmi:type="ComIbmMQOutput.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_8" location="1147,206" queueName="LOGGING.QL" policyUrl="{COMMON_POLICY}:QM_GENERAL">
+        <translation xmi:type="utility:ConstantString" string="LOGGING.QL"/>
+      </nodes>
+      <nodes xmi:type="ComIbmCompute.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_9" location="962,-58" computeExpression="esql://routine/#MF_TCP_PKB_ADAPTER_Cannot_Put_Hadling.Main" computeMode="destinationAndMessage">
+        <translation xmi:type="utility:ConstantString" string="Cannot Put Hadling"/>
+      </nodes>
+      <nodes xmi:type="ComIbmMQInput.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_10" location="180,97" queueName="PKC_JABAR_REQ.QL" messageDomainProperty="XMLNSC" policyUrl="{COMMON_POLICY}:QM_BILLERSERVICE">
+        <translation xmi:type="utility:ConstantString" string="PKC JABAR ADAPTER REQ"/>
+      </nodes>
+      <nodes xmi:type="ComIbmTCPIPClientOutput.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_11" location="501,-49" connectionDetails="192.168.226.4:22222">
+        <translation xmi:type="utility:ConstantString" string="PKC JABAR TCP REQ"/>
+      </nodes>
+      <nodes xmi:type="ComIbmCompute.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_12" location="314,23" computeExpression="esql://routine/#MF_TCP_PKB_ADAPTER_Transform_and_Send_Req.Main" computeMode="destinationAndMessage">
+        <translation xmi:type="utility:ConstantString" string="Transform and Send Req"/>
+      </nodes>
+      <nodes xmi:type="ComIbmCompute.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_13" location="633,23" computeExpression="esql://routine/#MF_TCP_PKB_ADAPTER_Set_Timeout_Backend.Main" computeMode="destinationAndMessage">
+        <translation xmi:type="utility:ConstantString" string="Set Timeout Backend"/>
+      </nodes>
+      <nodes xmi:type="ComIbmMQOutput.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_14" location="628,186" queueName="PKC_JABAR_TMP.QL" policyUrl="{COMMON_POLICY}:QM_BILLERSERVICE">
+        <translation xmi:type="utility:ConstantString" string="Get PKB JABAR ADAPTER TMP"/>
+      </nodes>
+      <nodes xmi:type="ComIbmTimeoutNotification.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_15" location="112,-43" uniqueIdentifier="ECHO" transactionMode="no" timeoutInterval="600">
+        <translation xmi:type="utility:ConstantString" string="ECHO"/>
+      </nodes>
+      <nodes xmi:type="ComIbmLabel.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_16" location="981,205" labelName="LOGGING">
+        <translation xmi:type="utility:ConstantString" string="Label"/>
+      </nodes>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_1" targetNode="FCMComposite_1_4" sourceNode="FCMComposite_1_13" sourceTerminalName="OutTerminal.out" targetTerminalName="InTerminal.in"/>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_2" targetNode="FCMComposite_1_12" sourceNode="FCMComposite_1_2" sourceTerminalName="OutTerminal.out" targetTerminalName="InTerminal.in"/>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_3" targetNode="FCMComposite_1_14" sourceNode="FCMComposite_1_1" sourceTerminalName="OutTerminal.out" targetTerminalName="InTerminal.in"/>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_4" targetNode="FCMComposite_1_5" sourceNode="FCMComposite_1_9" sourceTerminalName="OutTerminal.out" targetTerminalName="InTerminal.in"/>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_5" targetNode="FCMComposite_1_2" sourceNode="FCMComposite_1_15" sourceTerminalName="OutTerminal.out" targetTerminalName="InTerminal.in"/>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_6" targetNode="FCMComposite_1_11" sourceNode="FCMComposite_1_12" sourceTerminalName="OutTerminal.out" targetTerminalName="InTerminal.in"/>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_7" targetNode="FCMComposite_1_1" sourceNode="FCMComposite_1_6" sourceTerminalName="OutTerminal.out" targetTerminalName="InTerminal.in"/>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_8" targetNode="FCMComposite_1_5" sourceNode="FCMComposite_1_3" sourceTerminalName="OutTerminal.out" targetTerminalName="InTerminal.in"/>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_9" targetNode="FCMComposite_1_12" sourceNode="FCMComposite_1_10" sourceTerminalName="OutTerminal.out" targetTerminalName="InTerminal.in"/>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_10" targetNode="FCMComposite_1_5" sourceNode="FCMComposite_1_7" sourceTerminalName="OutTerminal.out" targetTerminalName="InTerminal.in"/>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_11" targetNode="FCMComposite_1_8" sourceNode="FCMComposite_1_16" sourceTerminalName="OutTerminal.out" targetTerminalName="InTerminal.in"/>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_12" targetNode="FCMComposite_1_7" sourceNode="FCMComposite_1_4" sourceTerminalName="OutTerminal.out" targetTerminalName="InTerminal.in"/>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_13" targetNode="FCMComposite_1_9" sourceNode="FCMComposite_1_11" sourceTerminalName="OutTerminal.failure" targetTerminalName="InTerminal.in"/>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_14" targetNode="FCMComposite_1_13" sourceNode="FCMComposite_1_11" sourceTerminalName="OutTerminal.out" targetTerminalName="InTerminal.in"/>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_15" targetNode="FCMComposite_1_3" sourceNode="FCMComposite_1_4" sourceTerminalName="OutTerminal.noMessage" targetTerminalName="InTerminal.in"/>
+    </composition>
+    <propertyOrganizer/>
+    <stickyBoard/>
+  </eClassifiers>
+</ecore:EPackage>

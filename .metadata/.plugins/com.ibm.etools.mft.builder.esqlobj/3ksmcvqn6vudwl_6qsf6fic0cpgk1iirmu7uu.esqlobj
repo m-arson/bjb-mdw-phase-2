@@ -1,0 +1,4 @@
+CREATE PROCEDURE GetHostName()
+    RETURNS CHARACTER
+    LANGUAGE JAVA
+    EXTERNAL NAME "id.co.bankbjb.lib.ThreadProvider.getHostname";

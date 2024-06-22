@@ -1,0 +1,21 @@
+CREATE FUNCTION GenerateItaString (IN iRef REFERENCE, IN amount CHARACTER, IN bblc CHARACTER, IN debitCode CHARACTER, IN creditCode CHARACTER) RETURNS CHARACTER
+	BEGIN
+		DECLARE outBuf, docRef CHARACTER;
+		SET docRef = iRef.CHANNEL || '-' || iRef.USER_ID || '-' || iRef.REF_TRX;
+		SET outBuf = SPACE(38) ||
+					 CAST(CURRENT_TIMESTAMP AS CHARACTER FORMAT 'yyMMddHHmmssSSSSSS') ||
+					 SPACE(8) || 
+					 LEFT(iRef.SENDER_ACCOUNT || SPACE(20), 20) ||
+					 SPACE(33) ||
+					 bblc ||
+					 RIGHT(REPLICATE('0', 15) || amount, 15) ||
+					 LEFT(iRef.REF_TRX || SPACE(16), 16) ||
+					 docRef ||
+					 docRef || 
+					 LEFT(iRef.NARATIVE || SPACE(35), 35) ||
+					 LEFT(iRef.NARATIVE2 || SPACE(35), 35) ||
+					 SPACE(226) ||
+					 debitCode ||
+					 creditCode;
+		RETURN outBuf;
+	END;

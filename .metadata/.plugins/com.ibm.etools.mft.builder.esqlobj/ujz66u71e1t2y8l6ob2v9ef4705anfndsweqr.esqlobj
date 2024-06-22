@@ -1,0 +1,150 @@
+CREATE COMPUTE MODULE MF_TX_JSON_PAY_PKB_Posting_Log
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		
+		-- Keep the UUID
+		DECLARE oRef REFERENCE TO OutputRoot.JSON.Data;
+		
+		DECLARE oriMsgRef REFERENCE TO Environment.Variables.inMessage;
+		DECLARE iRef REFERENCE TO InputRoot.JSON.Data;
+		
+		SET OutputRoot.MQMD.CorrelId = CAST(Environment.Variables.details.correlId AS BLOB);
+		SET OutputRoot.MQRFH2.usr.vs.uuid = InputLocalEnvironment.UUID;
+		
+		CREATE LASTCHILD OF OutputRoot DOMAIN 'JSON';
+		CREATE FIELD OutputRoot.JSON.Data IDENTITY (JSON.Object)Data;
+		
+		DECLARE ts, st CHARACTER ST;
+		SET ts = CAST(CURRENT_TIMESTAMP AS CHARACTER FORMAT 'yyyyMMddHHMMss');
+		SET st = ST;
+		
+		X: BEGIN ATOMIC READ WRITE
+			SET ST = ST + 1;
+		END X;
+		
+		DECLARE oRef REFERENCE TO OutputRoot.JSON.Data;
+		
+		CALL Split(Environment.Variables.details.dbParam.Param2, Environment, '|');
+		
+		SET oRef.CC = COALESCE(Environment.Split[5], '');
+		SET oRef.ST = COALESCE(SUBSTRING(ts FROM 8 FOR 6) || SUBSTRING('00000' || st FROM LENGTH(st)+1), '');
+		SET oRef.BRANCHCD = COALESCE(Environment.Split[9], '');
+		SET oRef.SPPW = COALESCE(Environment.Split[7], '');
+		SET oRef.SPPU = COALESCE(Environment.Split[6], '');
+		SET oRef.MT = COALESCE(Environment.Split[4], '');
+		
+		SET oRef.PPBBN = REPLICATE('0', 14);												-- Pokok BBN (0)
+		SET oRef.PSDATE = LEFT(ts, 8);														-- Settlement Date (yyyyMMdd)
+		SET oRef.PTBBN = REPLICATE('0', 14);												-- Total BBN (0)
+		SET oRef.PNIK = oriMsgRef.IDENTITY_NO;												-- NIK
+		SET oRef.PPAN = iRef.Field002;														-- PAN (Bit002 Adapter)
+		SET oRef.PTBUAT = oriMsgRef.YEAR_MADE;												-- Tahun Buat
+		SET oRef.PTRMNO = oriMsgRef.USER_ID;												-- Terminal Number (USER_ID)
+		SET oRef.PREFF = TRIM(oriMsgRef.TERMID) || REPLICATE('0', 6) || oriMsgRef.REF_TRX;	-- Reference Number	(TERMID + 0*6 + REF_TRX)
+		SET oRef.PNOPOL = oriMsgRef.POLICE_NO;												-- Nomor Polisi
+		SET oRef.PPJKLM = oriMsgRef.OLD_TAX_END_DATE;										-- Tanggal Akhir Pajak Lama
+		SET oRef.PTIME = RIGHT(ts, 6);														-- Trx Time (HHmmss)
+		SET oRef.PALP1 = '';																-- Reserved Alp 1	(Kosong Kutip)
+		SET oRef.PALP2 = '';																-- Reserved Alp 2	(Kosong Kutip)
+		SET oRef.PTRACE = oriMsgRef.REF_TRX;												-- Trx Trace Number	(REF_TRX)
+		SET oRef.PDBBN = REPLICATE('0', 14);												-- Denda Beban (0)
+		SET oRef.PTTNKB = REPLICATE('0', 14);												-- Total Adm TNKB (0)
+		SET oRef.PTSTNK = REPLICATE('0', 14);												-- Total Adm STNK (0)
+		SET oRef.PCOLOR = oriMsgRef.PLATE_COLOR;											-- Warna Plat
+		SET oRef.PPPKB = oriMsgRef.TOTAL_PKB;												-- Pokok PKB (Total PKB)
+		SET oRef.PNOKA = oriMsgRef.CHASSIS_NO;												-- Nomor Rangka
+		SET oRef.PDTNKB = REPLICATE('0', 14);												-- Denda Adm TNKB (0)
+		SET oRef.PCHRG = oriMsgRef.CHARGE_FEE;												-- Charge Fee
+		SET oRef.PTPKB =																	-- Total PKB + Denda PKB
+			SanityAndTotalIntToChar(oriMsgRef.TOTAL_PKB, oriMsgRef.TOTAL_PENALTY_PKB, 'ADD');			
+		
+		CASE iRef.Field018																	-- Terminal Type
+			WHEN '6010' THEN
+				SET oRef.PTRMTP = 'T';
+			WHEN '6011' THEN
+				SET oRef.PTRMTP = 'A';
+			WHEN '6012' THEN
+				SET oRef.PTRMTP = 'E';
+			WHEN '6014' THEN
+				SET oRef.PTRMTP = 'I';
+			WHEN '6017' THEN
+				SET oRef.PTRMTP = 'M';
+			WHEN '6025' THEN
+				SET oRef.PTRMTP = 'S';
+			ELSE
+				SET oRef.PTRMTP = '';
+		END CASE;
+								
+		SET oRef.PBLID = oriMsgRef.BILL_NO;													-- Kode Bayar
+		SET oRef.PACC = oriMsgRef.SENDER_ACCOUNT;											-- Account Number
+		SET oRef.PDPKB = oriMsgRef.TOTAL_PENALTY_PKB;										-- Denda PKB
+		SET oRef.PJUMLA = 																	-- TOTAL_PAY - CHARGE_FEE
+			SanityAndTotalIntToChar(oriMsgRef.TOTAL_PAY, oriMsgRef.CHARGE_FEE, 'SUB');										
+		SET oRef.PJENIS = oriMsgRef.VEHICLE_TYPE;											-- Jenis
+		SET oRef.PDSTNK = REPLICATE('0', 14);												-- Denda Adm STNK (0)
+		SET oRef.PCODE = oriMsgRef.PEMDA_ID;												-- Payment Code (PEMDA_ID)
+		SET oRef.PBLAM = oriMsgRef.TOTAL_PAY;												-- Billing Amount	(TOTAL_PAY)
+		SET oRef.PRTFLG = '';																-- Print Flag		(Kosong kutip)
+		SET oRef.PPTNKB = REPLICATE('0', 14);												-- Pokok adm TNKB (0)
+		
+		IF oRef.PCODE = 'PKB' THEN															-- Nomor TRX Bank
+			SET oRef.PNTB = REPLICATE('0', 6) || oriMsgRef.REF_TRX;							-- * IF PEMDA_ID IS PKB THEN 000000 + REF_TRX
+		ELSE																				-- * ELSE oRef.PSDATE + REF_TRX
+			SET oRef.PNTB = oRef.PSDATE || oriMsgRef.REF_TRX;
+		END IF;
+		SET oRef.PPSTNK = REPLICATE('0', 14);												-- Pokok Adm STNK (0)
+		SET oRef.PKET = oriMsgRef.DESCRIPTION;												-- Keterangan
+		SET oRef.PNAME = oriMsgRef.OWNER_NAME;												-- Nama
+		SET oRef.PNUM2 = '0';																-- Reserved Num 2 (0)
+		SET oRef.PTSWD = oriMsgRef.TOTAL_SWD;												-- Total SWDKLLJ
+		SET oRef.PTRAMT = 																	-- Transaction Amount (TOTAL_PAY + CHARGE_FEE)
+			SanityAndTotalIntToChar(oriMsgRef.TOTAL_PAY, oriMsgRef.CHARGE_FEE, 'ADD');
+		SET oRef.PKWIL = '';																-- Kode Wilayah (Kutip Kosong)
+		SET oRef.PNUM1 = '0';																-- Reserved Num 1 (0)
+		SET oRef.PMODEL = oriMsgRef.VEHICLE_MODEL_NAME;										-- Model
+		SET oRef.PPJKBR = oriMsgRef.NEW_TAX_END_DATE;										-- Tanggal Akhir Pajak Baru
+		SET oRef.PNTP = RIGHT(REPLICATE('0', 12) || LEFT(iRef.Field047, 12), 12);			-- Nomor TRX Dispenda (Bit047 * C1-12 * Padding 0)
+		SET oRef.PMILIK = oriMsgRef.OWNED_TO;												-- Milik Ke
+		SET oRef.PALMT = oriMsgRef.OWNER_ADDRESS; 											-- Alamat
+		SET oRef.PFLG1 = '';																-- Reserved Flag 1 (Kutip Kosong)
+		SET oRef.PFLG2 = '';																-- Reserved Flag 2 (Kutip Kosong)
+		SET oRef.PDSWD = oriMsgRef.TOTAL_PENALTY_PKB;										-- Denda SWDKLLJ
+		SET oRef.PPSWD = '00000000035000';													-- Pokok SWDKLLJ (TOTAL_SWD)
+		SET oRef.PTDATE = oRef.PSDATE;														-- Trx Date (yyyyMMdd)
+		SET oRef.PMEREK = oriMsgRef.VEHICLE_BRAND_NAME;										-- Merek
+		SET oRef.PNOSIN = oriMsgRef.ENGINE_NO;												-- Nomor Mesin
+		SET oRef.PTRSEQ = oriMsgRef.TRX_REF;												-- Trx Seq Number (REF_TRX)
+		
+		IF oRef.PCODE = 'PKB' THEN															-- Transaction Flag (IF PEMDA_ID IS PKB THEN P ELSE Y)
+			SET oRef.PTRFLG = 'P';
+		ELSE
+			SET oRef.PTRFLG = 'Y';
+		END IF;
+		
+		SET oRef.DT = CAST(CURRENT_TIMESTAMP AS CHARACTER FORMAT 'yyyyMMddHHmmss');
+		SET oRef.PCC = COALESCE(Environment.Split[2], '');
+		SET oRef.PC = COALESCE(Environment.Split[1], '');
+		SET oRef.MC = COALESCE(Environment.Split[3], '');
+		SET oRef.FC = COALESCE(Environment.Split[8], '');
+		SET oRef.CID = oriMsgRef.CHANNEL_ID;
+		
+		RETURN TRUE;
+	END;
+	
+	CREATE FUNCTION SanityAndTotalIntToChar(IN nc1 CHARACTER, IN nc2 CHARACTER, IN op CHARACTER) RETURNS CHARACTER
+	BEGIN
+		DECLARE ni1, ni2, o INTEGER;
+		
+		SET ni1 = CAST(COALESCE(TRIM(nc1), '0') AS INTEGER);
+		SET ni2 = CAST(COALESCE(TRIM(nc2), '0') AS INTEGER);
+		
+		CASE op
+			WHEN 'ADD' THEN
+				SET o = ni1 + ni2;
+			WHEN 'SUB' THEN
+				SET o = ni1 - ni2;
+		END CASE;
+		
+		RETURN CAST(o AS CHARACTER);
+	END;
+END MODULE;

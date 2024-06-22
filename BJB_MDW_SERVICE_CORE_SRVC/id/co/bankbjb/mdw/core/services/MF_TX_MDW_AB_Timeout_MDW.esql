@@ -1,0 +1,11 @@
+BROKER SCHEMA id.co.bankbjb.mdw.core.services
+PATH id.co.bankbjb.mdw.lib;
+
+CREATE COMPUTE MODULE MF_TX_MDW_AB_Timeout_MDW
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		
+		
+		RETURN TRUE;
+	END;
+END MODULE;

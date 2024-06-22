@@ -1,0 +1,12 @@
+CREATE PROCEDURE LogToFile(IN message REFERENCE, IN fileName CHARACTER, IN level CHARACTER)
+BEGIN
+	DECLARE rc BOOLEAN;
+	CALL initLog4j('/var/mqsi/log4jconfig/config.xml') INTO rc;
+	
+	IF rc THEN
+		DECLARE rc1 BOOLEAN;
+		DECLARE logMsg CHARACTER CAST(ASBITSTREAM(message) AS CHARACTER CCSID 1208 ENCODING 815);
+		CALL log4j2('BJB_MDW_FLOW', fileName, level, logMsg) INTO rc1;
+	END IF;
+	
+END;

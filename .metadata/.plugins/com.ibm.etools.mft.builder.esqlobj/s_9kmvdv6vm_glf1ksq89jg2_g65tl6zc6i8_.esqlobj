@@ -1,0 +1,14 @@
+/*EATE FUNCTION Main() RETURNS BOOLE*/
+	BEGIN
+		
+		IF InputLocalEnvironment.TCPIP.Input.ConnectionDetails.ReplyId = 'CLIENT_ECHO' THEN
+			RETURN FALSE
+		END IF;
+		
+		CREATE LASTCHILD OF OutputRoot DOMAIN 'XMLNSC';
+		SET OutputRoot.XMLNSC = InputRoot.DFDL;
+		
+		SET OutputLocalEnvironment.Destination.HTTP.RequestIdentifier = CAST(InputLocalEnvironment.TCPIP.Input.ConnectionDetails.ReplyId AS BLOB);
+		
+		RETURN TRUE;
+	END;

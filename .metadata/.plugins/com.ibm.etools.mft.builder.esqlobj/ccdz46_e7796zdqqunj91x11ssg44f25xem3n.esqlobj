@@ -1,0 +1,158 @@
+/*EATE FUNCTION Main() RETURNS BOOLE*/
+	BEGIN
+		-- Save input data and other propeties
+		SET Environment.Variables.details = InputRoot.MQRFH2.usr.vs.details;
+		SET Environment.Variables.details.correlId = InputRoot.MQMD.CorrelId;
+		SET Environment.Variables.details.timeoutMDW = TIMEOUT_SERVICE;
+		SET Environment.Variables.inMessage = InputRoot.JSON.Data;
+		-- Set flow UUID
+		SET InputLocalEnvironment.UUID = Environment.Variables.details.uuid;
+		SET OutputLocalEnvironment.UUID = InputLocalEnvironment.UUID;
+		-- Check and load table error map
+		IF NOT EXISTS(T_ERROR_MAP.Field[]) THEN
+			DECLARE dataSource CHARACTER DataSource;
+			SET Environment.Variables.DB.T_ERROR_MAP.Field[] = PASSTHRU('SELECT * FROM ' || DB_SCHEMA || '.T_ERROR_MAP' TO Database.{dataSource});
+
+			DECLARE I INTEGER 1;
+			DECLARE J INTEGER CARDINALITY(Environment.Variables.DB.T_ERROR_MAP.Field[]);
+
+			WHILE I <= J DO
+				SET T_ERROR_MAP.Field[I] = Environment.Variables.DB.T_ERROR_MAP.Field[I];
+				SET I = I + 1;
+			END WHILE;
+
+			DELETE FIELD Environment.Variables.DB;
+		END IF;
+		-- Load Service destination parameter
+		IF SERVICE_PARAM IS NULL OR TRIM(SERVICE_PARAM) = ''
+			THEN
+			DECLARE dataSource CHARACTER DataSource;
+			SET Environment.Variables.SERVICE_PARAM[] =
+			PASSTHRU('SELECT * FROM ' || DB_SCHEMA || '.T_PARAMETER WHERE "ServiceName" = ' || SERVICE_NAME TO Database.{dataSource});
+			SET SERVICE_PARAM = Environment.Variables.SERVICE_PARAM;
+			SET SERVICE_PARAM.TxQueueRes = SUBSTRING(Environment.Variables.SERVICE_PARAM.TxQueue AFTER '|');
+		END IF;
+
+		SET Environment.Variables.details.dbParam = SERVICE_PARAM;
+		DELETE FIELD Environment.Variables.SERVICE_PARAM;
+		
+		-- Logging input
+		CALL PrepareLogMessage(OutputRoot, ApplicationLabel, MessageFlowLabel, NodeLabel, 'input', 'debug', InputExceptionList, InputLocalEnvironment, InputRoot);
+		PROPAGATE TO TERMINAL 'out1' DELETE NONE;
+		DELETE FIELD OutputRoot.BLOB;
+		
+		-- Declare I/O Reference
+		CREATE LASTCHILD OF OutputRoot DOMAIN 'JSON';
+		CREATE FIELD OutputRoot.JSON.Data IDENTITY (JSON.Object)Data;
+		DECLARE outRef REFERENCE TO OutputRoot.JSON.Data;
+		DECLARE inRef REFERENCE TO InputRoot.JSON.Data;
+		DECLARE envReff REFERENCE TO Environment.Variables.details;
+		DECLARE ts CHARACTER CAST(CURRENT_TIMESTAMP AS CHARACTER FORMAT 'yyyyMMddHHMMss');
+		DECLARE st CHARACTER ST;
+		
+		X: BEGIN ATOMIC READ WRITE
+			SET ST = ST + 1;
+		END X;
+		
+		DECLARE outData ROW;
+		
+		-- Mapping the request to backend
+		CALL Split(envReff.dbParam.Param2, Environment, '|');
+
+		SET outRef.SPPW = COALESCE(Environment.Split[7], '');
+		SET outRef.PC = COALESCE(Environment.Split[1], '');
+		SET outRef.SPPU = COALESCE(Environment.Split[6], '');
+		
+		SET outRef.MPI.BGEQF = COALESCE(inRef.EQ_FLE_COD, '');
+		SET outRef.MPI.BGLPV = COALESCE(inRef.LNK_PRM_VAL, '');
+		SET outRef.MPI.BGIGR = COALESCE(inRef.INF_GRP, '');
+		SET outRef.MPI.BGCUS = COALESCE(inRef.CUS_NAME, '');
+		SET outRef.MPI.BGPSQ = COALESCE(inRef.PSTG_NUM, '');
+		SET outRef.MPI.BGPOD = COALESCE(inRef.PSTG_DTE, '');
+		SET outRef.MPI.BG0001 = COALESCE(inRef.CON_BANK, '');
+		SET outRef.MPI.BG0003 = COALESCE(inRef.BRTH_CTY_NAME, '');
+		SET outRef.MPI.BG0004 = COALESCE(inRef.BRTH_DTE, '');
+		SET outRef.MPI.BG0005 = COALESCE(inRef.RELIGION, '');
+		SET outRef.MPI.BG0006 = COALESCE(inRef.NAME, '');
+		SET outRef.MPI.BG0007 = COALESCE(inRef.ID_NUM, '');
+		SET outRef.MPI.BG0008 = COALESCE(inRef.ID_EXP_DTE, '');
+		SET outRef.MPI.BG0009 = COALESCE(inRef.SEX, '');
+		SET outRef.MPI.BG0010 = COALESCE(inRef.JOB_TYPE, '');
+		SET outRef.MPI.BG0011 = COALESCE(inRef.JOB_ADDR, '');
+		
+		SET outRef.MPI.BG0014 = COALESCE(inRef.OTHR_BANK_NAME, '');
+		
+		SET outRef.MPI.BG0015 = COALESCE(inRef.OTHR_BANK_NAME, '');
+		SET outRef.MPI.BG0016 = COALESCE(inRef.OPN_DTE, '');
+		SET outRef.MPI.BG0021 = COALESCE(inRef.EXP_TDP, '');
+		SET outRef.MPI.BG0023 = COALESCE(inRef.CNTC_PRSN, '');
+		SET outRef.MPI.BG0070 = COALESCE(inRef.EMAIL_ADDR, '');
+		SET outRef.MPI.BG0071 = COALESCE(inRef.HP_NUM, '');
+		SET outRef.MPI.BG0073 = COALESCE(inRef.DGREE_STS, '');
+		SET outRef.MPI.BG0074 = COALESCE(inRef.TRANS_ACTV, '');
+		SET outRef.MPI.BG0075 = COALESCE(inRef.PRPS_FUND, '');
+		SET outRef.MPI.BG0076 = COALESCE(inRef.ID_CODE, '');
+		SET outRef.MPI.BG0078 = COALESCE(inRef.CUS_CTG, '');
+		SET outRef.MPI.BG0099 = COALESCE(inRef.MTHR_MDN_NAME, '');
+		SET outRef.MPI.BG0100 = COALESCE(inRef.BLD_TYP, '');
+		
+		SET outRef.MPI.BG018B = COALESCE(inRef.EXP_SIUP, '');
+		SET outRef.MPI.BG018D = COALESCE(inRef.EXP_SIG, '');
+		SET outRef.MPI.BG019A = COALESCE(inRef.ADDR, '');
+		SET outRef.MPI.BG0190 = COALESCE(inRef.ADDR_1, '');
+		SET outRef.MPI.BG0192 = COALESCE(inRef.EXP_ID_KITAS, '');
+		SET outRef.MPI.BG0193 = COALESCE(inRef.SRC_FUND, '');
+		SET outRef.MPI.BG0197 = COALESCE(inRef.PURPOSE, '');
+		SET outRef.MPI.BG0199 = COALESCE(inRef.BSNS_ISSUED_DTE, '');
+		SET outRef.MPI.BG0200 = COALESCE(inRef.BSNS_EXP_DTE, '');
+		SET outRef.MPI.BG0201 = COALESCE(inRef.NIP, '');
+		SET outRef.MPI.BG0202 = COALESCE(inRef.APRVL_PRD, '');
+		SET outRef.MPI.BG0203 = COALESCE(inRef.CVIL_NATION, '');
+		SET outRef.MPI.BG0204 = COALESCE(inRef.RSDN_CODE, '');
+		SET outRef.MPI.BG0212 = COALESCE(inRef.PANGSA, '');
+		SET outRef.MPI.BG0220 = COALESCE(inRef.PRTNR_BRTH_DTE, '');
+
+		SET outRef.MT = COALESCE(Environment.Split[4], '');
+		SET outRef.SID = COALESCE(InputLocalEnvironment.UUID, '');
+		SET outRef.CID = COALESCE(inRef.CHANNEL_ID, '');
+		SET outRef.ST = COALESCE(SUBSTRING(ts FROM 8 FOR 6) || SUBSTRING('00000' || st FROM LENGTH(st)+1), '');
+		SET outRef.FC = COALESCE(Environment.Split[8], '');
+		SET outRef.DT = COALESCE(ts, '');
+		SET outRef.PCC = COALESCE(Environment.Split[2], '');
+		SET outRef.MC = COALESCE(Environment.Split[3], '');
+		SET outRef.CC = COALESCE(Environment.Split[5], '');
+
+		CREATE LASTCHILD OF outData DOMAIN 'JSON';
+		CREATE FIELD outData.JSON.Data IDENTITY (JSON.Object)Data;
+		SET outData.JSON.Data = outRef;
+
+		DELETE FIELD Environment.Split;
+		
+		-- Logging output
+		CALL PrepareLogMessage(OutputRoot, ApplicationLabel, MessageFlowLabel, NodeLabel, 'output', 'debug', OutputExceptionList, OutputLocalEnvironment, OutputRoot);
+		PROPAGATE TO TERMINAL 'out1' DELETE NONE;
+		DELETE FIELD OutputRoot.BLOB;
+		
+		-- Reassign the value
+		CREATE LASTCHILD OF OutputRoot DOMAIN 'JSON';
+		CREATE FIELD OutputRoot.JSON.Data IDENTITY (JSON.Object)Data;
+		SET OutputRoot.JSON.Data = outData.JSON.Data;
+
+
+
+		RETURN TRUE;
+	END;
+
+	CREATE PROCEDURE CopyMessageHeaders() BEGIN
+		DECLARE I INTEGER 1;
+		DECLARE J INTEGER;
+		SET J = CARDINALITY(InputRoot.*[]);
+		WHILE I < J DO
+			SET OutputRoot.*[I] = InputRoot.*[I];
+			SET I = I + 1;
+		END WHILE;
+	END;
+
+	CREATE PROCEDURE CopyEntireMessage() BEGIN
+		SET OutputRoot = InputRoot;
+	END;

@@ -1,0 +1,36 @@
+CREATE COMPUTE MODULE MF_TCP_PKB_ADAPTER_Timeout_Backend_Handling
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		
+		-- Keep the UUID
+		SET OutputLocalEnvironment.UUID = Environment.Variables.uuid;
+		
+		SET OutputRoot.MQMD.CorrelId = Environment.Variables.correlId;
+		SET OutputRoot.XMLNSC.isomsg.Field039 = '68';
+		
+		--------------------
+		
+		CALL PrepareLogMessage(OutputRoot, ApplicationLabel, MessageFlowLabel, NodeLabel, 'input', 'debug', InputExceptionList, InputLocalEnvironment, InputRoot);
+		PROPAGATE TO TERMINAL 'out1' DELETE NONE;
+		DELETE FIELD OutputRoot.BLOB;
+		
+		SET OutputRoot.MQMD.CorrelId = Environment.Variables.CorrelId;
+		SET OutputRoot.JSON.Data.RC = '0068';
+		
+		SET OutputLocalEnvironment.Destination.MQDestinationList.DestinationData[1].queueName = Environment.Variables.ReplyToQ;
+		
+		CALL PrepareLogMessage(OutputRoot, ApplicationLabel, MessageFlowLabel, NodeLabel, 'output', 'info', OutputExceptionList, OutputLocalEnvironment, OutputRoot);
+		PROPAGATE TO TERMINAL 'out1' DELETE NONE;
+		DELETE FIELD OutputRoot.BLOB;
+		
+		SET OutputRoot.MQMD.Expiry = Q_EXPIRY;
+		CREATE LASTCHILD OF OutputRoot DOMAIN 'JSON';
+		CREATE FIELD OutputRoot.JSON.Data IDENTITY (JSON.Object)Data;
+		SET OutputRoot.JSON.Data.RC = '0068';
+		
+		RETURN TRUE;
+		
+		
+		RETURN TRUE;
+	END;
+END MODULE;

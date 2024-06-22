@@ -1,0 +1,19 @@
+CREATE PROCEDURE Split(IN source CHARACTER, IN Buffer REFERENCE, IN delimiter CHARACTER) 
+BEGIN
+	DECLARE P INTEGER;
+	DECLARE I INTEGER 1;
+	
+	SET Buffer.Split = NULL;
+	
+	REPEAT
+		SET P = POSITION(delimiter IN source);
+		IF P = 0 THEN
+			SET Buffer.Split[I] = source;
+		ELSE
+			SET Buffer.Split[I] = LEFT(source, P - 1);
+			SET source = SUBSTRING(source FROM P + LENGTH(delimiter));
+			SET I = I + 1;
+		END IF;
+		UNTIL P = 0
+	END REPEAT;
+END;

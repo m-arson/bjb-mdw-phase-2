@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ecore:EPackage xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:ComIbmCompute.msgnode="ComIbmCompute.msgnode" xmlns:ComIbmFlowOrder.msgnode="ComIbmFlowOrder.msgnode" xmlns:ComIbmMQGet.msgnode="ComIbmMQGet.msgnode" xmlns:ComIbmMQOutput.msgnode="ComIbmMQOutput.msgnode" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" xmlns:eflow="http://www.ibm.com/wbi/2005/eflow" xmlns:utility="http://www.ibm.com/wbi/2005/eflow_utility" nsURI="SF_DUPLICATE_CHECK.subflow" nsPrefix="SF_DUPLICATE_CHECK.subflow">
+  <eClassifiers xmi:type="eflow:FCMComposite" name="FCMComposite_1" useDefaults="true" udpSupport="true" nodeLayoutStyle="SQUARE">
+    <eSuperTypes href="http://www.ibm.com/wbi/2005/eflow#//FCMBlock"/>
+    <translation xmi:type="utility:TranslatableString" key="SF_DUPLICATE_CHECK" bundleName="SF_DUPLICATE_CHECK" pluginId="BJB_MDW_HANDLER_REST_SAMSAT_SRVC"/>
+    <colorGraphic16 xmi:type="utility:GIFFileGraphic" resourceName="platform:/plugin/BJB_MDW_HANDLER_REST_SAMSAT_SRVC/icons/full/obj16/SF_DUPLICATE_CHECK.gif"/>
+    <colorGraphic32 xmi:type="utility:GIFFileGraphic" resourceName="platform:/plugin/BJB_MDW_HANDLER_REST_SAMSAT_SRVC/icons/full/obj30/SF_DUPLICATE_CHECK.gif"/>
+    <composition>
+      <nodes xmi:type="eflow:FCMSource" xmi:id="InTerminal.Input" location="37,149">
+        <translation xmi:type="utility:TranslatableString" key="InTerminal.Input" bundleName="SF_DUPLICATE_CHECK" pluginId="BJB_MDW_HANDLER_REST_SAMSAT_SRVC"/>
+      </nodes>
+      <nodes xmi:type="eflow:FCMSink" xmi:id="OutTerminal.Output" location="616,279">
+        <translation xmi:type="utility:TranslatableString" key="OutTerminal.Output" bundleName="SF_DUPLICATE_CHECK" pluginId="BJB_MDW_HANDLER_REST_SAMSAT_SRVC"/>
+      </nodes>
+      <nodes xmi:type="ComIbmCompute.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_1" location="108,150" computeExpression="esql://routine/#SF_DUPLICATE_CHECK_Check_Duplicate.Main" computeMode="destinationAndMessage">
+        <translation xmi:type="utility:ConstantString" string="Check Duplicate"/>
+      </nodes>
+      <nodes xmi:type="ComIbmMQGet.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_4" location="228,151" queueName="TOBEOVERRIDEN" getWithCorrelID="true" browse="true" browseFirst="true" policyUrl="{COMMON_POLICY}:QM_GATEWAY">
+        <translation xmi:type="utility:ConstantString" string="Check DuplicateQ"/>
+      </nodes>
+      <nodes xmi:type="eflow:FCMSink" xmi:id="OutTerminal.Output1" location="383,146">
+        <translation xmi:type="utility:TranslatableString" key="OutTerminal.Duplicate" bundleName="SF_DUPLICATE_CHECK" pluginId="BJB_MDW_HANDLER_REST_SAMSAT_SRVC"/>
+      </nodes>
+      <nodes xmi:type="ComIbmCompute.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_5" location="334,219" computeExpression="esql://routine/#SF_DUPLICATE_CHECK_Set_Duplicate_ID___Expiry.Main" computeMode="destinationAndMessage">
+        <translation xmi:type="utility:ConstantString" string="Set Duplicate ID &amp; Expiry"/>
+      </nodes>
+      <nodes xmi:type="ComIbmFlowOrder.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_6" location="492,219">
+        <translation xmi:type="utility:ConstantString" string="Flow Order"/>
+      </nodes>
+      <nodes xmi:type="ComIbmMQOutput.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_7" location="606,167" destinationMode="list" policyUrl="{COMMON_POLICY}:QM_GATEWAY">
+        <translation xmi:type="utility:ConstantString" string="DuplicateQ"/>
+      </nodes>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_1" targetNode="FCMComposite_1_1" sourceNode="InTerminal.Input" sourceTerminalName="OutTerminal.out" targetTerminalName="InTerminal.in"/>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_5" targetNode="FCMComposite_1_4" sourceNode="FCMComposite_1_1" sourceTerminalName="OutTerminal.out" targetTerminalName="InTerminal.in"/>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_6" targetNode="OutTerminal.Output1" sourceNode="FCMComposite_1_4" sourceTerminalName="OutTerminal.out" targetTerminalName="InTerminal.in"/>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_7" targetNode="FCMComposite_1_5" sourceNode="FCMComposite_1_4" sourceTerminalName="OutTerminal.noMessage" targetTerminalName="InTerminal.in"/>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_8" targetNode="FCMComposite_1_6" sourceNode="FCMComposite_1_5" sourceTerminalName="OutTerminal.out" targetTerminalName="InTerminal.in"/>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_9" targetNode="FCMComposite_1_7" sourceNode="FCMComposite_1_6" sourceTerminalName="OutTerminal.first" targetTerminalName="InTerminal.in"/>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_10" targetNode="OutTerminal.Output" sourceNode="FCMComposite_1_6" sourceTerminalName="OutTerminal.second" targetTerminalName="InTerminal.in"/>
+    </composition>
+    <propertyOrganizer/>
+    <stickyBoard/>
+  </eClassifiers>
+</ecore:EPackage>

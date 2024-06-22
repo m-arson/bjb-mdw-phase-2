@@ -1,0 +1,37 @@
+
+PATH id.co.bankbjb.mdw.lib;
+
+CREATE COMPUTE MODULE MF_TCP_PKB_ADAPTER_Backend_Response_Handling
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		
+		-- Keep the UUID
+		SET OutputLocalEnvironment.UUID = Environment.Variables.uuid;
+		
+		-- Logging Input
+		CALL PrepareLogMessage(OutputRoot, ApplicationLabel, MessageFlowLabel, NodeLabel, 'input', 'debug', InputExceptionList, InputLocalEnvironment, InputRoot);
+		PROPAGATE TO LABEL 'LOGGING' DELETE NONE;
+		DELETE FIELD OutputRoot.BLOB;
+		
+		-- Building Output Message
+		SET OutputRoot.MQMD.CorrelId = Environment.Variables.CorrelId;
+		CREATE LASTCHILD OF OutputRoot DOMAIN 'XMLNSC';
+		SET OutputRoot.XMLNSC = InputRoot.XMLNSC;
+		
+		-- Set Queue Destination
+		SET OutputLocalEnvironment.Destination.MQDestinationList.DestinationData[1].queueName = Environment.Variables.ReplyToQ;
+		
+		-- Logging Output
+		CALL PrepareLogMessage(OutputRoot, ApplicationLabel, MessageFlowLabel, NodeLabel, 'output', 'info', OutputExceptionList, OutputLocalEnvironment, OutputRoot);
+		PROPAGATE TO LABEL 'LOGGING' DELETE NONE;
+		DELETE FIELD OutputRoot.BLOB;
+		
+		-- Set Output Message
+		SET OutputRoot.MQMD.CorrelId = Environment.Variables.CorrelId;
+		SET OutputRoot.MQMD.Expiry = Q_EXPIRY;
+		CREATE LASTCHILD OF OutputRoot DOMAIN 'XMLNSC';
+		SET OutputRoot.XMLNSC = InputRoot.XMLNSC;
+		
+		RETURN TRUE;
+	END;
+END MODULE;

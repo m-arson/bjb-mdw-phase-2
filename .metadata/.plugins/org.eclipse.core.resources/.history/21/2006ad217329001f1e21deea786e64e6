@@ -1,0 +1,280 @@
+
+DECLARE NS_STD NAMESPACE 'http://www.ibm.com/dfdl/ISO8583STD';
+
+CREATE COMPUTE MODULE MF_MAIN_Route_Message
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		DECLARE inRef REFERENCE TO InputRoot.DFDL.NS_STD:ISO8583STD;
+		DECLARE srcDomain, dstDomain, dstMsgType, msgSetProp, msgTypeProp CHARACTER;
+		
+		IF inRef.MTI = '0800' THEN
+			SET inRef.MTI = LEFT(inRef.MTI, 2) || '10';
+			
+			DELETE FIELD inRef.PrimaryBitmap;
+			DELETE FIELD inRef.SecondaryBitmap;
+			
+			SET srcDomain = 'DFDL';
+			SET dstDomain = 'DFDL';
+			SET dstMsgType = 'ISO8583STD';
+			SET msgSetProp = '';
+			SET msgTypeProp = '{http://www.ibm.com/dfdl/ISO8583STD}:ISO8583STD';
+			
+			CALL Generate2BitsLengthISOMessage(InputRoot, OutputRoot, srcDomain, dstDomain, NS_STD, dstMsgType, msgSetProp, msgTypeProp);
+		
+		ELSEIF inRef.MTI = '0210' THEN
+			CREATE LASTCHILD OF OutputRoot DOMAIN 'XMLNSC';
+			SET OutputRoot.XMLNSC.isomsg = inRef;
+		ELSE
+			SET srcDomain = 'DFDL';
+			SET dstDomain = 'DFDL';
+			SET dstMsgType = 'ISO8583STD';
+			SET msgSetProp = '';
+			SET msgTypeProp = '{http://www.ibm.com/dfdl/ISO8583STD}:ISO8583STD';
+			
+			CALL Generate2BitsLengthISOMessage(InputRoot, OutputRoot, srcDomain, dstDomain, NS_STD, dstMsgType, msgSetProp, msgTypeProp);
+		END IF;
+		
+		
+		RETURN TRUE;
+	END;
+	
+	CREATE PROCEDURE Generate4BitsLengthISOMessage(IN iRef REFERENCE, IN oRef REFERENCE, IN srcDomain CHARACTER, IN dstDomain CHARACTER, IN isoName CHARACTER, IN msgSet CHARACTER, IN msgType CHARACTER)
+	BEGIN
+		
+		IF FIELDNAME(iRef.{srcDomain}.{isoName}.Length) IS NULL THEN
+			CREATE FIRSTCHILD OF iRef.{srcDomain}.{isoName} NAME 'Length' VALUE '9999';
+		ELSE
+			SET iRef.{srcDomain}.{isoName}.Length = '9999';
+		END IF;
+		
+		SET oRef.Properties.MessageType = msgType;
+		CREATE LASTCHILD OF oRef DOMAIN(dstDomain);
+		
+		SET oRef.{dstDomain} = iRef.{srcDomain};
+		CREATE FIELD oRef.{dstDomain}.{isoName};
+		DECLARE omRef REFERENCE TO oRef.{dstDomain}.{isoName};
+		
+		CREATE NEXTSIBLING OF omRef.MTI NAME 'PrimaryBitmap';
+		
+		DECLARE ptr REFERENCE TO omRef.PrimaryBitmap;
+		CALL PopulatePrimaryBitmap(ptr);
+		
+		DECLARE SecondaryBitmap BOOLEAN FALSE;
+		IF CAST(SUBSTRING(FIELDNAME(omRef.*[<]) AFTER 'd') AS INT) > 64 THEN
+			SET SecondaryBitmap = TRUE;
+		END IF;
+		
+		IF SecondaryBitmap THEN
+			CREATE NEXTSIBLING OF omRef.PrimaryBitmap NAME 'SecondaryBitmap';
+			MOVE ptr TO omRef.SecondaryBitmap;
+			CALL PopulateSecondaryBitmap(ptr);
+
+			SET omRef.PrimaryBitmap.Bits001to004 = '8';
+		ELSE
+			MOVE ptr TO omRef.PrimaryBitmap;
+		END IF;
+		
+		CALL UpdateBitmapsBasedOnAvailableFields(ptr);
+		
+		CREATE LASTCHILD OF oRef DOMAIN 'BLOB' NAME 'BLOB';
+		SET oRef.BLOB.BLOB = ASBITSTREAM(oRef.{dstDomain} CCSID 1208 SET msgSet TYPE msgType OPTIONS RootBitStream);
+		DELETE FIELD oRef.{dstDomain};
+		
+		DECLARE ISONL CHARACTER CAST(oRef.BLOB.BLOB AS CHARACTER CCSID 1208 Encoding 815);
+
+		DECLARE ISO CHARACTER;
+		CALL GenerateISOLength(ISONL , ISO);
+		
+		DELETE FIELD oRef.BLOB;
+		
+		CREATE LASTCHILD OF oRef DOMAIN 'BLOB' NAME 'BLOB';
+		SET oRef.BLOB.BLOB = CAST(ISO AS BLOB CCSID 1208);
+		
+	END;
+	
+	CREATE PROCEDURE Generate2BitsLengthISOMessage(IN iRef REFERENCE, IN oRef REFERENCE, IN srcDomain CHARACTER, IN dstDomain CHARACTER, IN ns NAMESPACE, IN isoNameDst CHARACTER, IN msgSet CHARACTER, IN msgType CHARACTER)
+	BEGIN
+		IF FIELDNAME(iRef.{srcDomain}.*.Length) IS NULL THEN
+			CREATE FIRSTCHILD OF iRef.{srcDomain}.* NAME 'Length' VALUE '0039';
+		ELSE
+			SET iRef.{srcDomain}.*.Length = '0039';
+		END IF;
+		
+		SET oRef.Properties.MessageType = msgType;
+		CREATE LASTCHILD OF oRef DOMAIN(dstDomain);
+		
+		SET oRef.{dstDomain}.{ns}:{isoNameDst} = iRef.{srcDomain}.*;
+		CREATE FIELD oRef.{dstDomain}.{ns}:{isoNameDst};
+		DECLARE omRef REFERENCE TO oRef.{dstDomain}.{ns}:{isoNameDst};
+		
+		CREATE NEXTSIBLING OF omRef.MTI NAME 'PrimaryBitmap';
+		
+		DECLARE ptr REFERENCE TO omRef.PrimaryBitmap;
+		CALL PopulatePrimaryBitmap(ptr);
+		
+		DECLARE SecondaryBitmap BOOLEAN FALSE;
+		IF CAST(SUBSTRING(FIELDNAME(omRef.*[<]) AFTER 'd') AS INT) > 64 THEN
+			SET SecondaryBitmap = TRUE;
+		END IF;
+		
+		IF SecondaryBitmap THEN
+			CREATE NEXTSIBLING OF omRef.PrimaryBitmap NAME 'SecondaryBitmap';
+			MOVE ptr TO omRef.SecondaryBitmap;
+			CALL PopulateSecondaryBitmap(ptr);
+
+			SET omRef.PrimaryBitmap.Bits001to004 = '8';
+		ELSE
+			MOVE ptr TO omRef.PrimaryBitmap;
+		END IF;
+		
+		CALL UpdateBitmapsBasedOnAvailableFields2Bits(ptr, ns, isoNameDst);
+		
+		CREATE LASTCHILD OF oRef DOMAIN 'BLOB' NAME 'BLOB';
+		SET oRef.BLOB.BLOB = ASBITSTREAM(oRef.{dstDomain} CCSID 1208 SET msgSet TYPE msgType OPTIONS RootBitStream);
+		
+		DECLARE ISOLN INTEGER (LENGTH(oRef.BLOB.BLOB) - 2);
+		DELETE FIELD oRef.BLOB;
+		
+		SET omRef.Length = RIGHT(CAST(ISOLN AS BLOB),2);
+		
+		CREATE LASTCHILD OF oRef DOMAIN 'BLOB' NAME 'BLOB';
+		SET oRef.BLOB.BLOB = ASBITSTREAM(omRef CCSID 1208 SET msgSet TYPE msgType OPTIONS RootBitStream);
+		DELETE FIELD oRef.{dstDomain};
+		
+	END;
+
+	CREATE PROCEDURE GenerateThreeDigitIndex(IN IndexInt INTEGER, OUT IndexChar CHAR)
+	BEGIN
+		SET IndexChar =
+		CASE
+			WHEN IndexInt < 10 THEN ('00' || CAST(IndexInt AS CHAR))
+			WHEN IndexInt < 100 THEN ('0' || CAST(IndexInt AS CHAR))
+			ELSE CAST(IndexInt AS CHAR)
+		END;
+	END;
+
+	CREATE PROCEDURE RemoveUnrequiredXMLAttributes(INOUT InRef REFERENCE)
+	BEGIN
+		SET InRef.XMLNSC.*:XmlDeclaration = NULL;
+		DECLARE NumberRootAttributes INTEGER CARDINALITY(InRef.XMLNSC.isomsg.(XMLNSC.Attribute)*[]);
+		DECLARE I1 INTEGER 1;
+		WHILE I1 <= NumberRootAttributes DO
+			SET InRef.XMLNSC.isomsg.(XMLNSC.Attribute)*[1] = NULL;
+			SET I1 = I1 + 1;
+		END WHILE;
+	END;
+
+	CREATE PROCEDURE PopulatePrimaryBitmap(INOUT DFDLPointer REFERENCE)
+	BEGIN
+		DECLARE I2 INTEGER 1;
+		DECLARE IndexChar1 CHAR;
+		DECLARE IndexChar2 CHAR;
+		WHILE I2 < 65 DO
+			CALL GenerateThreeDigitIndex(I2, IndexChar1);
+			CALL GenerateThreeDigitIndex(I2+3, IndexChar2);
+			CREATE LASTCHILD OF DFDLPointer NAME ('Bits' || IndexChar1 || 'to' || IndexChar2) VALUE '0';
+			SET I2 = I2 + 4;
+		END WHILE;
+	END;
+
+	CREATE PROCEDURE PopulateSecondaryBitmap(INOUT DFDLPointer REFERENCE)
+	BEGIN
+		DECLARE J INTEGER 65;
+		DECLARE IndexChar1 CHAR;
+		DECLARE IndexChar2 CHAR;
+		WHILE J < 129 DO
+			CALL GenerateThreeDigitIndex(J, IndexChar1);
+			CALL GenerateThreeDigitIndex(J+3, IndexChar2);
+			CREATE LASTCHILD OF DFDLPointer NAME ('Bits' || IndexChar1 || 'to' || IndexChar2) VALUE '0';
+			SET J = J + 4;
+		END WHILE;
+	END;
+
+	CREATE PROCEDURE UpdateBitmapsBasedOnAvailableFields(INOUT DFDLPointer REFERENCE)
+	BEGIN
+		DECLARE BitName CHAR;
+		DECLARE BitMapName CHAR 'PrimaryBitmap';
+		DECLARE CurrentFieldName CHAR;
+		DECLARE CurrentFieldNumber INT;
+		DECLARE CurrentFieldBase INT;
+		DECLARE IndexChar1 CHAR;
+		DECLARE IndexChar2 CHAR;
+		DECLARE Value INT;
+		DECLARE CharValue CHAR;
+
+		MOVE DFDLPointer NEXTSIBLING;
+		WHILE LASTMOVE(DFDLPointer) DO
+			SET CurrentFieldName = FIELDNAME(DFDLPointer);
+			SET CurrentFieldNumber = CAST(SUBSTRING(CurrentFieldName AFTER 'd') AS INT);
+			SET CurrentFieldBase = FLOOR((CurrentFieldNumber - 1) / 4) * 4 + 1;
+			SET Value = CAST(POWER(2, 3 - MOD(CurrentFieldNumber - 1, 4)) AS INT);
+			CALL GenerateThreeDigitIndex(CurrentFieldBase, IndexChar1);
+			CALL GenerateThreeDigitIndex(CurrentFieldBase + 3, IndexChar2);
+			SET BitName = 'Bits' || IndexChar1 || 'to' || IndexChar2;
+			IF CurrentFieldNumber > 64 THEN
+				SET BitMapName = 'SecondaryBitmap';
+			END IF;
+			
+			SET CharValue = OutputRoot.DFDL.isomsg.{BitMapName}.{BitName};
+			SET CharValue = '000000000000000' || CharValue;
+			SET Value = CAST(CAST(CharValue AS BLOB) AS INT) + Value;
+			SET CharValue = CAST(CAST(Value AS BLOB) AS CHAR);
+			SET CharValue = UPPER(SUBSTRING(CharValue FROM 18 FOR 1));
+			SET OutputRoot.DFDL.isomsg.{BitMapName}.{BitName} = CharValue;
+
+			MOVE DFDLPointer NEXTSIBLING;
+		END WHILE;
+	END;
+	
+	CREATE PROCEDURE UpdateBitmapsBasedOnAvailableFields2Bits(INOUT DFDLPointer REFERENCE, IN ns NAMESPACE, IN isoName CHARACTER)
+	BEGIN
+		DECLARE BitName CHAR;
+		DECLARE BitMapName CHAR 'PrimaryBitmap';
+		DECLARE CurrentFieldName CHAR;
+		DECLARE CurrentFieldNumber INT;
+		DECLARE CurrentFieldBase INT;
+		DECLARE IndexChar1 CHAR;
+		DECLARE IndexChar2 CHAR;
+		DECLARE Value INT;
+		DECLARE CharValue CHAR;
+
+		MOVE DFDLPointer NEXTSIBLING;
+		WHILE LASTMOVE(DFDLPointer) DO
+			SET CurrentFieldName = FIELDNAME(DFDLPointer);
+			SET CurrentFieldNumber = CAST(SUBSTRING(CurrentFieldName AFTER 'd') AS INT);
+			SET CurrentFieldBase = FLOOR((CurrentFieldNumber - 1) / 4) * 4 + 1;
+			SET Value = CAST(POWER(2, 3 - MOD(CurrentFieldNumber - 1, 4)) AS INT);
+			CALL GenerateThreeDigitIndex(CurrentFieldBase, IndexChar1);
+			CALL GenerateThreeDigitIndex(CurrentFieldBase + 3, IndexChar2);
+			SET BitName = 'Bits' || IndexChar1 || 'to' || IndexChar2;
+			IF CurrentFieldNumber > 64 THEN
+				SET BitMapName = 'SecondaryBitmap';
+			END IF;
+			
+			SET CharValue = OutputRoot.DFDL.{ns}:{isoName}.{BitMapName}.{BitName};
+			SET CharValue = '000000000000000' || CharValue;
+			SET Value = CAST(CAST(CharValue AS BLOB) AS INT) + Value;
+			SET CharValue = CAST(CAST(Value AS BLOB) AS CHAR);
+			SET CharValue = UPPER(SUBSTRING(CharValue FROM 18 FOR 1));
+			SET OutputRoot.DFDL.{ns}:{isoName}.{BitMapName}.{BitName} = CharValue;
+
+			MOVE DFDLPointer NEXTSIBLING;
+		END WHILE;
+	END;
+
+	CREATE PROCEDURE GenerateISOLength (IN ISONL CHARACTER, INOUT ISO CHARACTER)
+	BEGIN
+		SET ISO = SUBSTRING (ISONL AFTER '9999');
+		DECLARE LISO INTEGER LENGTH(ISO);
+
+		IF LISO < 10 THEN
+			SET ISO = '000' || CAST(LISO AS CHARACTER) || ISO;
+		ELSEIF LISO < 100 THEN
+			SET ISO = '00' || CAST(LISO AS CHARACTER) || ISO;
+		ELSEIF LISO < 1000 THEN
+			SET ISO = '0' || CAST(LISO AS CHARACTER) || ISO;
+		ELSE
+			SET ISO = CAST(LISO AS CHARACTER) || ISO;
+		END IF;
+	END;
+END MODULE;

@@ -1,0 +1,11 @@
+/*EATE FUNCTION Main() RETURNS BOOLE*/
+	BEGIN
+		
+		SET OutputLocalEnvironment.Destination.TCPIP.Output.ReplyId = InputLocalEnvironment.Destination.HTTP.RequestIdentifier;
+		-- CALL Generate4BitsLengthISOMessage(InputRoot, OutputRoot, 'XMLNSC', 'DFDL', 'isomsg', '', '{}:isomsg');
+		CALL Generate2BitsLengthISOMessage(InputRoot, OutputRoot, 'XMLNSC', 'DFDL', 'isomsg', nsstd, 'ISO8583STD', '', '{http://www.ibm.com/dfdl/ISO8583STD}:ISO8583STD');
+		
+		RETURN TRUE;
+	END;
+	
+	CREATE PROCEDURE Generate4BitsLengthISOMessage(IN iRef REFERENCE, IN oRef REFERENCE, IN srcDomain CHARACTER, IN dstDomain CHARACTER, IN isoName CHARACTER, IN msgSet CHARACTER, IN msgType CHARACTER)

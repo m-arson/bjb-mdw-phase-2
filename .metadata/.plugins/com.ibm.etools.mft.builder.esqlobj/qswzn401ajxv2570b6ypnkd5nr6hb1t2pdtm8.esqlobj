@@ -1,0 +1,43 @@
+CREATE COMPUTE MODULE MF_TX_JSON_PAY_PKB_Validate_and_Map_Res
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		DECLARE adapterRef REFERENCE TO InputRoot.XMLNSC.isomsg;
+		DECLARE iRef REFERENCE TO Environment.Variables.inMessage;
+		
+		IF adapterRef.Field039 = '00' THEN
+			CREATE LASTCHILD OF OutputRoot DOMAIN 'JSON';
+			CREATE FIELD OutputRoot.JSON.Data IDENTITY (JSON.Object)Data;
+			
+		ELSE
+			-- Process to Reversal
+		END IF;
+		
+		RETURN TRUE;
+	END;
+	CREATE PROCEDURE GeneratePostingMessage(IN iRef REFERENCE, IN oRef REFERENCE)
+	BEGIN
+		
+	END;
+	
+	CREATE FUNCTION GenerateItaString (IN iRef REFERENCE, IN amount CHARACTER, IN bblc CHARACTER) RETURNS CHARACTER
+	BEGIN
+		DECLARE outBuf, docRef CHARACTER;
+		SET docRef = iRef.CHANNEL || '-' || iRef.USER_ID || '-' || iRef.REF_TRX;
+		SET outBuf = SPACE(38) ||
+					 CAST(CURRENT_TIMESTAMP AS CHARACTER FORMAT 'yyMMddHHmmssSSSSSS') ||
+					 SPACE(8) || 
+					 LEFT(iRef.SENDER_ACCOUNT || SPACE(20), 20) ||
+					 SPACE(33) ||
+					 bblc ||
+					 RIGHT(REPLICATE('0', 15) || amount, 15) ||
+					 LEFT(iRef.REF_TRX || SPACE(16), 16) ||
+					 docRef ||
+					 docRef || 
+					 LEFT('KOR ' || iRef.NARATIVE || SPACE(35), 35) ||
+					 LEFT('KOR ' || iRef.NARATIVE2 || SPACE(35), 35) ||
+					 SPACE(226) ||
+					 iRef.CREBIT_CODE ||
+					 iRef.DEBIT_CODE;
+		RETURN outBuf;
+	END;
+END MODULE;

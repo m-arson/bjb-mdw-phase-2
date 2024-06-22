@@ -1,0 +1,30 @@
+CREATE COMPUTE MODULE SF_DUPLICATE_CHECK_Check_Duplicate
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		
+		-- Keep The UUID
+		SET OutputLocalEnvironment.UUID = InputLocalEnvironment.UUID;
+		
+		-- Logging Input
+		CALL PrepareLogMessage(OutputRoot, ApplicationLabel, MessageFlowLabel, NodeLabel, 'input', 'debug', InputExceptionList, InputLocalEnvironment, InputRoot);
+		PROPAGATE TO LABEL 'LOGGING' DELETE NONE;
+		DELETE FIELD OutputRoot.BLOB;
+		
+		IF Environment.Variables.isDown
+		THEN
+			RETURN FALSE;
+		END IF;
+		
+		-- Preparing Properties for Duplicate Check
+		SET OutputRoot.MQMD.CorrelId = Environment.Variables.details.correlId;
+		SET OutputLocalEnvironment.MQ.GET.QueueName = Environment.Variables.details.dbParam.Param1;
+		SET OutputLocalEnvironment.MQ.GET.MQGMO.WaitInterval = 0;
+		
+		-- Logging Output
+		CALL PrepareLogMessage(OutputRoot, ApplicationLabel, MessageFlowLabel, NodeLabel, 'output', 'debug', OutputExceptionList, OutputLocalEnvironment, OutputRoot);
+		PROPAGATE TO LABEL 'LOGGING' DELETE NONE;
+		DELETE FIELD OutputRoot.BLOB;
+		
+		RETURN TRUE;
+	END;
+END MODULE;

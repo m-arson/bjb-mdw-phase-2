@@ -1,0 +1,55 @@
+/*EATE FUNCTION Main() RETURNS BOOLE*/
+	BEGIN
+		
+		DECLARE iRef REFERENCE TO InputLocalEnvironment.TCPIP.Input.ConnectionDetails;
+		
+		DECLARE isAvail BOOLEAN FALSE;
+		DECLARE sessionBuffer, tmpSessionBuffer ROW;
+		CALL GetSessionIndex(iRef.ClientDetails.Address, SESSION, sessionBuffer);
+		
+		IF sessionBuffer.Avail THEN
+			SET tmpSessionBuffer = SESSION.Data[sessionBuffer.Index];
+		END IF;
+		
+		IF sessionBuffer.Index > 0 THEN
+			SET SESSION.Data[sessionBuffer.Index].Id = iRef.Id;
+			SET SESSION.Data[sessionBuffer.Index].Port = iRef.Port;
+			SET SESSION.Data[sessionBuffer.Index].Address = iRef.ClientDetails.Address;
+		END IF;
+		
+		RETURN FALSE;
+	END;
+	
+	CREATE FUNCTION GetSessionLength(IN S REFERENCE) RETURNS INTEGER
+	BEGIN
+		IF S = NULL THEN
+			RETURN 0;
+		ELSE
+			DECLARE L INTEGER;
+			SET L = CARDINALITY(S.Data[]);
+			RETURN L;	
+		END IF;
+	END;
+	
+	CREATE PROCEDURE GetSessionIndex(IN H CHARACTER, IN S REFERENCE, IN B REFERENCE)
+	BEGIN
+		DECLARE I, L INTEGER;
+		SET I = 1;
+		SET L = GetSessionLength(S);
+		
+		IF L = 0 THEN
+			SET B.Index = 1;
+			SET B.Avail = FALSE;
+		ELSE
+			WHILE I <= L DO
+				IF S.Data[I].Address = H THEN
+					SET B.Index = I;
+					SET B.Avail = TRUE;
+				END IF;
+				SET I = I + 1;
+			END WHILE;
+		END IF;
+		SET B.Index = I;
+		SET B.Avail = FALSE;
+	END;
+	

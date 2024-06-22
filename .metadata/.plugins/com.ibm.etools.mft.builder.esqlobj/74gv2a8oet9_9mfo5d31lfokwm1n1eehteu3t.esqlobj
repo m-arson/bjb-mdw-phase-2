@@ -1,0 +1,11 @@
+/*EATE FUNCTION Main() RETURNS BOOLE*/
+	BEGIN
+		DECLARE dtime CHARACTER CAST(CURRENT_TIMESTAMP AS CHARACTER FORMAT 'yyyymmddHHMMssSSS');
+		
+		SET OutputRoot.DFDL.isomsg.MTI = '0800';
+		SET OutputRoot.DFDL.isomsg.Field007 = SUBSTRING(dtime FROM 5 FOR 10);
+		SET OutputRoot.DFDL.isomsg.Field011 = RIGHT(dtime,6);
+		SET OutputRoot.DFDL.isomsg.Field070 = '301';
+		
+		RETURN TRUE;
+	END;

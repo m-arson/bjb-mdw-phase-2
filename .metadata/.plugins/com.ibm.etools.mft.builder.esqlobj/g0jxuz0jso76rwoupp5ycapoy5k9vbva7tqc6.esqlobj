@@ -1,0 +1,5 @@
+CREATE PROCEDURE GetResponseProperties(IN tError REFERENCE, IN errorMap REFERENCE, IN iRef REFERENCE)
+	BEGIN
+		DECLARE dbRef ROW;
+		
+	END;

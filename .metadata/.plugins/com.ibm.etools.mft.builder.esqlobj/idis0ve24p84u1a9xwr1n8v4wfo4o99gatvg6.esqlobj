@@ -1,0 +1,34 @@
+/*EATE FUNCTION Main() RETURNS BOOLE*/
+	BEGIN
+		
+		X: BEGIN ATOMIC READ WRITE
+			SET SESSION.Data[1].Name = 'Name1';
+			SET SESSION.Data[1].Gender = 'M';
+			
+			SET SESSION.Data[2].Name = 'Name2';
+			SET SESSION.Data[2].Gender = 'F';
+		END X;
+		
+		
+--		X: BEGIN ATOMIC READ WRITE
+--			UPDATE SESSION.Data[] SET Name = 'Hello' WHERE Name = 'name1';
+--		END X;
+--		SET Environment.Variables.Data[] = (SELECT * FROM SESSION.Data[]);
+--		
+--		SET OutputRoot.JSON.(JSON.Array)Data.Item[] = Environment.Variables.Data[];
+		SET OutputRoot.JSON.Data.Length = GetSessionLength(SESSION);
+		
+		RETURN TRUE;
+	END;
+	
+	CREATE FUNCTION GetSessionLength (IN S REFERENCE) RETURNS INTEGER
+	BEGIN
+		IF S = NULL THEN
+			RETURN 0;
+		ELSE
+			DECLARE L INTEGER;
+			SET L = CARDINALITY(S.Data[]);
+			RETURN L;	
+		END IF;
+	END;
+	

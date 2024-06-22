@@ -1,0 +1,108 @@
+/*EATE FUNCTION Main() RETURNS BOOLE*/
+	BEGIN
+		-- CALL CopyMessageHeaders();
+		-- CALL CopyEntireMessage();
+		RETURN TRUE;
+	END;
+
+	CREATE PROCEDURE GenerateThreeDigitIndex(IN IndexInt INTEGER, OUT IndexChar CHAR)
+	BEGIN
+		SET IndexChar =
+		CASE
+		WHEN IndexInt < 10 THEN ('00' || CAST(IndexInt AS CHAR))
+		WHEN IndexInt < 100 THEN ('0' || CAST(IndexInt AS CHAR))
+		ELSE CAST(IndexInt AS CHAR)
+		END;
+	END;
+
+	CREATE PROCEDURE RemoveUnrequiredXMLAttributes(INOUT InRef REFERENCE)
+	BEGIN
+		SET InRef.XMLNSC.*:XmlDeclaration = NULL;
+		DECLARE NumberRootAttributes INTEGER CARDINALITY(InRef.XMLNSC.isomsg.(XMLNSC.Attribute)*[]);
+		DECLARE I1 INTEGER 1;
+		WHILE I1 <= NumberRootAttributes DO
+			SET InRef.XMLNSC.isomsg.(XMLNSC.Attribute)*[1] = NULL;
+			SET I1 = I1 + 1;
+		END WHILE;
+	END;
+
+	CREATE PROCEDURE PopulatePrimaryBitmap(INOUT DFDLPointer REFERENCE)
+	BEGIN
+		DECLARE I2 INTEGER 1;
+		DECLARE IndexChar1 CHAR;
+		DECLARE IndexChar2 CHAR;
+		-- Create unpacked PrimaryBitmap structure, with all bits set to 0
+		WHILE I2 < 65 DO
+			CALL GenerateThreeDigitIndex(I2, IndexChar1);
+			CALL GenerateThreeDigitIndex(I2+3, IndexChar2);
+			CREATE LASTCHILD OF DFDLPointer NAME ('Bits' || IndexChar1 || 'to' || IndexChar2) VALUE '0';
+			SET I2 = I2 + 4;
+		END WHILE;
+	END;
+
+	CREATE PROCEDURE PopulateSecondaryBitmap(INOUT DFDLPointer REFERENCE)
+	BEGIN
+		DECLARE J INTEGER 65;
+		DECLARE IndexChar1 CHAR;
+		DECLARE IndexChar2 CHAR;
+		WHILE J < 129 DO
+			-- Create unpacked SecondaryBitmap structure, with all bits set to 0
+			CALL GenerateThreeDigitIndex(J, IndexChar1);
+			CALL GenerateThreeDigitIndex(J+3, IndexChar2);
+			CREATE LASTCHILD OF DFDLPointer NAME ('Bits' || IndexChar1 || 'to' || IndexChar2) VALUE '0';
+			SET J = J + 4;
+		END WHILE;
+	END;
+
+	CREATE PROCEDURE UpdateBitmapsBasedOnAvailableFields(INOUT DFDLPointer REFERENCE)
+	BEGIN
+		DECLARE BitName CHAR;
+		DECLARE BitMapName CHAR 'PrimaryBitmap';
+		DECLARE CurrentFieldName CHAR;
+		DECLARE CurrentFieldNumber INT;
+		DECLARE CurrentFieldBase INT;
+		DECLARE IndexChar1 CHAR;
+		DECLARE IndexChar2 CHAR;
+		DECLARE Value INT;
+		DECLARE CharValue CHAR;
+
+		MOVE DFDLPointer NEXTSIBLING;
+		WHILE LASTMOVE(DFDLPointer) DO
+			SET CurrentFieldName = FIELDNAME(DFDLPointer);
+			SET CurrentFieldNumber = CAST(SUBSTRING(CurrentFieldName AFTER 'd') AS INT);
+			SET CurrentFieldBase = FLOOR((CurrentFieldNumber - 1) / 4) * 4 + 1;
+			SET Value = CAST(POWER(2, 3 - MOD(CurrentFieldNumber - 1, 4)) AS INT);
+			CALL GenerateThreeDigitIndex(CurrentFieldBase, IndexChar1);
+			CALL GenerateThreeDigitIndex(CurrentFieldBase + 3, IndexChar2);
+			SET BitName = 'Bits' || IndexChar1 || 'to' || IndexChar2;
+			IF CurrentFieldNumber > 64 THEN
+				SET BitMapName = 'SecondaryBitmap';
+			END IF;
+			
+			SET CharValue = OutputRoot.DFDL.isomsg.{BitMapName}.{BitName};
+			SET CharValue = '000000000000000' || CharValue;
+			SET Value = CAST(CAST(CharValue AS BLOB) AS INT) + Value;
+			SET CharValue = CAST(CAST(Value AS BLOB) AS CHAR);
+			SET CharValue = UPPER(SUBSTRING(CharValue FROM 18 FOR 1));
+			SET OutputRoot.DFDL.isomsg.{BitMapName}.{BitName} = CharValue;
+
+			MOVE DFDLPointer NEXTSIBLING;
+		END WHILE;
+	END;
+
+	CREATE PROCEDURE GenerateISOLength (IN ISONL CHARACTER, INOUT ISO CHARACTER)
+	BEGIN
+		SET ISO = SUBSTRING (ISONL AFTER '9999');
+		DECLARE LISO INTEGER LENGTH(ISO);
+
+		IF LISO < 10 THEN
+			SET ISO = '000' || CAST(LISO AS CHARACTER) || ISO;
+		ELSEIF LISO < 100 THEN
+			SET ISO = '00' || CAST(LISO AS CHARACTER) || ISO;
+		ELSEIF LISO < 1000 THEN
+			SET ISO = '0' || CAST(LISO AS CHARACTER) || ISO;
+		ELSE
+			SET ISO = CAST(LISO AS CHARACTER) || ISO;
+		END IF;
+
+	END;

@@ -1,0 +1,11 @@
+/*EATE FUNCTION Main() RETURNS BOOLE*/
+	BEGIN
+		
+		DECLARE BIPNumber INTEGER;
+		DECLARE NIPMessage CHARACTER;
+		
+		CALL GetLastExceptionDetail(InputExceptionList, BIPNumber, BIPMessage);
+		
+		SET OutputRoot.JSON.Data.Response = 'Exception Occur';
+		RETURN TRUE;
+	END;

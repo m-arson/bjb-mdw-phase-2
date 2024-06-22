@@ -1,0 +1,27 @@
+/*EATE FUNCTION Main() RETURNS BOOLE*/
+	BEGIN
+		
+		-- Keep the UUID
+		SET OutputLocalEnvironment.UUID = Environment.Variables.uuid;
+		
+		CALL PrepareLogMessage(OutputRoot, ApplicationLabel, MessageFlowLabel, NodeLabel, 'input', 'debug', InputExceptionList, InputLocalEnvironment, InputRoot);
+		PROPAGATE TO TERMINAL 'out1' DELETE NONE;
+		DELETE FIELD OutputRoot.BLOB;
+		
+		SET OutputRoot.MQMD.CorrelId = Environment.Variables.correlId;
+			
+		CREATE LASTCHILD OF OutputRoot DOMAIN 'XMLNSC';
+		SET OutputRoot.XMLNSC = InputRoot.XMLNSC;
+		
+		SET OutputLocalEnvironment.Destination.MQDestinationList.DestinationData[1].queueName = Environment.Variables.ReplyToQ;
+		
+		CALL PrepareLogMessage(OutputRoot, ApplicationLabel, MessageFlowLabel, NodeLabel, 'output', 'info', OutputExceptionList, OutputLocalEnvironment, OutputRoot);
+		PROPAGATE TO TERMINAL 'out1' DELETE NONE;
+		DELETE FIELD OutputRoot.BLOB;
+		
+		SET OutputRoot.MQMD.Expiry = Q_EXPIRY;
+		CREATE LASTCHILD OF OutputRoot DOMAIN 'XMLNSC';
+		SET OutputRoot.XMLNSC = InputRoot.XMLNSC;
+		
+		RETURN TRUE;
+	END;

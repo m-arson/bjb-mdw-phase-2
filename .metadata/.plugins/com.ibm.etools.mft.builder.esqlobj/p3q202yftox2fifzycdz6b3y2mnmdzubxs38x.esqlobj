@@ -1,0 +1,23 @@
+CREATE COMPUTE MODULE MF_TX_JSON_PAY_PKB_Validate_and_Build_Resp
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		
+		-- Keep the UUID
+		SET OutputLocalEnvironment.UUID = InputLocalEnvironment.UUID;
+		
+		-- Set Correl ID Output
+		SET OutputRoot.MQMD.CorrelId = CAST(Environment.Variables.details.correlId AS BLOB);
+		
+		DECLARE iRef REFERENCE TO InputRoot.JSON.Data;
+		DECLARE oriMsgRef REFERENCE TO Environment.Variables.inMessage;
+		
+		CREATE LASTCHILD OF OutputRoot DOMAIN 'JSON';
+		CREATE FIELD OutputRoot.JSON.Data IDENTITY (JSON.Object)Data;
+		DECLARE oRef REFERENCE TO OutputRoot.JSON.Data;
+		
+		SET oRef = oriMsgRef;
+		SET oRef.RESPONSE_CODE = '00' || iRef.Field039;
+		SET oRef.RESPONSE_TIME = CAST(CURRENT_TIMESTAMP AS CHARACTER FORMAT 'yyyyMMddHHmmss');
+		RETURN TRUE;
+	END;
+END MODULE;

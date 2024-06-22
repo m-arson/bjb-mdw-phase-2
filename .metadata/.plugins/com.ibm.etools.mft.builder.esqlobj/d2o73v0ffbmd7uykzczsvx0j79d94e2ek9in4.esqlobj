@@ -1,0 +1,121 @@
+/*EATE FUNCTION Main() RETURNS BOOLE*/
+	BEGIN
+		-------------------- SET UUID --------------------
+		DECLARE uuid CHARACTER;
+		IF FIELDNAME(InputRoot.HTTPInputHeader."X-Uuid") IS NOT NULL AND TRIM(InputRoot.HTTPInputHeader."X-Uuid") <> ''
+		THEN
+			SET InputLocalEnvironment.UUID = InputRoot.HTTPInputHeader."X-Uuid";
+		ELSE
+			SET uuid = RIGHT(TRIM(
+				REPLICATE('0', 24) ||
+				InputRoot.JSON.Data.CHANNEL_ID ||
+				COALESCE(InputRoot.JSON.Data.MODULE_CODE, '') ||
+				InputRoot.JSON.Data.REF_NO ||
+				InputRoot.JSON.Data.REQUEST_TIME
+			), 24);
+			SET InputLocalEnvironment.UUID = BASE64ENCODE(uuid);
+		END IF;
+		SET OutputLocalEnvironment.UUID = InputLocalEnvironment.UUID;
+		-------------------- SET UUID --------------------
+		
+		-------------------- KEEP THE INPUT MESSAGE --------------------
+		SET Environment.Variables.details.(JSON.Object)inMessage = InputRoot.JSON.Data;
+		SET Environment.Variables.isDown = FALSE;
+		-------------------- KEEP THE INPUT MESSAGE --------------------
+		
+		-------------------- CHECK AND LOAD TABLE PARAMETER --------------------
+		IF NOT EXISTS(SAMSAT.Field[]) THEN
+			SET Environment.Variables.DB.SAMSAT.Field[] =
+				(SELECT 
+					T."""ServiceName""" AS ServiceName,
+					T."""BasePath""" AS BasePath,
+					T."""Timeout""" AS Timeout,
+					T."""TxQueue""" AS TxQueue,
+					T."""DestRequestQ""" AS DestRequestQ,
+					T."""DestResponseQ""" AS DestResponseQ,
+					T."""Param1""" AS Param1
+				FROM Database.{'T_PARAMETER'} AS T
+				WHERE
+					T."""ServiceName""" = SOURCE_SYSTEM AND
+					T."""TargetSystem""" = TARGET_SYSTEM);
+			
+			DECLARE I INTEGER 1;
+			DECLARE J INTEGER CARDINALITY(Environment.Variables.DB.SAMSAT.Field[]);
+			
+			WHILE I <= J DO
+				SET SAMSAT.Field[I] = Environment.Variables.DB.SAMSAT.Field[I];
+				SET I = I + 1;
+			END WHILE;
+		END IF;
+		-------------------- CHECK AND LOAD TABLE PARAMETER --------------------
+		
+		-------------------- CHECK AND LOAD TABLE ERROR MAP --------------------
+		IF NOT EXISTS(T_ERROR_MAP.Field[]) THEN
+			SET Environment.Variables.DB.T_ERROR_MAP.Field[] =
+				(SELECT 
+					T.MESSAGE_ID,
+					T.RC,
+					T.RC_GROUP,
+					T.HTTP_STATUS,
+					T.MESSAGE,
+					T."""SourceSystem""" AS SourceSystem,
+					T."""TargetSystem""" AS TargetSystem
+				FROM Database.{'T_ERROR_MAP'} AS T
+				WHERE
+					T."""SourceSystem""" = SOURCE_SYSTEM AND
+					T."""TargetSystem""" = TARGET_SYSTEM);
+			
+			DECLARE I INTEGER 1;
+			DECLARE J INTEGER CARDINALITY(Environment.Variables.DB.T_ERROR_MAP.Field[]);
+			
+			WHILE I <= J DO
+				SET T_ERROR_MAP.Field[I] = Environment.Variables.DB.T_ERROR_MAP.Field[I];
+				SET I = I + 1;
+			END WHILE;
+		END IF;
+		-------------------- CHECK AND LOAD TABLE ERROR MAP --------------------
+		
+		-------------------- PREPARING LOGGING INPUT --------------------
+		CALL PrepareLogMessage(OutputRoot, ApplicationLabel, MessageFlowLabel, NodeLabel, 'input', 'info', InputExceptionList, InputLocalEnvironment, InputRoot);
+		PROPAGATE TO LABEL 'LOGGING' DELETE NONE;
+		DELETE FIELD OutputRoot.BLOB;
+		-------------------- PREPARING LOGGING INPUT --------------------
+		
+		-------------------- CHECK WHETHER QUEUE DOWN OR NOT --------------------
+		IF Environment.Variables.isDown
+		THEN
+			RETURN FALSE;
+		END IF;
+		-------------------- CHECK WHETHER QUEUE DOWN OR NOT --------------------
+		
+		-------------------- CHECK BASEPATH AVAILABILITY --------------------
+		DECLARE requestURI CHARACTER InputLocalEnvironment.HTTP.Input.RequestLine.RequestURI;
+		DECLARE dbParam ROW;
+		SET dbParam = THE(SELECT T FROM T_PARAMETER.Field[] AS T WHERE T.BasePath = requestURI);
+		-------------------- CHECK BASEPATH AVAILABILITY --------------------
+		
+		-------------------- KEEP SOME PROPERTIES --------------------
+		SET Environment.Variables.details.dbParam = dbParam;
+		SET Environment.Variables.details.uuid = InputLocalEnvironment.UUID;
+		SET Environment.Variables.details.duplicateTimeout = DUPLICATE_TIMEOUT;
+		SET Environment.Variables.details.timeoutMDW = TIMEOUT_MDW;
+		SET Environment.Variables.details.correlId = CAST(uuid AS BLOB CCSID 819);
+        CALL Split(Environment.Variables.details.dbParam.TxQueue, Environment, '|');
+        SET Environment.Variables.details.dbParam.TxQueueReq = Environment.Split[1];
+        SET Environment.Variables.details.dbParam.TxQueueRes = Environment.Split[2];
+		DELETE FIELD Environment.Split;
+		-------------------- KEEP SOME PROPERTIES --------------------
+		
+		
+		-------------------- PREPARING LOGGING OUTPUT --------------------
+		CALL PrepareLogMessage(OutputRoot, ApplicationLabel, MessageFlowLabel, NodeLabel, 'output', 'debug', OutputExceptionList, OutputLocalEnvironment, OutputRoot);
+		PROPAGATE TO LABEL 'LOGGING' DELETE NONE;
+		DELETE FIELD OutputRoot.BLOB;
+		-------------------- PREPARING LOGGING OUTPUT --------------------
+		
+		-------------------- REASSIGN OUTPUT DATA --------------------
+		SET OutputRoot.JSON.Data = InputRoot.JSON.Data;
+		-------------------- REASSIGN OUTPUT DATA --------------------
+		
+		RETURN TRUE;
+	END;

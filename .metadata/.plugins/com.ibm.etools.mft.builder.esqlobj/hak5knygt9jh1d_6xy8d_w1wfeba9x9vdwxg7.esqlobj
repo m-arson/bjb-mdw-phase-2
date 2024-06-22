@@ -1,0 +1,108 @@
+/*EATE FUNCTION Main() RETURNS BOOLE*/
+	BEGIN
+		
+		-- Keep the UUID
+		SET OutputLocalEnvironment.UUID = InputLocalEnvironment.UUID;
+		
+		-- Logging Input
+		CALL PrepareLogMessage(OutputRoot, ApplicationLabel, MessageFlowLabel, NodeLabel, 'input', 'debug', InputExceptionList, InputLocalEnvironment, InputRoot);
+		PROPAGATE TO TERMINAL 'out1' DELETE NONE;
+		DELETE FIELD OutputRoot.BLOB;
+		
+		DECLARE oriMsgRef REFERENCE TO Environment.Variables.inMessage;
+		DECLARE iRef REFERENCE TO InputRoot.JSON.Data;
+		
+		
+		IF iRef.RESPONSE_CODE = '0000' THEN
+			SET OutputRoot.MQMD.CorrelId = CAST(Environment.Variables.details.correlId AS BLOB);
+			SET OutputRoot.MQMD.Expiry = Q_EXPIRY;
+			SET OutputRoot.MQMD.ReplyToQ = Environment.Variables.details.dbParam.DestResponseQ;
+			SET OutputRoot.MQRFH2.usr.vs.coreTimeout = Environment.Variables.details.dbParam.Timeout;
+			SET OutputRoot.MQRFH2.usr.vs.uuid = InputLocalEnvironment.UUID;
+			
+			DECLARE dtts, gmtts CHARACTER;
+			SET dtts = CAST(CURRENT_TIMESTAMP AS CHARACTER FORMAT 'yyyyMMddHHmmssSSS');
+			SET gmtts = CAST(CURRENT_GMTTIMESTAMP AS CHARACTER FORMAT 'yyyyMMddHHmmss');
+			
+			CREATE LASTCHILD OF OutputRoot DOMAIN 'XMLNSC';
+			CREATE FIELD OutputRoot.XMLNSC.isomsg;
+			DECLARE oRef REFERENCE TO OutputRoot.XMLNSC.isomsg;
+			
+			SET oRef.MTI = '0200';
+			SET oRef.Field002 = '622011444444444444';
+			SET oRef.Field003 = '541099';
+			SET oRef.Field004 = RIGHT(REPLICATE('0', 12) || Environment.Variables.ADAPTER_PROPS.TOTAL_PAY, 12);
+			SET oRef.Field007 = LEFT(gmtts,10);
+			SET oRef.Field011 = RIGHT(dtts,6);
+			SET oRef.Field012 = LEFT(dtts,6);
+			SET oRef.Field013 = SUBSTRING(dtts FROM 5 FOR 4);
+			SET oRef.Field015 = SUBSTRING(dtts FROM 5 FOR 4);
+			SET oRef.Field018 = oriMsgRef.CHANNEL;
+			SET oRef.Field022 = '021';
+			SET oRef.Field032 = '03110';
+			SET oRef.Field033 = oRef.Field032;
+			SET oRef.Field035 = oRef.Field002 || '=9912?';
+			SET oRef.Field037 = RIGHT(REPLICATE('0', 12) || oriMsgRef.REF_TRX, 12);
+			SET oRef.Field041 = LEFT(TRIM(oriMsgRef.TERMID) || SPACE(8), 8);
+			SET oRef.Field043 = LEFT(TRIM(oriMsgRef.LOCATION) || SPACE(25), 25) || LEFT(TRIM(oriMsgRef.TERMNAME) || SPACE(15), 15);
+			
+			IF oriMsgRef.PEMDA_ID = 'PKB' THEN
+				SET oRef.Field048 = '000000' || CAST(CURRENT_TIMESTAMP AS CHARACTER FORMAT 'HHmmss');
+			ELSE
+				SET oRef.Field048 = CAST(CURRENT_TIMESTAMP AS CHAR FORMAT 'YYYYMMdd') || CAST(CURRENT_TIMESTAMP AS CHAR FORMAT 'HHmmss');
+			END IF;
+			
+			SET oRef.Field049 = '360';
+			SET oRef.Field061 = LEFT(oriMsgRef.BILL_NO || SPACE(16), 16) ||
+								LEFT(oriMsgRef.CHASSIS_NO || SPACE(25), 25) ||
+								LEFT(oriMsgRef.ENGINE_NO || SPACE(25), 25) ||
+								LEFT(oriMsgRef.IDENTITY_NO || SPACE(18), 18) ||
+								LEFT(oriMsgRef.OWNER_NAME || SPACE(25), 25) ||
+								LEFT(oriMsgRef.OWNER_ADDRESS || SPACE(40), 40) ||
+								LEFT(oriMsgRef.POLICE_NO || SPACE(9), 9) ||
+								LEFT(oriMsgRef.PLATE_COLOR || SPACE(6), 6) ||
+								RIGHT(REPLICATE('0', 3) || oriMsgRef.OWNED_TO, 3) ||
+								LEFT(oriMsgRef.VEHICLE_TYPE || SPACE(15), 15) ||
+								LEFT(oriMsgRef.VEHICLE_BRAND_NAME || SPACE(15), 15) ||
+								LEFT(oriMsgRef.VEHICLE_MODEL_NAME || SPACE(30), 30) ||
+								oriMsgRef.YEAR_MADE || 
+								oriMsgRef.OLD_TAX_END_DATE || 
+								LEFT(oriMsgRef.NEW_TAX_END_DATE || SPACE(8), 8) ||
+								RIGHT(REPLICATE('0', 12) || COALESCE(oriMsgRef.TOTAL_BBN, '0'), 12) || 
+								RIGHT(REPLICATE('0', 12) || COALESCE(oriMsgRef.TOTAL_PENALTY_BBN, '0'), 12) || 
+								RIGHT(REPLICATE('0', 12) || oriMsgRef.TOTAL_PKB, 12) || 
+								RIGHT(REPLICATE('0', 12) || oriMsgRef.TOTAL_PENALTY_PKB, 12) || 
+								RIGHT(REPLICATE('0', 12) || oriMsgRef.TOTAL_SWD, 12) || 
+								RIGHT(REPLICATE('0', 12) || oriMsgRef.TOTAL_PENALTY_SWD, 12) || 
+								RIGHT(REPLICATE('0', 12) || COALESCE(oriMsgRef.TOTAL_CHARGE_STNK, '0'), 12) || 
+								RIGHT(REPLICATE('0', 12) || COALESCE(oriMsgRef.TOTAL_CHARGE_TNKB, '0'), 12) || 
+								RIGHT(REPLICATE('0', 12) || Environment.Variables.ADAPTER_PROPS.TOTAL_PAY, 12) || 
+								LEFT(oriMsgRef.DESCRIPTION || SPACE(90), 90) ||
+								LEFT(oriMsgRef.RESERVED || SPACE(5), 5);
+								
+			SET oRef.Field102 = LEFT(oriMsgRef.SENDER_ACCOUNT || SPACE(13), 13);
+			
+			SET OutputLocalEnvironment.Destination.MQ.DestinationData[1].queueName = Environment.Variables.details.dbParam.DestRequestQ;
+			SET OutputLocalEnvironment.MQ.GET.QueueName = Environment.Variables.details.dbParam.DestResponseQ;
+			SET OutputLocalEnvironment.MQ.GET.MQGMO.WaitInterval = TIMEOUT_SERVICE * 1000;
+			
+			PROPAGATE TO TERMINAL 'out';
+		ELSE
+			CREATE LASTCHILD OF OutputRoot DOMAIN 'JSON';
+			CREATE FIELD OutputRoot.JSON.Data IDENTITY (JSON.Object)Data;
+			
+			SET OutputRoot.JSON.Data = oriMsgRef;
+			SET OutputRoot.JSON.Data.RESPONSE_CODE = iRef.RESPONSE_CODE;
+			SET OutputRoot.JSON.Data.RESPONSE_MESSAGE = iRef.RESPONSE_MESSAGE;
+			SET OutputRoot.JSON.Data.RESPONSE_TIME = CAST(CURRENT_TIMESTAMP AS CHARACTER FORMAT 'yyyyMMddHHmmss');
+			
+			DECLARE txQueueRes CHARACTER;
+			SET txQueueRes = SUBSTRING(Environment.Variables.details.dbParam.TxQueue AFTER '|');
+			SET OutputLocalEnvironment.Destination.MQ.DestinationData[1].queueName = txQueueRes;
+			
+			PROPAGATE TO TERMINAL 'out2';
+			
+		END IF;
+		
+		RETURN FALSE;
+	END;

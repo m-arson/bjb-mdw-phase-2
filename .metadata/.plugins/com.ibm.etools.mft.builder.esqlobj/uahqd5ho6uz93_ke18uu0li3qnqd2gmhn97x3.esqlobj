@@ -1,0 +1,12 @@
+CREATE COMPUTE MODULE MF_CLIENT_Compute
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		
+		CREATE LASTCHILD OF OutputRoot DOMAIN 'XMLNSC';
+		SET OutputRoot.XMLNSC = InputRoot.DFDL;
+		
+		SET OutputLocalEnvironment.Destination.HTTP.RequestIdentifier = CAST(InputLocalEnvironment.TCPIP.Input.ConnectionDetails.ReplyId AS BLOB);
+		
+		RETURN TRUE;
+	END;
+END MODULE;

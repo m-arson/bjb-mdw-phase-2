@@ -1,0 +1,13 @@
+/*EATE FUNCTION Main() RETURNS BOOLE*/
+	BEGIN
+		
+		-- Keep the UUID
+		SET OutputLocalEnvironment.UUID = InputLocalEnvironment.UUID;
+		
+		DECLARE iRef REFERENCE TO InputRoot.JSON.Data;
+		
+		
+		
+		
+		RETURN TRUE;
+	END;

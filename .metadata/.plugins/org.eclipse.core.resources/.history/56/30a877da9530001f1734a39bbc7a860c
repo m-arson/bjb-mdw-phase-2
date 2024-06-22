@@ -1,0 +1,272 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ecore:EPackage xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:ComIbmCompute.msgnode="ComIbmCompute.msgnode" xmlns:ComIbmMQGet.msgnode="ComIbmMQGet.msgnode" xmlns:ComIbmMQInput.msgnode="ComIbmMQInput.msgnode" xmlns:ComIbmMQOutput.msgnode="ComIbmMQOutput.msgnode" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" xmlns:eflow="http://www.ibm.com/wbi/2005/eflow" xmlns:utility="http://www.ibm.com/wbi/2005/eflow_utility" nsURI="MF_TX_JSON_PAY_PKB.msgflow" nsPrefix="MF_TX_JSON_PAY_PKB.msgflow">
+  <eClassifiers xmi:type="eflow:FCMComposite" name="FCMComposite_1" nodeLayoutStyle="SQUARE">
+    <eSuperTypes href="http://www.ibm.com/wbi/2005/eflow#//FCMBlock"/>
+    <eStructuralFeatures xmi:type="ecore:EAttribute" xmi:id="Property.PEM_ID" name="PEM_ID" lowerBound="1" defaultValueLiteral="PKB">
+      <eType xmi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    </eStructuralFeatures>
+    <eStructuralFeatures xmi:type="ecore:EAttribute" xmi:id="Property.MESSAGE_FORMAT" name="MESSAGE_FORMAT" lowerBound="1" defaultValueLiteral="JSON">
+      <eType xmi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    </eStructuralFeatures>
+    <eStructuralFeatures xmi:type="ecore:EAttribute" xmi:id="Property.TIMEOUT_SERVICE" name="TIMEOUT_SERVICE" defaultValueLiteral="30">
+      <eType xmi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EInt"/>
+    </eStructuralFeatures>
+    <eStructuralFeatures xmi:type="ecore:EAttribute" xmi:id="Property.Q_EXPIRY" name="Q_EXPIRY" lowerBound="1" defaultValueLiteral="864000">
+      <eType xmi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EInt"/>
+    </eStructuralFeatures>
+    <eStructuralFeatures xmi:type="ecore:EAttribute" xmi:id="Property.DB_SCHEMA" name="DB_SCHEMA" lowerBound="1" defaultValueLiteral="MDWSCHEMA">
+      <eType xmi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    </eStructuralFeatures>
+    <eStructuralFeatures xmi:type="ecore:EAttribute" xmi:id="Property.SVR_TYPE" name="SVR_TYPE" lowerBound="1" defaultValueLiteral="PAY">
+      <eType xmi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    </eStructuralFeatures>
+    <eStructuralFeatures xmi:type="ecore:EAttribute" xmi:id="Property.SOURCE_SYSTEM" name="SOURCE_SYSTEM" lowerBound="1" defaultValueLiteral="REST_PEMDA">
+      <eType xmi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    </eStructuralFeatures>
+    <eStructuralFeatures xmi:type="ecore:EAttribute" xmi:id="Property.TARGET_SYSTEM" name="TARGET_SYSTEM" lowerBound="1" defaultValueLiteral="PKB">
+      <eType xmi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    </eStructuralFeatures>
+    <translation xmi:type="utility:TranslatableString" key="MF_TX_JSON_PAY_PKB" bundleName="MF_TX_JSON_PAY_PKB" pluginId="BJB_MDW_SERVICE_SAMSAT"/>
+    <colorGraphic16 xmi:type="utility:GIFFileGraphic" resourceName="platform:/plugin/BJB_MDW_SERVICE_SAMSAT/icons/full/obj16/MF_TX_JSON_PAY_PKB.gif"/>
+    <colorGraphic32 xmi:type="utility:GIFFileGraphic" resourceName="platform:/plugin/BJB_MDW_SERVICE_SAMSAT/icons/full/obj30/MF_TX_JSON_PAY_PKB.gif"/>
+    <composition>
+      <nodes xmi:type="ComIbmCompute.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_1" location="380,41" computeExpression="esql://routine/#MF_TX_JSON_PAY_PKB_Validate_Resp.Main" computeMode="destinationAndMessage">
+        <translation xmi:type="utility:ConstantString" string="Validate Resp"/>
+      </nodes>
+      <nodes xmi:type="ComIbmCompute.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_2" location="1206,5" computeExpression="esql://routine/#MF_TX_JSON_PAY_PKB_Posting_Log.Main" computeMode="destinationAndMessage">
+        <translation xmi:type="utility:ConstantString" string="Posting Log PKB"/>
+      </nodes>
+      <nodes xmi:type="ComIbmCompute.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_3" location="694,-20" computeExpression="esql://routine/#MF_TX_JSON_PAY_PKB_Validate_Resp_and_SendTo_Adapter.Main" computeMode="destinationAndMessage">
+        <translation xmi:type="utility:ConstantString" string="Validate Resp and SendTo Adapter"/>
+      </nodes>
+      <nodes xmi:type="ComIbmMQInput.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_5" location="-55,115" queueName="PAY_PKB_JSON_REQ.QL" messageDomainProperty="JSON" policyUrl="{COMMON_POLICY}:QM_CHANNELSERVICE">
+        <translation xmi:type="utility:ConstantString" string="Pay PKB Req"/>
+      </nodes>
+      <nodes xmi:type="ComIbmMQGet.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_6" location="1325,-77" queueName="ITA_MULTIPOST_REV_RES" messageDomainProperty="JSON" getWithCorrelID="true" policyUrl="{COMMON_POLICY}:QM_CHANNELSERVICE">
+        <translation xmi:type="utility:ConstantString" string="ITA Multipost Rev Res"/>
+      </nodes>
+      <nodes xmi:type="ComIbmMQOutput.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_7" location="204,41" queueName="AB_Q_REQ" destinationMode="list" transactionMode="no" policyUrl="{COMMON_POLICY}:QM_CHANNELSERVICE">
+        <translation xmi:type="utility:ConstantString" string="AB Req"/>
+      </nodes>
+      <nodes xmi:type="ComIbmMQOutput.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_8" location="1204,-81" queueName="ITA_MULTIPOST_REV_REQ" destinationMode="list" transactionMode="no" policyUrl="{COMMON_POLICY}:QM_CHANNELSERVICE">
+        <translation xmi:type="utility:ConstantString" string="ITA Multipost Rev Req"/>
+      </nodes>
+      <nodes xmi:type="ComIbmCompute.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_9" location="1470,-12" computeExpression="esql://routine/#MF_TX_JSON_PAY_PKB_Handling_Timeout_Rev.Main" computeMode="destinationAndMessage">
+        <translation xmi:type="utility:ConstantString" string="Handling Timeout Rev"/>
+      </nodes>
+      <nodes xmi:type="ComIbmMQOutput.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_10" location="1648,66" queueName="PAY_PKB_RES" destinationMode="list" transactionMode="no" policyUrl="{COMMON_POLICY}:QM_CHANNELSERVICE">
+        <translation xmi:type="utility:ConstantString" string="Pay PKB Res"/>
+      </nodes>
+      <nodes xmi:type="ComIbmCompute.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_11" location="620,59" computeExpression="esql://routine/#MF_TX_JSON_PAY_PKB_Handling_ITA_Multipost_Timeout.Main" computeMode="destinationAndMessage">
+        <translation xmi:type="utility:ConstantString" string="Handling ITA Multipost Timeout"/>
+      </nodes>
+      <nodes xmi:type="ComIbmCompute.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_12" location="1473,-81" computeExpression="esql://routine/#MF_TX_JSON_PAY_PKB_Validate_and_Build_Resp.Main">
+        <translation xmi:type="utility:ConstantString" string="Validate and Build Resp"/>
+      </nodes>
+      <nodes xmi:type="ComIbmMQGet.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_13" location="937,-78" queueName="ADAPTER_Q_RES" messageDomainProperty="XMLNSC" getWithCorrelID="true" policyUrl="{COMMON_POLICY}:QM_BILLERSERVICE">
+        <translation xmi:type="utility:ConstantString" string="Adapter Res Q"/>
+      </nodes>
+      <nodes xmi:type="ComIbmCompute.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_14" location="27,115" computeExpression="esql://routine/#MF_TX_JSON_PAY_PKB_Calc_Amt_and_Call_AB.Main" computeMode="destinationAndMessage">
+        <translation xmi:type="utility:ConstantString" string="Calc Amt and Call AB"/>
+      </nodes>
+      <nodes xmi:type="ComIbmCompute.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_15" location="1046,-82" computeExpression="esql://routine/#MF_TX_JSON_PAY_PKB_Validate_and_Map_Res.Main" computeMode="destinationAndMessage">
+        <translation xmi:type="utility:ConstantString" string="Validate and Map Res"/>
+      </nodes>
+      <nodes xmi:type="ComIbmCompute.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_16" location="331,107" computeExpression="esql://routine/#MF_TX_JSON_PAY_PKB_Handling_AB_Timeout.Main" computeMode="destinationAndMessage">
+        <translation xmi:type="utility:ConstantString" string="Handling AB Timeout"/>
+      </nodes>
+      <nodes xmi:type="ComIbmMQGet.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_17" location="295,45" queueName="AB_Q_RES" messageDomainProperty="JSON" getWithCorrelID="true" policyUrl="{COMMON_POLICY}:QM_CHANNELSERVICE">
+        <translation xmi:type="utility:ConstantString" string="AB Res"/>
+      </nodes>
+      <nodes xmi:type="ComIbmMQGet.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_18" location="569,-16" queueName="ITA_MULTIPOST_Q_RES" messageDomainProperty="JSON" getWithCorrelID="true" policyUrl="{COMMON_POLICY}:QM_CHANNELSERVICE">
+        <translation xmi:type="utility:ConstantString" string="ITA Multpost Res"/>
+      </nodes>
+      <nodes xmi:type="ComIbmMQOutput.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_19" location="840,-82" queueName="PKB_ADAPTER_REQ_Q" destinationMode="list" transactionMode="no" policyUrl="{COMMON_POLICY}:QM_BILLERSERVICE">
+        <translation xmi:type="utility:ConstantString" string="Adapter Req Q"/>
+      </nodes>
+      <nodes xmi:type="ComIbmMQOutput.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_20" location="461,-20" queueName="ITA_MULTIPOST_Q_REQ" destinationMode="list" transactionMode="no" policyUrl="{COMMON_POLICY}:QM_CHANNELSERVICE">
+        <translation xmi:type="utility:ConstantString" string="ITA Multipost Req"/>
+      </nodes>
+      <nodes xmi:type="ComIbmMQOutput.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_21" location="1322,6" queueName="POSTING_LOG_Q" destinationMode="list" transactionMode="no" policyUrl="{COMMON_POLICY}:QM_CORESERVICE">
+        <translation xmi:type="utility:ConstantString" string="Log PKB Req Q"/>
+      </nodes>
+      <nodes xmi:type="ComIbmCompute.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_22" location="985,-6" computeExpression="esql://routine/#MF_TX_JSON_PAY_PKB_Handling_Timeout_to_Adapter.Main" computeMode="destinationAndMessage">
+        <translation xmi:type="utility:ConstantString" string="Handling Timeout to Adapter"/>
+      </nodes>
+      <nodes xmi:type="ComIbmMQOutput.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_4" location="1744,151" queueName="LOGGING.QL" policyUrl="{COMMON_POLICY}:QM_GENERAL">
+        <translation xmi:type="utility:ConstantString" string="LOGGING.QL"/>
+      </nodes>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_1" targetNode="FCMComposite_1_2" sourceNode="FCMComposite_1_15" sourceTerminalName="OutTerminal.out3" targetTerminalName="InTerminal.in"/>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_2" targetNode="FCMComposite_1_7" sourceNode="FCMComposite_1_14" sourceTerminalName="OutTerminal.out" targetTerminalName="InTerminal.in">
+        <bendPoints>46,-9,-106,65</bendPoints>
+      </connections>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_5" targetNode="FCMComposite_1_3" sourceNode="FCMComposite_1_18" sourceTerminalName="OutTerminal.out" targetTerminalName="InTerminal.in"/>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_7" targetNode="FCMComposite_1_18" sourceNode="FCMComposite_1_20" sourceTerminalName="OutTerminal.out" targetTerminalName="InTerminal.in"/>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_8" targetNode="FCMComposite_1_14" sourceNode="FCMComposite_1_5" sourceTerminalName="OutTerminal.out" targetTerminalName="InTerminal.in"/>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_9" targetNode="FCMComposite_1_16" sourceNode="FCMComposite_1_17" sourceTerminalName="OutTerminal.noMessage" targetTerminalName="InTerminal.in"/>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_11" targetNode="FCMComposite_1_20" sourceNode="FCMComposite_1_1" sourceTerminalName="OutTerminal.out" targetTerminalName="InTerminal.in">
+        <bendPoints>31,-56,-62,5</bendPoints>
+        <bendPoints>46,-71,-47,-10</bendPoints>
+      </connections>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_12" targetNode="FCMComposite_1_10" sourceNode="FCMComposite_1_16" sourceTerminalName="OutTerminal.out" targetTerminalName="InTerminal.in">
+        <bendPoints>46,-9,-1246,32</bendPoints>
+        <bendPoints>62,7,-1230,48</bendPoints>
+        <bendPoints>484,7,-808,48</bendPoints>
+        <bendPoints>503,-12,-789,29</bendPoints>
+        <bendPoints>1024,-12,-268,29</bendPoints>
+        <bendPoints>1063,-51,-229,-10</bendPoints>
+      </connections>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_13" targetNode="FCMComposite_1_19" sourceNode="FCMComposite_1_3" sourceTerminalName="OutTerminal.out" targetTerminalName="InTerminal.in">
+        <bendPoints>31,-58,-64,4</bendPoints>
+        <bendPoints>45,-72,-50,-10</bendPoints>
+      </connections>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_14" targetNode="FCMComposite_1_21" sourceNode="FCMComposite_1_2" sourceTerminalName="OutTerminal.out" targetTerminalName="InTerminal.in"/>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_16" targetNode="FCMComposite_1_17" sourceNode="FCMComposite_1_7" sourceTerminalName="OutTerminal.out" targetTerminalName="InTerminal.in"/>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_17" targetNode="FCMComposite_1_10" sourceNode="FCMComposite_1_15" sourceTerminalName="OutTerminal.out" targetTerminalName="InTerminal.in">
+        <bendPoints>54,-9,-524,-157</bendPoints>
+        <bendPoints>104,41,-474,-107</bendPoints>
+        <bendPoints>276,41,-302,-107</bendPoints>
+        <bendPoints>373,138,-205,-10</bendPoints>
+      </connections>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_19" targetNode="FCMComposite_1_11" sourceNode="FCMComposite_1_18" sourceTerminalName="OutTerminal.noMessage" targetTerminalName="InTerminal.in">
+        <bendPoints>43,2,-48,-73</bendPoints>
+        <bendPoints>60,19,-31,-56</bendPoints>
+      </connections>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_22" targetNode="FCMComposite_1_6" sourceNode="FCMComposite_1_8" sourceTerminalName="OutTerminal.out" targetTerminalName="InTerminal.in"/>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_24" targetNode="FCMComposite_1_15" sourceNode="FCMComposite_1_13" sourceTerminalName="OutTerminal.out" targetTerminalName="InTerminal.in"/>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_25" targetNode="FCMComposite_1_10" sourceNode="FCMComposite_1_12" sourceTerminalName="OutTerminal.out" targetTerminalName="InTerminal.in">
+        <bendPoints>50,-9,-96,-156</bendPoints>
+        <bendPoints>85,26,-61,-121</bendPoints>
+        <bendPoints>85,107,-61,-40</bendPoints>
+      </connections>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_26" targetNode="FCMComposite_1_12" sourceNode="FCMComposite_1_6" sourceTerminalName="OutTerminal.out" targetTerminalName="InTerminal.in"/>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_27" targetNode="FCMComposite_1_1" sourceNode="FCMComposite_1_17" sourceTerminalName="OutTerminal.out" targetTerminalName="InTerminal.in"/>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_29" targetNode="FCMComposite_1_10" sourceNode="FCMComposite_1_9" sourceTerminalName="OutTerminal.out" targetTerminalName="InTerminal.in">
+        <bendPoints>54,-9,-148,-86</bendPoints>
+        <bendPoints>113,68,-38,-10</bendPoints>
+      </connections>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_30" targetNode="FCMComposite_1_10" sourceNode="FCMComposite_1_11" sourceTerminalName="OutTerminal.out" targetTerminalName="InTerminal.in">
+        <bendPoints>78,-9,-898,-16</bendPoints>
+        <bendPoints>108,21,-868,14</bendPoints>
+        <bendPoints>701,21,-275,14</bendPoints>
+        <bendPoints>725,-3,-251,-10</bendPoints>
+      </connections>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_33" targetNode="FCMComposite_1_9" sourceNode="FCMComposite_1_6" sourceTerminalName="OutTerminal.noMessage" targetTerminalName="InTerminal.in">
+        <bendPoints>64,2,-84,-63</bendPoints>
+      </connections>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_35" targetNode="FCMComposite_1_22" sourceNode="FCMComposite_1_13" sourceTerminalName="OutTerminal.noMessage" targetTerminalName="InTerminal.in">
+        <bendPoints>44,2,-44,-70</bendPoints>
+        <bendPoints>57,15,-31,-57</bendPoints>
+      </connections>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_36" targetNode="FCMComposite_1_10" sourceNode="FCMComposite_1_22" sourceTerminalName="OutTerminal.out" targetTerminalName="InTerminal.in">
+        <bendPoints>65,-9,-553,-81</bendPoints>
+        <bendPoints>136,62,-482,-10</bendPoints>
+      </connections>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_3" targetNode="FCMComposite_1_4" sourceNode="FCMComposite_1_14" sourceTerminalName="OutTerminal.out1" targetTerminalName="InTerminal.in">
+        <bendPoints>66,-9,-1629,-45</bendPoints>
+        <bendPoints>102,27,-1593,-9</bendPoints>
+      </connections>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_4" targetNode="FCMComposite_1_4" sourceNode="FCMComposite_1_16" sourceTerminalName="OutTerminal.out1" targetTerminalName="InTerminal.in">
+        <bendPoints>46,-9,-1345,-53</bendPoints>
+        <bendPoints>81,27,-1309,-17</bendPoints>
+        <bendPoints>1134,28,-257,-16</bendPoints>
+        <bendPoints>1140,34,-251,-10</bendPoints>
+      </connections>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_20" targetNode="FCMComposite_1_4" sourceNode="FCMComposite_1_1" sourceTerminalName="OutTerminal.out1" targetTerminalName="InTerminal.in">
+        <bendPoints>128,88,-1236,-22</bendPoints>
+        <bendPoints>1132,88,-232,-22</bendPoints>
+        <bendPoints>1145,100,-220,-10</bendPoints>
+      </connections>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_21" targetNode="FCMComposite_1_10" sourceNode="FCMComposite_1_1" sourceTerminalName="OutTerminal.out2" targetTerminalName="InTerminal.in">
+        <bendPoints>98,58,-1168,33</bendPoints>
+        <bendPoints>455,58,-811,33</bendPoints>
+        <bendPoints>466,47,-800,22</bendPoints>
+        <bendPoints>995,47,-271,22</bendPoints>
+        <bendPoints>1027,15,-239,-10</bendPoints>
+      </connections>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_28" targetNode="FCMComposite_1_4" sourceNode="FCMComposite_1_11" sourceTerminalName="OutTerminal.out1" targetTerminalName="InTerminal.in">
+        <bendPoints>64,-9,-1011,-101</bendPoints>
+        <bendPoints>135,62,-940,-30</bendPoints>
+        <bendPoints>757,62,-318,-30</bendPoints>
+        <bendPoints>855,62,-220,-30</bendPoints>
+        <bendPoints>875,82,-200,-10</bendPoints>
+      </connections>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_31" targetNode="FCMComposite_1_8" sourceNode="FCMComposite_1_15" sourceTerminalName="OutTerminal.out2" targetTerminalName="InTerminal.in"/>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_32" targetNode="FCMComposite_1_4" sourceNode="FCMComposite_1_15" sourceTerminalName="OutTerminal.out1" targetTerminalName="InTerminal.in">
+        <bendPoints>42,-9,-635,-242</bendPoints>
+        <bendPoints>101,50,-576,-183</bendPoints>
+        <bendPoints>279,50,-398,-183</bendPoints>
+        <bendPoints>399,170,-278,-63</bendPoints>
+        <bendPoints>496,170,-181,-63</bendPoints>
+        <bendPoints>549,223,-128,-10</bendPoints>
+      </connections>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_34" targetNode="FCMComposite_1_4" sourceNode="FCMComposite_1_2" sourceTerminalName="OutTerminal.out1" targetTerminalName="InTerminal.in">
+        <bendPoints>135,95,-395,-51</bendPoints>
+        <bendPoints>341,95,-189,-51</bendPoints>
+        <bendPoints>381,136,-148,-10</bendPoints>
+      </connections>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_37" targetNode="FCMComposite_1_4" sourceNode="FCMComposite_1_9" sourceTerminalName="OutTerminal.out1" targetTerminalName="InTerminal.in">
+        <bendPoints>46,-9,-204,-172</bendPoints>
+        <bendPoints>122,-9,-128,-172</bendPoints>
+        <bendPoints>161,30,-89,-133</bendPoints>
+        <bendPoints>210,79,-40,-84</bendPoints>
+        <bendPoints>210,143,-40,-20</bendPoints>
+      </connections>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_38" targetNode="FCMComposite_1_4" sourceNode="FCMComposite_1_12" sourceTerminalName="OutTerminal.out1" targetTerminalName="InTerminal.in">
+        <bendPoints>60,-9,-185,-241</bendPoints>
+        <bendPoints>214,145,-31,-87</bendPoints>
+      </connections>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_40" targetNode="FCMComposite_1_10" sourceNode="FCMComposite_1_3" sourceTerminalName="OutTerminal.out2" targetTerminalName="InTerminal.in">
+        <bendPoints>100,-9,-797,-95</bendPoints>
+        <bendPoints>199,90,-698,4</bendPoints>
+        <bendPoints>621,90,-276,4</bendPoints>
+        <bendPoints>635,76,-262,-10</bendPoints>
+      </connections>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_41" targetNode="FCMComposite_1_4" sourceNode="FCMComposite_1_3" sourceTerminalName="OutTerminal.out1" targetTerminalName="InTerminal.in">
+        <bendPoints>89,-9,-907,-180</bendPoints>
+        <bendPoints>233,134,-763,-37</bendPoints>
+        <bendPoints>666,134,-330,-37</bendPoints>
+        <bendPoints>786,134,-210,-37</bendPoints>
+        <bendPoints>812,161,-183,-10</bendPoints>
+      </connections>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_42" targetNode="FCMComposite_1_4" sourceNode="FCMComposite_1_22" sourceTerminalName="OutTerminal.out1" targetTerminalName="InTerminal.in">
+        <bendPoints>55,-9,-662,-166</bendPoints>
+        <bendPoints>178,113,-539,-44</bendPoints>
+        <bendPoints>424,113,-293,-44</bendPoints>
+        <bendPoints>518,113,-199,-44</bendPoints>
+        <bendPoints>552,147,-165,-10</bendPoints>
+      </connections>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_43" targetNode="FCMComposite_1_20" sourceNode="FCMComposite_1_14" sourceTerminalName="OutTerminal.out2" targetTerminalName="InTerminal.in">
+        <bendPoints>168,-145,-256,-10</bendPoints>
+      </connections>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_10" targetNode="FCMComposite_1_13" sourceNode="FCMComposite_1_19" sourceTerminalName="OutTerminal.out" targetTerminalName="InTerminal.in"/>
+    </composition>
+    <propertyOrganizer>
+      <propertyDescriptor groupName="Group.Basic" configurable="true" userDefined="true" describedAttribute="Property.PEM_ID">
+        <propertyName xmi:type="utility:TranslatableString" key="Property.PEM_ID" bundleName="MF_TX_JSON_PAY_PKB" pluginId="BJB_MDW_SERVICE_SAMSAT"/>
+        <propertyDescriptor groupName="Group.Basic" configurable="true" userDefined="true" describedAttribute="Property.MESSAGE_FORMAT">
+          <propertyName xmi:type="utility:TranslatableString" key="Property.MESSAGE_FORMAT" bundleName="MF_TX_JSON_PAY_PKB" pluginId="BJB_MDW_SERVICE_SAMSAT"/>
+          <propertyDescriptor groupName="Group.Basic" configurable="true" userDefined="true" describedAttribute="Property.TIMEOUT_SERVICE">
+            <propertyName xmi:type="utility:TranslatableString" key="Property.TIMEOUT_SERVICE" bundleName="MF_TX_JSON_PAY_PKB" pluginId="BJB_MDW_SERVICE_SAMSAT"/>
+            <propertyDescriptor groupName="Group.Basic" configurable="true" userDefined="true" describedAttribute="Property.Q_EXPIRY">
+              <propertyName xmi:type="utility:TranslatableString" key="Property.Q_EXPIRY" bundleName="MF_TX_JSON_PAY_PKB" pluginId="BJB_MDW_SERVICE_SAMSAT"/>
+              <propertyDescriptor groupName="Group.Basic" configurable="true" userDefined="true" describedAttribute="Property.DB_SCHEMA">
+                <propertyName xmi:type="utility:TranslatableString" key="Property.DB_SCHEMA" bundleName="MF_TX_JSON_PAY_PKB" pluginId="BJB_MDW_SERVICE_SAMSAT"/>
+                <propertyDescriptor groupName="Group.Basic" configurable="true" userDefined="true" describedAttribute="Property.SVR_TYPE">
+                  <propertyName xmi:type="utility:TranslatableString" key="Property.SVR_TYPE" bundleName="MF_TX_JSON_PAY_PKB" pluginId="BJB_MDW_SERVICE_SAMSAT"/>
+                  <propertyDescriptor groupName="Group.Basic" configurable="true" userDefined="true" describedAttribute="Property.SOURCE_SYSTEM">
+                    <propertyName xmi:type="utility:TranslatableString" key="Property.SOURCE_SYSTEM" bundleName="MF_TX_JSON_PAY_PKB" pluginId="BJB_MDW_SERVICE_SAMSAT"/>
+                    <propertyDescriptor groupName="Group.Basic" configurable="true" userDefined="true" describedAttribute="Property.TARGET_SYSTEM">
+                      <propertyName xmi:type="utility:TranslatableString" key="Property.TARGET_SYSTEM" bundleName="MF_TX_JSON_PAY_PKB" pluginId="BJB_MDW_SERVICE_SAMSAT"/>
+                    </propertyDescriptor>
+                  </propertyDescriptor>
+                </propertyDescriptor>
+              </propertyDescriptor>
+            </propertyDescriptor>
+          </propertyDescriptor>
+        </propertyDescriptor>
+      </propertyDescriptor>
+    </propertyOrganizer>
+    <stickyBoard/>
+  </eClassifiers>
+</ecore:EPackage>

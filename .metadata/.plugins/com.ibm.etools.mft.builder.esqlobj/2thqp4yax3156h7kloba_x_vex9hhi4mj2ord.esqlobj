@@ -1,0 +1,129 @@
+/*EATE FUNCTION Main() RETURNS BOOLE*/
+	BEGIN
+		
+		-- Keep the UUID
+		SET OutputLocalEnvironment.UUID = InputLocalEnvironment.UUID;
+		
+		-- Logging input
+		CALL PrepareLogMessage(OutputRoot, ApplicationLabel, MessageFlowLabel, NodeLabel, 'input', 'debug', InputExceptionList, InputLocalEnvironment, InputRoot);
+		PROPAGATE TO TERMINAL 'out1' DELETE NONE;
+		DELETE FIELD OutputRoot.BLOB;
+		
+		SET OutputRoot.MQMD.CorrelId = CAST(Environment.Variables.details.correlId AS BLOB);
+		
+		DECLARE outData, errorMap ROW;
+		DECLARE httpStatus CHARACTER;
+		CREATE LASTCHILD OF outData DOMAIN 'JSON';
+		DECLARE inRef REFERENCE TO InputRoot.JSON.Data;
+		CREATE LASTCHILD OF OutputRoot DOMAIN 'JSON';
+		CREATE FIELD OutputRoot.JSON.Data IDENTITY (JSON.Object)Data;
+		DECLARE outRef REFERENCE TO OutputRoot.JSON.Data;
+		
+		IF inRef.RC = '0068' THEN
+			CALL GetErrorDetails(T_ERROR_MAP, errorMap, 'MDW0068', SOURCE_SYSTEM, TARGET_SYSTEM);
+			SET outRef = Environment.Variables.inMessage;
+			SET outRef.RESPONSE_CODE = errorMap.Field.RC;
+			SET outRef.RESPONSE_MESSAGE = errorMap.Field.MESSAGE;
+			SET httpStatus = errorMap.Field.HTTP_STATUS;
+		ELSEIF inRef.RC = '0091' THEN
+			CALL GetErrorDetails(T_ERROR_MAP, errorMap, 'CANNOT_PUT_TO_CORE', SOURCE_SYSTEM, TARGET_SYSTEM);
+			SET outRef = Environment.Variables.inMessage;
+			SET outRef.RESPONSE_CODE = errorMap.Field.RC;
+			SET outRef.RESPONSE_MESSAGE = errorMap.Field.MESSAGE;
+			SET httpStatus = errorMap.Field.HTTP_STATUS;
+		ELSE
+	        SET outRef.CHANNEL_ID = COALESCE(inRef.CID, '');
+	        SET outRef.AUTH_TOKEN = COALESCE(Environment.Variables.inMessage.AUTH_TOKEN, '');
+	        SET outRef.REF_NO = COALESCE(Environment.Variables.inMessage.REF_NO, '');
+	        SET outRef.MODULE_CODE = COALESCE(inRef.MC, '');
+	        
+			SET outRef.CIF = COALESCE(inRef.MPO."0".ZLCUS, '');
+			SET outRef.CUS_TYPE = COALESCE(inRef.MPO."0".ZLCTP, '');
+			SET outRef.CUS_NUM = COALESCE(inRef.MPO."0".ZLCPNC, '');
+			SET outRef.CUS_NAME = COALESCE(inRef.MPO."0".ZLCUN, '');
+			SET outRef.CUS_SRT_NAME = COALESCE(inRef.MPO."0".ZLDAS, '');
+			SET outRef.BRANCH = COALESCE(inRef.MPO."0".ZLBRNM, '');
+			SET outRef.TAX_REF1 = COALESCE(inRef.MPO."0".ZLCRB1, '');
+			SET outRef.TAX_REF2 = COALESCE(inRef.MPO."0".ZLCRB2, '');
+			SET outRef.PRT_CRTY = COALESCE(inRef.MPO."0".ZLCNAP, '');
+			SET outRef.RSDN_CTRY = COALESCE(inRef.MPO."0".ZLCNAL, '');
+			SET outRef.DECS_LIQD = COALESCE(inRef.MPO."0".ZLCUD, '');
+			SET outRef.ACC_CLSD = COALESCE(inRef.MPO."0".ZLCUC, '');
+			SET outRef.ACC_INKV = COALESCE(inRef.MPO."0".ZLCUS, '');
+			SET outRef.ACC_OFCR = COALESCE(inRef.MPO."0".ZLACO, '');
+			SET outRef.RISK_CTRY = COALESCE(inRef.MPO."0".ZLCNAR, '');
+			SET outRef.INIRSK_CTRY = COALESCE(inRef.MPO."0".ZLCNAI, '');
+			SET outRef.LANG = COALESCE(inRef.MPO."0".ZLLNM, '');
+			SET outRef.MAIL_BRCH = COALESCE(inRef.MPO."0".ZLMTB, '');
+			SET outRef.EXMPT_TAX = COALESCE(inRef.MPO."0".ZLYETX, '');
+			SET outRef.LOAN_ORG_REF = COALESCE(inRef.MPO."0".ZLCREF, '');
+			SET outRef.TRD_FINC = COALESCE(inRef.MPO."0".ZLTRIZ, '');
+			SET outRef.RTL_BRCH = COALESCE(inRef.MPO."0".ZLRETZ, '');
+			SET outRef.CONSD_STAT = COALESCE(inRef.MPO."0".ZLCS, '');
+			SET outRef.FRC_CYCL_STAT = COALESCE(inRef.MPO."0".ZLFCYC, '');
+			SET outRef.CPY_STAT = COALESCE(inRef.MPO."0".ZLCSSA, '');
+			SET outRef.FRNT_OFFC = COALESCE(inRef.MPO."0".ZLDRCZ, '');
+			SET outRef.FRNT_OFFC_NAME = COALESCE(inRef.MPO."0".ZLFON, '');
+			SET outRef.FRNT_OFFC_LOC = COALESCE(inRef.MPO."0".ZLFOL, '');
+			SET outRef.CUS_TYP_DESC = COALESCE(inRef.MPO."0".ZLCTD, '');
+			SET outRef.BRCH_NAME = COALESCE(inRef.MPO."0".ZLBRN, '');
+			SET outRef.PRT_CRTY_DESC = COALESCE(inRef.MPO."0".ZLCNMP, '');
+			SET outRef.RSDN_CRTY_DESC = COALESCE(inRef.MPO."0".ZLCNML, '');
+			SET outRef.VLD_DECS_LIQD = COALESCE(inRef.MPO."0".CHS01, '');
+			SET outRef.VLD_ACC_CLSD = COALESCE(inRef.MPO."0".CHS02, '');
+			SET outRef.VLD_ACC_INKV = COALESCE(inRef.MPO."0".CHS03, '');
+			SET outRef.ACC_OFFC_NM = COALESCE(inRef.MPO."0".ZLRNM, '');
+			SET outRef.INT_RSK_CRTY = COALESCE(inRef.MPO."0".ZLCNMI, '');
+			SET outRef.ANLYS_CODE = COALESCE(inRef.MPO."0".ZLLAN, '');
+			SET outRef.BRCH_NM = COALESCE(inRef.MPO."0".ZLMTBD, '');
+			SET outRef.VLD_EXMPT_TAX = COALESCE(inRef.MPO."0".CHS10, '');
+			SET outRef.VLD_TRD_FINC = COALESCE(inRef.MPO."0".CHS21, '');
+			SET outRef.VLD_RTL_BRCH = COALESCE(inRef.MPO."0".CHS22, '');
+			SET outRef.VLD_FRNT_OFFCE = COALESCE(inRef.MPO."0".CHS25, '');
+			SET outRef.VLD_CONSD_STAT = COALESCE(inRef.MPO."0".CHS31, '');
+			SET outRef.VLD_FRC_CYCL_STAT = COALESCE(inRef.MPO."0".CHS32, '');
+			SET outRef.VLD_CPY_STAT = COALESCE(inRef.MPO."0".CHS22, '');
+	        
+	        SET outRef.RESPONSE_CODE = '';
+	        SET outRef.RESPONSE_MESSAGE = '';
+	        
+	        IF inRef.RC = '0000' THEN
+	        	SET outRef.RESPONSE_CODE = '0000';
+	        	SET outRef.RESPONSE_MESSAGE = 'success';
+	        ELSE
+				CALL GetErrorDetails(T_ERROR_MAP, errorMap, inRef.RCMSG."0".MESSAGE_ID, SOURCE_SYSTEM, TARGET_SYSTEM);
+				
+				IF FIELDTYPE(errorMap.Field) IS NULL
+				THEN
+					CALL GetErrorDetails(T_ERROR_MAP, errorMap, '*', SOURCE_SYSTEM, TARGET_SYSTEM);
+				END IF;
+				
+				SET outRef.RESPONSE_CODE = errorMap.Field.RC;
+				SET outRef.RESPONSE_MESSAGE = errorMap.Field.MESSAGE;
+				SET httpStatus = errorMap.Field.HTTP_STATUS;
+			END IF;
+			
+	        SET outRef.KSMID = COALESCE(inRef.RCMSG."0".MESSAGE_ID, '');
+		END IF;
+		
+		IF Environment.Variables.details.source = 'HOPE' THEN
+			SET outRef.MPO = inRef.MPO."0";
+		END IF;
+		
+		CREATE LASTCHILD OF outRef NAME 'RESPONSE_TIME' VALUE CAST(CURRENT_TIMESTAMP AS CHARACTER FORMAT 'yyyyMMddHHmmss');
+		SET outData.JSON.(JSON.Object)Data = outRef;
+		
+		-- Logging output
+		CALL PrepareLogMessage(OutputRoot, ApplicationLabel, MessageFlowLabel, NodeLabel, 'output', 'info', OutputExceptionList, OutputLocalEnvironment, OutputRoot);
+		PROPAGATE TO TERMINAL 'out1' DELETE NONE;
+		DELETE FIELD OutputRoot.BLOB;
+		
+		SET OutputRoot.MQMD.Expiry = Q_EXPIRY;
+		SET OutputRoot.MQRFH2.usr.vs.httpStatus = httpStatus;
+		CREATE LASTCHILD OF OutputRoot DOMAIN 'JSON';
+		SET OutputRoot.JSON.(JSON.Object)Data = outData.JSON.Data;
+		
+		SET OutputLocalEnvironment.Destination.MQDestinationList.DestinationData[1].queueName = Environment.Variables.details.dbParam.TxQueueRes;
+		
+		RETURN TRUE;
+	END;

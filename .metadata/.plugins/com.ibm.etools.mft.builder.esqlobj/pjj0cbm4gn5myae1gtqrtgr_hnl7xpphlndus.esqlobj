@@ -1,0 +1,60 @@
+/*EATE FUNCTION Main() RETURNS BOOLE*/
+	BEGIN
+		
+		-- Keep the UUID
+		SET OutputLocalEnvironment.UUID = InputLocalEnvironment.UUID;
+		DECLARE iRef REFERENCE TO InputRoot.XMLNSC.isomsg;
+		
+		IF iRef.Field039 = '00' THEN
+			-- Propagate to posting log
+			CREATE LASTCHILD OF OutputRoot DOMAIN 'XMLNSC';
+			SET OutputRoot.XMLNSC = InputRoot.XMLNSC;
+			PROPAGATE TO TERMINAL 'out3' DELETE NONE;
+			DELETE FIELD OutputRoot.XMLNSC;
+			
+			-- Process to return output
+			CREATE LASTCHILD OF OutputRoot DOMAIN 'JSON';
+			CREATE FIELD OutputRoot.JSON.Data IDENTITY (JSON.Object)Data;
+			DECLARE oRef REFERENCE TO OutputRoot.JSON.Data;
+			
+			-- Set Output Message
+			SET oRef = Environment.Variables.inMessage;
+			SET oRef.RESPONSE_CODE = '0000';
+			SET oRef.RESPONSE_MESSAGE = 'Success';
+			SET oRef.RESPONSE_TIME = CAST(CURRENT_TIMESTAMP AS CHARACTER FORMAT 'yyyyMMddHHmmss');
+			
+			-- Set Destination Queue
+			DECLARE txQueueRes CHARACTER;
+			SET txQueueRes = SUBSTRING(Environment.Variables.details.dbParam.TxQueue AFTER '|');
+			SET OutputLocalEnvironment.Destination.MQ.DestinationData[1].queueName = txQueueRes;
+			
+			PROPAGATE TO TERMINAL 'out'
+			
+		ELSE
+			-- Prepare for reversal
+		END IF;
+		
+		RETURN FALSE;
+	END;
+	
+	CREATE FUNCTION GenerateItaString (IN iRef REFERENCE, IN amount CHARACTER, IN bblc CHARACTER) RETURNS CHARACTER
+	BEGIN
+		DECLARE outBuf, docRef CHARACTER;
+		SET docRef = iRef.CHANNEL || '-' || iRef.USER_ID || '-' || iRef.REF_TRX;
+		SET outBuf = SPACE(38) ||
+					 CAST(CURRENT_TIMESTAMP AS CHARACTER FORMAT 'yyMMddHHmmssSSSSSS') ||
+					 SPACE(8) || 
+					 LEFT(iRef.SENDER_ACCOUNT || SPACE(20), 20) ||
+					 SPACE(33) ||
+					 bblc ||
+					 RIGHT(REPLICATE('0', 15) || amount, 15) ||
+					 LEFT(iRef.REF_TRX || SPACE(16), 16) ||
+					 docRef ||
+					 docRef || 
+					 LEFT('KOR ' || iRef.NARATIVE || SPACE(35), 35) ||
+					 LEFT('KOR ' || iRef.NARATIVE2 || SPACE(35), 35) ||
+					 SPACE(226) ||
+					 iRef.CREBIT_CODE ||
+					 iRef.DEBIT_CODE;
+		RETURN outBuf;
+	END;

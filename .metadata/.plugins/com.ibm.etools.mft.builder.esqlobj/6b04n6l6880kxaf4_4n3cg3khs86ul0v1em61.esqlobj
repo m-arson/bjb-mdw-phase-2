@@ -1,0 +1,46 @@
+/*EATE FUNCTION Main() RETURNS BOOLE*/
+	BEGIN
+		
+		-- Keep the UUID
+		SET OutputLocalEnvironment.UUID = InputLocalEnvironment.UUID;
+		
+		DECLARE itaRef REFERENCE TO InputRoot.JSON.Data;
+		DECLARE iRef REFERENCE TO Environment.Variables.inMessage;
+		
+		
+		SET OutputRoot.MQMD.CorrelId = CAST(Environment.Variables.details.correlId AS BLOB);
+		SET OutputRoot.MQMD.Expiry = Q_EXPIRY;
+		
+		CREATE LASTCHILD OF OutputRoot DOMAIN 'XMLNSC';
+		CREATE FIELD OutputRoot.XMLNSC.isomsg;
+		DECLARE oRef REFERENCE TO OutputRoot.XMLNSC.isomsg;
+		
+		SET oRef.Field002 = '622011444444444444';
+		SET oRef.Field004 = RIGHT(REPLICATE('0', 12) || Environment.Varaibles.ADAPTER_PROPS.TOTAL_PAY, 12);
+		SET ox.F007 = now1;
+		SET ox.F011 = bit11;
+		SET ox.F012 = SUBSTRING(now1 FROM 1 FOR 6);
+		SET ox.F013 = now3;
+		SET ox.F015 = CAST(now4 AS CHARACTER FORMAT 'MMdd');
+		SET ox.F018 = ijm.CHANNEL;
+		SET ox.F022 = '021';
+		SET ox.F032 = '03110';
+		SET ox.F033 = ox.F032;
+		SET ox.F035 = ox.F002|| '=9912?';
+		SET ox.F037 = ACE_LIB.fixedLenLeftPad(ijm.REF_TRX, 12, '0');
+		SET InputLocalEnvironment.TERMID = TRIM(ijm.TERMID);
+		SET InputLocalEnvironment.LOCATION = TRIM(ijm.LOCATION);
+		SET InputLocalEnvironment.TERMNAME = TRIM(ijm.TERMNAME);
+		SET ox.F041 = ACE_LIB.fixedLenPad(InputLocalEnvironment.TERMID, 8, ' ');
+		SET ox.F043 = ACE_LIB.fixedLenPad(InputLocalEnvironment.LOCATION, 25, ' ') || ACE_LIB.fixedLenPad(InputLocalEnvironment.TERMNAME, 15, ' ');
+			IF ijm.PEMDA_ID = 'PKB' THEN
+				SET ox.F048 = '000000' || CAST(CURRENT_TIMESTAMP AS CHAR FORMAT 'HHmmss');
+			ELSE
+				SET ox.F048 = CAST(CURRENT_TIMESTAMP AS CHAR FORMAT 'YYYYMMdd') || CAST(CURRENT_TIMESTAMP AS CHAR FORMAT 'HHmmss');
+			END IF;
+		SET ox.F049 = '360';
+		SET ox.F061 = ACE_LIB.fixedLenPad(ijm.BILL_NO, 16, ' ') || ACE_LIB.fixedLenPad(ijm.CHASSIS_NO, 25, ' ') || ACE_LIB.fixedLenPad(ijm.ENGINE_NO, 25, ' ') || ACE_LIB.fixedLenPad(ijm.IDENTITY_NO, 18, ' ') || ACE_LIB.fixedLenPad(ijm.OWNER_NAME, 25, ' ') || ACE_LIB.fixedLenPad(ijm.OWNER_ADDRESS, 40, ' ') || ACE_LIB.fixedLenPad(ijm.POLICE_NO, 9, ' ') || ACE_LIB.fixedLenPad(ijm.PLATE_COLOR, 6, ' ') || ACE_LIB.fixedLenLeftPad(ijm.OWNED_TO, 3, '0') || ACE_LIB.fixedLenPad(ijm.VEHICLE_TYPE, 15, ' ') || ACE_LIB.fixedLenPad(ijm.VEHICLE_BRAND_NAME, 15, ' ') || ACE_LIB.fixedLenPad(ijm.VEHICLE_MODEL_NAME, 30, ' ') || ijm.YEAR_MADE || ijm.OLD_TAX_END_DATE || ACE_LIB.fixedLenPad(ijm.NEW_TAX_END_DATE, 8, ' ') || ACE_LIB.fixedLenLeftPad(ijm.TOTAL_BBN, 12, '0') || ACE_LIB.fixedLenLeftPad(ijm.TOTAL_PENALTY_BBN, 12, '0') || ACE_LIB.fixedLenLeftPad(ijm.TOTAL_PKB, 12, '0') || ACE_LIB.fixedLenLeftPad(ijm.TOTAL_PENALTY_PKB, 12, '0') || ACE_LIB.fixedLenLeftPad(ijm.TOTAL_SWD, 12, '0') || ACE_LIB.fixedLenLeftPad(ijm.TOTAL_PENALTY_SWD, 12, '0') || ACE_LIB.fixedLenLeftPad(ijm.TOTAL_CHARGE_STNK, 12, '0') || ACE_LIB.fixedLenLeftPad(ijm.TOTAL_CHARGE_TNKB, 12, '0') || ACE_LIB.fixedLenLeftPad(InputLocalEnvironment.TotalPay, 12, '0') || ACE_LIB.fixedLenPad(ijm.DESCRIPTION, 90, ' ') || ACE_LIB.fixedLenPad(ijm.RESERVED, 5, ' ');
+		SET ox.F102 = ACE_LIB.fixedLenPad(ijm.SENDER_ACCOUNT, 13, ' ');
+
+		RETURN TRUE;
+	END;

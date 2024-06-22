@@ -1,0 +1,15 @@
+CREATE COMPUTE MODULE MF_MAIN_Transform_Service_Req_Msg
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		DECLARE inRef REFERENCE TO InputRoot.XMLNSC.isomsg;
+		DECLARE srcDomain, dstDomain, dstMsgType, msgSetProp, msgTypeProp CHARACTER;
+		
+		SET srcDomain = 'XMLNSC';
+		SET dstDomain = 'DFDL';
+		SET dstMsgType = 'ISO8583STD';
+		SET msgSetProp = '';
+		SET msgTypeProp = '{http://www.ibm.com/dfdl/ISO8583STD}:ISO8583STD';
+		
+		RETURN TRUE;
+	END;
+END MODULE;

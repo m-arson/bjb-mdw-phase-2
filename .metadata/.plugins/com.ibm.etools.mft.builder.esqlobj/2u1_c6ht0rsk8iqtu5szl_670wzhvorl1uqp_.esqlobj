@@ -1,0 +1,22 @@
+/*EATE FUNCTION Main() RETURNS BOOLE*/
+	BEGIN
+		
+		X: BEGIN ATOMIC READ WRITE
+			SET SESSION.Data[1].Name = 'Name1';
+			SET SESSION.Data[1].Gender = 'M';
+			
+			SET SESSION.Data[2].Name = 'Name2';
+			SET SESSION.Data[2].Gender = 'F';
+		END X;
+		
+		-- SET Environment.Variables.Data[] = (SELECT X FROM SESSION.Data[] AS X WHERE X.Name = 'Name2');
+		
+		X: BEGIN ATOMIC READ WRITE
+			UPDATE SESSION.Data[] SET Name = 'Hello';
+		END X;
+		SET Environment.Variables.Data[] = (SELECT * FROM SESSION.Data[]);
+		
+		SET OutputRoot.JSON.(JSON.Array)Data.Item[] = Environment.Variables.Data[];
+		
+		RETURN TRUE;
+	END;

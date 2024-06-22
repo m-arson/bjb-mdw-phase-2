@@ -1,0 +1,43 @@
+CREATE COMPUTE MODULE MF_TX_JSON_PAY_PKB_Calc_Amt_and_Call_AB
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		
+		-- Keep Input Properties
+		SET Environment.Variables.correlId = InputRoot.MQMD.CorrelId;
+		SET Environment.Variables.inMessage = InputRoot.JSON.Data;
+		
+		-- Declare Input Reference
+		DECLARE iRef REFERENCE TO InputRoot.JSON.Data;
+		
+		-- Sanity
+		DECLARE cFee, tPkb, tSwd CHARACTER;
+		SET cFee = COALESCE(TRIM(iRef.CHARGE_FEE), '0');
+		SET tPkb = SanityAndTotalIntToChar(iRef.TOTAL_PKB, iRef.TOTAL_PENALTY_PKB, 'ADD');
+		SET tSwd = SanityAndTotalIntToChar(iRef.TOTAL_SWD, iRef.TOTAL_PENALTY_SWD, 'ADD');
+		
+		-- Propagating output
+		IF iRef.CHANNEL = '6010' THEN
+			DECLARE msg1, msg2, msg3 CHARACTER;
+			
+			IF cFee = '0' THEN
+			ELSE
+			END IF;
+			
+			PROPAGATE TO TERMINAL 'out2';
+		ELSE
+			CREATE LASTCHILD OF OutputRoot DOMAIN 'JSON';
+			CREATE FIELD OutputRoot.JSON.Data IDENTITY (JSON.Object)Data;
+			DECLARE oRef REFERENCE TO OutputRoot.JSON.Data;
+			
+			SET oRef.CHANNEL_ID = iRef.CHANNEL_ID;
+			SET oRef.ACC_NUM = iRef.SENDER_ACCOUNT;
+			PROPAGATE TO TERMINAL 'out';
+		END IF;
+			
+		RETURN FALSE;
+	END;
+	
+	CREATE FUNCTION GenerataItaString () RETURNS BOOLEAN CHARACTER
+	BEGIN
+		DECLARE o CHARACTER;
+		RETURN o;

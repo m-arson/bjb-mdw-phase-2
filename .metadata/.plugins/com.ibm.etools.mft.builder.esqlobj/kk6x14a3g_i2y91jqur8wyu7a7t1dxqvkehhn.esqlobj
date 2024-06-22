@@ -1,0 +1,15 @@
+CREATE COMPUTE MODULE MF_TCP_PKB_ADAPTER_Set_Timeout_Backend
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		
+		IF Environment.Variables.type = 'ECHO' THEN
+			RETURN FALSE;
+		END IF;
+		
+		SET OutputRoot.MQMD.CorrelId = Environment.Variables.correlId;
+		SET OutputLocalEnvironment.MQ.GET.QueueName = 'PKB_JABAR_TMP.QL';
+		SET OutputLocalEnvironment.MQ.GET.MQGMO.WaitInterval = Environment.Variables.timeout;
+		
+		RETURN TRUE;
+	END;
+END MODULE;

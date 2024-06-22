@@ -1,0 +1,13 @@
+CREATE COMPUTE MODULE MF_MAIN_REST_SAMSAT_SRVC_Exception_Handling
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		
+		DECLARE BIPNumber INTEGER;
+		DECLARE NIPMessage CHARACTER;
+		
+		CALL GetLastExceptionDetail(InputExceptionList, BIPNumber, BIPMessage);
+		
+		SET OutputRoot.JSON.Data.Response = 'Exception Occur';
+		RETURN TRUE;
+	END;
+END MODULE;

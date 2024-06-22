@@ -1,0 +1,20 @@
+/*EATE FUNCTION Main() RETURNS BOOLE*/
+	BEGIN
+		SET OutputRoot.JSON.Data.CID = 'MDW-ECHO';
+		DECLARE outRef REFERENCE TO OutputRoot.JSON.Data;
+		SET outRef.DT = CAST(CURRENT_TIMESTAMP AS CHARACTER FORMAT 'yyyyMMddHHmmss');
+		SET outRef.FC = 'ECHO';
+		SET outRef.ST = RIGHT('0000' || outRef.DT, 4);
+		SET outRef.MPI.ECHO_REQ = 'TEST';
+		
+		DECLARE uuidBlob BLOB UUIDASBLOB || RIGHT(X'000000000000000000000000' || CAST(outRef.ST AS BLOB CCSID 1208), 8);
+		DECLARE uuid CHARACTER BASE64ENCODE(uuidBlob);
+		SET outRef.SID = uuid;
+		
+		SET OutputRoot.BLOB.BLOB = CAST(ASBITSTREAM(OutputRoot.JSON.Data CCSID 1208) AS BLOB CCSID 819) || X'03';
+		DELETE FIELD OutputRoot.JSON;
+		
+		SET Environment.Variables.ResponseId = 'ECHO';
+		
+		RETURN TRUE;
+	END;

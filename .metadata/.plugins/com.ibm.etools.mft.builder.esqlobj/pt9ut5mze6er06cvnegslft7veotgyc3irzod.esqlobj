@@ -1,0 +1,10 @@
+CREATE PROCEDURE RemoveUnrequiredXMLAttributes(INOUT InRef REFERENCE)
+	BEGIN
+		SET InRef.XMLNSC.*:XmlDeclaration = NULL;
+		DECLARE NumberRootAttributes INTEGER CARDINALITY(InRef.XMLNSC.isomsg.(XMLNSC.Attribute)*[]);
+		DECLARE I1 INTEGER 1;
+		WHILE I1 <= NumberRootAttributes DO
+			SET InRef.XMLNSC.isomsg.(XMLNSC.Attribute)*[1] = NULL;
+			SET I1 = I1 + 1;
+		END WHILE;
+	END;

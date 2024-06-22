@@ -1,0 +1,12 @@
+CREATE COMPUTE MODULE MF_MAIN_Process_Open_Conn
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		
+		DECLARE tcpIn REFERENCE TO InputLocalEnvironment.TCPIP.Input.ConnectionDetails;
+		IF SESSION IS NULL THEN
+				
+		END IF;
+		
+		RETURN TRUE;
+	END;
+END MODULE;

@@ -1,0 +1,9 @@
+CREATE COMPUTE MODULE MF_TCP_PKB_ADAPTER_Set_Timeout_Backend
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		
+		SET OutputRoot.MQMD.CorrelId = Environment.Variables.correlId;
+		
+		RETURN TRUE;
+	END;
+END MODULE;

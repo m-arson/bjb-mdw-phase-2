@@ -1,0 +1,7 @@
+/*EATE FUNCTION Main() RETURNS BOOLE*/
+	BEGIN
+		
+		SET Environment.Variables.SESSION[] = SESSION.Data[];
+		
+		SET OutputRoot.BLOB.BLOB = CAST('HELLO WORLD!' AS BLOB CCSID 819);
+	END;

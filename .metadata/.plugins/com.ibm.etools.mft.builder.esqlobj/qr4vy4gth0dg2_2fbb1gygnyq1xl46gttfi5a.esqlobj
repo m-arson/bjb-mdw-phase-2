@@ -1,0 +1,20 @@
+/*EATE FUNCTION Main() RETURNS BOOLE*/
+	BEGIN
+		DECLARE mti CHARACTER CAST(InputRoot.DFDL.isomsg.MTI AS CHARACTER);
+
+		IF mti = '0810' OR mti = '0800' THEN
+			--------------- PREPARED FOR INPUT LOGGING NM----------------------------
+			--------------- PREPARED FOR INPUT LOGGING NM----------------------------
+		ELSE
+			SET Environment.Variables.replyId = SUBSTRING(InputLocalEnvironment.TCPIP.Input.ConnectionDetails.ReplyId BEFORE '|')
+			SET OutputRoot.MQMD.CorrelId = CAST(InputLocalEnvironment.TCPIP.Input.ConnectionDetails.ReplyId AS BLOB);
+			SET OutputRoot.XMLNSC.isomsg = InputRoot.DFDL.isomsg;
+			
+			--------------- PREPARED FOR OUTPUT LOGGING ----------------------------;
+			--------------- PREPARED FOR INPUT LOGGING  ----------------------------
+			PROPAGATE TO TERMINAL 'out';
+
+		END IF;
+
+		RETURN FALSE;
+	END;

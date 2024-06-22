@@ -1,0 +1,48 @@
+/*EATE FUNCTION Main() RETURNS BOOLE*/
+	BEGIN
+		
+		DECLARE sessionIndex INTEGER;
+		DECLARE iRef REFERENCE TO InputLocalEnvironment.TCPIP.Input.ConnectionDetails;
+		
+		DECLARE resBuff ROW;
+		SET sessionIndex = GetSessionIndex(iRef.ClientDetails.Address, SESSION, resBuff);
+		
+		IF sessionIndex > 0 THEN
+			SET SESSION.Data[sessionIndex].Id = iRef.Id;
+			SET SESSION.Data[sessionIndex].Port = iRef.Port;
+			SET SESSION.Data[sessionIndex].Address = iRef.ClientDetails.Address;
+		END IF;
+		
+		RETURN FALSE;
+	END;
+	
+	CREATE FUNCTION GetSessionLength(IN S REFERENCE) RETURNS INTEGER
+	BEGIN
+		IF S = NULL THEN
+			RETURN 0;
+		ELSE
+			DECLARE L INTEGER;
+			SET L = CARDINALITY(S.Data[]);
+			RETURN L;	
+		END IF;
+	END;
+	
+	CREATE PROCEDURE GetSessionIndex(IN H CHARACTER, IN S REFERENCE, IN B REFERENCE)
+	BEGIN
+		DECLARE I, L INTEGER;
+		SET I = 1;
+		SET L = GetSessionLength(S);
+		
+		IF L = 0 THEN
+			RETURN 1;
+		ELSE
+			WHILE I <= L DO
+				IF S.Data[I].Address = H THEN
+					RETURN I;
+				END IF;
+				SET I = I + 1;
+			END WHILE;
+		END IF;
+		RETURN I;
+	END;
+	

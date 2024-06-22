@@ -1,0 +1,57 @@
+CREATE PROCEDURE LogOutputDebug(IN excReff REFERENCE, IN localReff REFERENCE, IN rootReff REFERENCE, IN outReff REFERENCE, IN appName CHARACTER, IN mfLabel CHARACTER, IN nodeLabel CHARACTER, IN ts CHARACTER)
+BEGIN
+
+	-- Prepare buffer and save current root value
+	DECLARE logMessage, rootReffBuffer ROW;
+	SET rootReffBuffer = rootReff;
+	
+	-- Delete output field if exists
+	IF FIELDTYPE(outReff.JSON.Data) IS NOT NULL
+	THEN
+		DELETE FIELD outReff.JSON;
+	END IF;
+	
+	IF FIELDTYPE(outReff.BLOB.BLOB) IS NOT NULL
+	THEN
+		DELETE FIELD outReff.BLOB;
+	END IF;
+	
+	IF FIELDTYPE(outReff.XMLNSC) IS NOT NULL
+	THEN
+		DELETE FIELD outReff.XMLNSC;
+	END IF;
+	
+	IF FIELDTYPE(outReff.DFDL) IS NOT NULL
+	THEN
+		DELETE FIELD outReff.DFDL;
+	END IF;
+	
+	-- Check hostname and Thread availability
+	IF HOSTNAME = '' THEN
+		X: BEGIN ATOMIC READ WRITE
+			SET HOSTNAME = GetHostName();
+		END X;
+	END IF;
+	
+	CREATE LASTCHILD OF logMessage DOMAIN 'JSON';
+	CREATE FIELD logMessage.JSON.Data IDENTITY (JSON.Object) Data;
+	
+	-- Fill the data
+	SET logMessage.JSON.Data."@timestamp" = ts;
+	SET logMessage.JSON.Data."@version" = '1';
+	SET logMessage.JSON.Data.message = 'output';
+	SET logMessage.JSON.Data.logger_name = 'bjb.' || LOWER(appName) || '.' || LOWER(mfLabel) || '.' || LOWER(nodeLabel);
+	SET logMessage.JSON.Data.thread_name = THREAD; --GetThreadName();
+	SET logMessage.JSON.Data.level = 'DEBUG';
+	SET logMessage.JSON.Data.level_value = DEBUG_LEVEL;
+	SET logMessage.JSON.Data.HOSTNAME = HOSTNAME; --GetHostName();
+	SET logMessage.JSON.Data.logType = 'OUTPUT';
+	SET logMessage.JSON.Data.node = UPPER(appName) || '.' || UPPER(mfLabel) || '.' || UPPER(nodeLabel);
+	
+	SET logMessage.JSON.Data.data.Root.LocalEnvironment = localReff;
+	SET logMessage.JSON.Data.data.Root.Root = rootReffBuffer;
+	
+	CREATE LASTCHILD OF outReff DOMAIN 'BLOB' NAME 'BLOB';
+	SET outReff.BLOB.BLOB = CAST(ASBITSTREAM(logMessage CCSID 1208) AS BLOB CCSID 819);
+
+END;

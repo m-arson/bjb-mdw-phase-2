@@ -1,0 +1,119 @@
+CREATE COMPUTE MODULE MF_TX_JSON_PAY_PKB_Validate_Resp
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		-- Keep the UUID
+		SET OutputLocalEnvironment.UUID = InputLocalEnvironment.UUID;
+		
+		-- Declare some reference
+		DECLARE iRef REFERENCE TO InputRoot.JSON.Data;
+		DECLARE oriMsgRef REFERENCE TO Environment.Variables.inMessage;
+		DECLARE evRef REFERENCE TO Environment.Variables;
+		
+		-- Set MQMD Properties
+		SET OutputRoot.MQMD.CorrelId = CAST(Environment.Variables.details.correlId AS BLOB);
+		SET OutputRoot.MQMD.Expiry = Q_EXPIRY;
+		
+		CREATE LASTCHILD OF OutputRoot DOMAIN 'JSON';
+		CREATE FIELD OutputRoot.JSON.Data IDENTITY (JSON.Object)Data;
+		DECLARE oRef REFERENCE TO OutputRoot.JSON.Data;
+		
+		-- Check and propagate the output
+		IF iRef.RESPONSE_CODE = '0000' THEN
+			
+			DECLARE availBalance INTEGER;
+			SET availBalance = CAST(REPLACE(REPLACE(iRef.ACC_BAL, ',', ''), '-', '') AS INTEGER);
+			
+			IF (availBalance - Environment.Variables.ADAPTER_PROPS.TOTAL_PAY) < 0 THEN
+				SET oRef = oriMsgRef;
+				SET oRef.RESPONSE_CODE = '0051';
+				SET oRef.RESPONSE_MESSAGE = 'Insufficient balance';
+				SET oRef.RESPONSE_TIME = CAST(CURRENT_TIMESTAMP AS CHARACTER FORMAT 'yyyyMMddHHmmss');
+				
+				DECLARE txQueueRes CHARACTER;
+				SET txQueueRes = SUBSTRING(Environment.Variables.details.dbParam.TxQueue AFTER '|');
+				SET OutputLocalEnvironment.Destination.MQ.DestinationData[1].queueName = txQueueRes;
+				
+				PROPAGATE TO TERMINAL 'out2';
+				RETURN FALSE;
+			END IF;
+			
+			/*
+			-- Generating ITA Multipost Message
+			DECLARE msg1, msg2, msg3 CHARACTER;
+			IF evRef.CHARGE_FEE = '0' THEN
+				SET msg1 = GenerateItaString(iRef, evRef.TOTAL_PKB, evRef.BUFFER_BALANCE_PKB, evRef.DEBIT_CODE, evRef.CREDIT_CODE);
+				SET msg2 = GenerateItaString(iRef, evRef.TOTAL_SWD, evRef.BUFFER_BALANCE_SWD, evRef.DEBIT_CODE, evRef.CREDIT_CODE);
+				SET msg3 = NULL;
+			ELSE
+				SET msg1 = GenerateItaString(iRef, evRef.CHARGE_FEE, evRef.BUFFER_BALANCE_CHARGE_FEE, evRef.DEBIT_CODE, evRef.CREDIT_CODE);
+				SET msg2 = GenerateItaString(iRef, evRef.TOTAL_PKB, evRef.BUFFER_BALANCE_PKB, evRef.DEBIT_CODE, evRef.CREDIT_CODE);
+				SET msg3 = GenerateItaString(iRef, evRef.TOTAL_SWD, evRef.BUFFER_BALANCE_SWD, evRef.DEBIT_CODE, evRef.CREDIT_CODE);
+			END IF;
+			
+			-- Set Output Message & Propagate to ITA MULTIPOSTING Queue
+			SET OutputRoot.MQMD.CorrelId = InputRoot.MQMD.CorrelId;
+			SET OutputRoot.MQMD.Expiry = Q_EXPIRY;
+			SET OutputRoot.MQRFH2.usr.vs.details.uuid = evRef.details.uuid;
+			
+			CREATE LASTCHILD OF OutputRoot DOMAIN 'JSON';
+			CREATE FIELD OutputRoot.JSON.Data IDENTITY (JSON.Object)Data;
+			DECLARE oRef REFERENCE TO OutputRoot.JSON.Data;
+			
+			SET oRef.REF_NO = oriMsgRef.REF_NO;
+			SET oRef.REQUEST_TIME = oriMsgRef.REQUEST_TIME;
+			SET oRef.MODULE_CODE = oriMsgRef.MODULE_CODE;
+			SET oRef.CHANNEL_ID = oriMsgRef.CHANNEL_ID;
+			SET oRef.MESSAGE1 = msg1;
+			SET oRef.MESSAGE2 = msg2;
+			
+			IF oRef.MESSAGE IS NOT NULL THEN
+				SET oRef.MESSAGE3 = msg3;
+			END IF;
+			*/
+			
+			DECLARE txQueueRes CHARACTER;
+			SET txQueueRes = SUBSTRING(Environment.Variables.details.dbParam.TxQueue AFTER '|');
+			SET OutputLocalEnvironment.Destination.MQ.DestinationData[1].queueName = txQueueRes;
+			
+			PROPAGATE TO TERMINAL 'out2';
+		ELSE
+			CREATE LASTCHILD OF OutputRoot DOMAIN 'JSON';
+			CREATE FIELD OutputRoot.JSON.Data IDENTITY (JSON.Object)Data;
+			DECLARE oRef REFERENCE TO OutputRoot.JSON.Data;
+			
+			SET oRef = oriMsgRef;
+			SET oRef.RESPONSE_TIME = CAST(CURRENT_TIMESTAMP AS CHARACTER FORMAT 'yyyyMMddHHmmss');
+			SET oRef.RESPONSE_CODE = iRef.RESPONSE_CODE;
+			SET oRef.RESPONSE_MESSAGE = iRef.RESPONSE_MESSAGE;
+			
+			DECLARE txQueueRes CHARACTER;
+			SET txQueueRes = SUBSTRING(Environment.Variables.details.dbParam.TxQueue AFTER '|');
+			SET OutputLocalEnvironment.Destination.MQ.DestinationData[1].queueName = txQueueRes;
+			
+			PROPAGATE TO TERMINAL 'out2';
+		END IF;
+		
+		RETURN FALSE;
+	END;
+	CREATE FUNCTION GenerateItaString (IN iRef REFERENCE, IN amount CHARACTER, IN bblc CHARACTER, IN debitCode CHARACTER, IN creditCode CHARACTER) RETURNS CHARACTER
+	BEGIN
+		DECLARE outBuf, docRef CHARACTER;
+		SET docRef = iRef.CHANNEL || '-' || iRef.USER_ID || '-' || iRef.REF_TRX;
+		SET outBuf = SPACE(38) ||
+					 CAST(CURRENT_TIMESTAMP AS CHARACTER FORMAT 'yyMMddHHmmssSSSSSS') ||
+					 SPACE(8) || 
+					 LEFT(iRef.SENDER_ACCOUNT || SPACE(20), 20) ||
+					 SPACE(33) ||
+					 bblc ||
+					 RIGHT(REPLICATE('0', 15) || amount, 15) ||
+					 LEFT(iRef.REF_TRX || SPACE(16), 16) ||
+					 docRef ||
+					 docRef || 
+					 LEFT(iRef.NARATIVE || SPACE(35), 35) ||
+					 LEFT(iRef.NARATIVE2 || SPACE(35), 35) ||
+					 SPACE(226) ||
+					 debitCode ||
+					 creditCode;
+		RETURN outBuf;
+	END;
+END MODULE;

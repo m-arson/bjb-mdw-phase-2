@@ -1,0 +1,116 @@
+/*EATE FUNCTION Main() RETURNS BOOLE*/
+	BEGIN
+		-- Save input data and other propeties
+		SET Environment.Variables.details = InputRoot.MQRFH2.usr.vs.details;
+		SET Environment.Variables.details.correlId = InputRoot.MQMD.CorrelId;
+		SET Environment.Variables.details.timeoutMDW = TIMEOUT_SERVICE;
+		SET Environment.Variables.details.qExpiry = Q_EXPIRY;
+		SET Environment.Variables.inMessage = InputRoot.JSON.Data;
+		
+		-- Set flow UUID
+		 SET InputLocalEnvironment.UUID = Environment.Variables.details.uuid;
+		 SET OutputLocalEnvironment.UUID = InputLocalEnvironment.UUID;
+		
+		
+		------------------------- PREPARE FOR INPUT LOGGING ---------------------------------
+		CALL PrepareLogMessage(OutputRoot, ApplicationLabel, MessageFlowLabel, NodeLabel, 'input', 'info', InputExceptionList, InputLocalEnvironment, InputRoot);
+		PROPAGATE TO TERMINAL 'out1' DELETE NONE;
+		DELETE FIELD OutputRoot.BLOB;
+		----------------------- PREPARE FOR INPUT LOGGING ---------------------------------
+		
+		-- Check and load table error map
+		IF NOT EXISTS(T_ERROR_MAP.Field[]) THEN
+			SET Environment.Variables.DB.T_ERROR_MAP.Field[] =
+				(SELECT 
+					T.MESSAGE_ID,
+					T.RC,
+					T.RC_GROUP,
+					T.HTTP_STATUS,
+					T.MESSAGE,
+					T."""SourceSystem""" AS SourceSystem,
+					T."""TargetSystem""" AS TargetSystem
+				FROM Database.{'T_ERROR_MAP'} AS T);
+			
+			DECLARE I INTEGER 1;
+			DECLARE J INTEGER CARDINALITY(Environment.Variables.DB.T_ERROR_MAP.Field[]);
+			
+			WHILE I <= J DO
+				SET T_ERROR_MAP.Field[I] = Environment.Variables.DB.T_ERROR_MAP.Field[I];
+				SET I = I + 1;
+			END WHILE;
+		END IF;
+		
+		-------------------------- LOAD BILLER PARAM PKB ----------------------------
+		IF PKB_INQ_JSON_PARAM IS NULL OR TRIM(PKB_INQ_JSON_PARAM) = '' THEN
+			SET Environment.Variables.PKB_INQ_JSON_PARAM =
+				THE(SELECT
+						T.PROCODE
+					FROM
+						Database.{'T_PEMDA_PARAM'} AS T
+					WHERE
+						T.PEMDAID = PEM_ID AND
+						T.SVRTYPE = SVR_TYPE);
+						
+			SET Environment.Variables.PKB_INQ_JSON_PARAM.TxQueueRes = SUBSTRING(InputRoot.MQRFH2.usr.vs.details.dbParam.TxQueue AFTER '|');
+			SET PKB_INQ_JSON_PARAM = Environment.Variables.PKB_INQ_JSON_PARAM;
+		END IF;
+
+		SET Environment.Variables.PKBINQ = PKB_INQ_JSON_PARAM;
+		-------------------------- LOAD BILLER PARAM PKB ----------------------------
+		
+		-----------------------------------SET NOW DATE-------------------------------------
+		DECLARE dtts CHARACTER CAST(CURRENT_TIMESTAMP AS CHARACTER FORMAT 'yyyyMMddHHmmssSSS');
+		DECLARE gmtts CHARACTER CAST(CURRENT_GMTTIMESTAMP AS CHARACTER FORMAT 'yyyyMMddHHmmss');
+		-----------------------------------SET NOW DATE-------------------------------------
+		
+		-------------------------- MAP JSON TO ISO XML ------------------------------		
+		SET OutputRoot.MQMD.CorrelId = CAST(Environment.Variables.details.correlId AS BLOB);
+		SET OutputRoot.MQMD.ReplyToQ = Environment.Variables.details.dbParam.DestResponseQ;
+		SET OutputRoot.MQRFH2.usr.vs.coreTimeout = Environment.Variables.details.dbParam.Timeout;
+		SET OutputRoot.MQRFH2.usr.vs.uuid = InputLocalEnvironment.UUID;
+		
+		
+		CREATE LASTCHILD OF OutputRoot DOMAIN 'XMLNSC';
+		SET OutputRoot.XMLNSC.isomsg.MTI = '0200';
+		SET OutputRoot.XMLNSC.isomsg.Field002 = '622011444444444444';
+		SET OutputRoot.XMLNSC.isomsg.Field003 = Environment.Variables.PKBINQ.PROCODE;
+		SET OutputRoot.XMLNSC.isomsg.Field004 = '000000000000';
+		SET OutputRoot.XMLNSC.isomsg.Field007 = LEFT(gmtts,10);
+		SET OutputRoot.XMLNSC.isomsg.Field011 = RIGHT(dtts,6);
+		SET OutputRoot.XMLNSC.isomsg.Field012 = LEFT(dtts,6);
+		SET OutputRoot.XMLNSC.isomsg.Field013 = SUBSTRING(dtts FROM 5 FOR 4);
+		SET OutputRoot.XMLNSC.isomsg.Field015 = SUBSTRING(dtts FROM 5 FOR 4);
+		SET OutputRoot.XMLNSC.isomsg.Field018 = InputRoot.JSON.Data.CHANNEL;
+		SET OutputRoot.XMLNSC.isomsg.Field022 = '021';
+		SET OutputRoot.XMLNSC.isomsg.Field032 = '03110';
+		SET OutputRoot.XMLNSC.isomsg.Field033 = OutputRoot.XMLNSC.isomsg.Field032;
+		SET OutputRoot.XMLNSC.isomsg.Field035 = CAST(OutputRoot.XMLNSC.isomsg.Field002 AS CHARACTER) || '=9912?';
+		SET OutputRoot.XMLNSC.isomsg.Field037 = RIGHT('000000000000' || CAST(InputRoot.JSON.Data.REF_TRX AS CHARACTER), 12);
+		SET Environment.TERMID = TRIM(InputRoot.JSON.Data.TERMID);
+		SET Environment.LOCATION = TRIM(InputRoot.JSON.Data.LOCATION);
+		SET Environment.TERMNAME = TRIM(InputRoot.JSON.Data.TERMNAME);
+		SET OutputRoot.XMLNSC.isomsg.Field041 = LEFT(Environment.TERMID || SPACE(8), 8);
+		SET OutputRoot.XMLNSC.isomsg.Field043 = LEFT(Environment.LOCATION || SPACE(25), 25) || LEFT(Environment.TERMNAME || SPACE(15), 15);
+		SET OutputRoot.XMLNSC.isomsg.Field049 = '360';
+		SET OutputRoot.XMLNSC.isomsg.Field061 = LEFT(CAST(InputRoot.JSON.Data.BILL_NO AS CHARACTER) || SPACE(32), 32);
+		-------------------------- MAP JSON TO ISO XML ------------------------------
+
+		SET OutputLocalEnvironment.MQ.GET.QueueName = Environment.Variables.details.dbParam.DestResponseQ;
+		SET OutputLocalEnvironment.MQ.GET.MQGMO.WaitInterval = TIMEOUT_SERVICE * 1000;
+		SET OutputLocalEnvironment.Destination.MQ.DestinationData[1].queueName = Environment.Variables.details.dbParam.DestRequestQ;	
+
+		DECLARE outData ROW;
+		CREATE LASTCHILD OF outData DOMAIN 'XMLNSC';
+		SET outData.XMLNSC = OutputRoot.XMLNSC;
+		
+		-- Logging output
+		CALL PrepareLogMessage(OutputRoot, ApplicationLabel, MessageFlowLabel, NodeLabel, 'output', 'debug', OutputExceptionList, OutputLocalEnvironment, OutputRoot);
+		PROPAGATE TO TERMINAL 'out1' DELETE NONE;
+		DELETE FIELD OutputRoot.BLOB;
+		
+		-- Reassign the value
+		CREATE LASTCHILD OF OutputRoot DOMAIN 'XMLNSC';
+		SET OutputRoot.XMLNSC = outData.XMLNSC;
+
+		RETURN TRUE;
+	END;

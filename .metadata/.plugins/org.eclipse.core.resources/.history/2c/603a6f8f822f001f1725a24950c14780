@@ -1,0 +1,27 @@
+
+
+CREATE COMPUTE MODULE MF_TX_JSON_PAY_PKB_Validate_Resp
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		-- Keep the UUID
+		SET OutputLocalEnvironment.UUID = InputLocalEnvironment.UUID;
+		
+		DECLARE iRef REFERENCE TO InputRoot.JSON.Data;
+		
+		IF iRef.RESPONSE_CODE = '0000' THEN
+			
+		ELSE
+			SET OutputRoot.MQMD.CorrelId = CAST(Environment.Variables.correlId AS BLOB);
+			
+			CREATE LASTCHILD OF OutputRoot DOMAIN 'JSON';
+			CREATE FIELD OutputRoot.JSON.Data IDENTITY (JSON.Object)Data;
+			DECLARE oRef REFERENCE TO OutputRoot.JSON.Data;
+			
+			SET oRef = Environment.Variables.inMessage;
+			
+			
+		END IF;
+		
+		RETURN TRUE;
+	END;
+END MODULE;

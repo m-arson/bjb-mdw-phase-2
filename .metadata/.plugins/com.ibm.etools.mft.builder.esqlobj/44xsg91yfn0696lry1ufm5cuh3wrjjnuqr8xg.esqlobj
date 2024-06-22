@@ -1,0 +1,13 @@
+CREATE COMPUTE MODULE MF_MAIN_Route_Message
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		
+		CREATE FIELD Environment.Variables;
+		CREATE LASTCHILD OF Environment.Variables DOMAIN 'JSON';
+		CREATE FIELD Environment.Variables.JSON.Data IDENTITY (JSON.Array)Data;
+		
+		SET Environment.Variables.JSON.Data.Item[] = (SELECT * FROM SESSION.Data[]);
+		
+		SET OutputRoot.BLOB.BLOB = CAST(ASBITSTREAM(Environment.Variables.JSON.Data CCSID 1208) AS BLOB CCSID 819);
+	END;
+END MODULE;

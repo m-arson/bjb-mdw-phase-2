@@ -1,0 +1,59 @@
+BROKER SCHEMA id.co.bankbjb.mdw.core.services
+PATH id.co.bankbjb.mdw.lib;
+
+CREATE COMPUTE MODULE MF_TX_MDW_INQ_LOAN_TIMEOUT_HANDLING
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		-- Keep the UUID
+		SET OutputLocalEnvironment.UUID = InputLocalEnvironment.UUID;
+		
+		-- Logging Input
+		SET OutputRoot.MQRFH2.usr.vs.log4jConfig = ApplicationLabel;
+		CALL LogInputInfo(InputExceptionList, InputLocalEnvironment, InputRoot, OutputRoot);
+		PROPAGATE TO TERMINAL 'out1' DELETE NONE;
+		DELETE FIELD OutputRoot.MQRFH2;
+		DELETE FIELD OutputRoot.BLOB;
+		
+		-- Get Error Message
+		DECLARE bipNumber INTEGER;
+		DECLARE bipMessage CHARACTER;
+		CALL GetLastExceptionDetail(InputExceptionList, bipNumber, bipMessage);
+		
+		-- Mapping the response for logging
+		DECLARE errorMap, outData ROW;
+		CREATE LASTCHILD OF outData DOMAIN 'JSON';
+		SET OutputRoot.MQMD.CorrelId = CAST(Environment.Variables.details.correlId AS BLOB);
+		
+		IF bipNumber = 3151 THEN
+			CALL GetErrorDetails(T_ERROR_MAP, errorMap, 'MDW0068', SOURCE_SYSTEM, TARGET_SYSTEM);
+		ELSE
+			CALL GetErrorDetails(T_ERROR_MAP, errorMap, 'INVALID_BIG_DATA_URL', SOURCE_SYSTEM, 'BIGDATA');
+		END IF;
+		
+		SET OutputRoot.JSON.Data = Environment.Variables.inMessage;
+		SET OutputRoot.JSON.Data.RESPONSE_CODE = errorMap.Field.RC;
+		SET OutputRoot.JSON.Data.RESPONSE_MESSAGE = errorMap.Field.MESSAGE;
+		
+		SET outData.JSON.(JSON.Object)Data = OutputRoot.JSON.Data;
+		
+		-- Set the main queue destination
+		SET OutputLocalEnvironment.Destination.MQDestinationList.DestinationData[1].queueName = SERVICE_PARAM.TxQueueRes;
+		SET OutputRoot.MQMD.CorrelId = CAST(Environment.Variables.details.correlId AS BLOB);
+			
+		-- Logging output
+		SET OutputRoot.MQRFH2.usr.vs.log4jConfig = ApplicationLabel;
+		CALL LogOutputDebug(OutputExceptionList, OutputLocalEnvironment, OutputRoot, OutputRoot);
+		PROPAGATE TO TERMINAL 'out1' DELETE NONE;
+		DELETE FIELD OutputRoot.MQRFH2;
+		DELETE FIELD OutputRoot.BLOB;
+		
+		-- Reassign the value
+		SET OutputRoot.MQRFH2.usr.vs.uuid = InputLocalEnvironment.UUID;
+		CREATE LASTCHILD OF OutputRoot DOMAIN 'JSON';
+		CREATE FIELD OutputRoot.JSON.Data IDENTITY (JSON.Object)Data;
+		SET OutputRoot.JSON.Data = outData.JSON.Data;
+		SET OutputRoot.JSON.Data.RESPONSE_TIME = CAST(CURRENT_TIMESTAMP AS CHARACTER FORMAT 'yyyyMMddHHmmss');
+		
+		RETURN TRUE;
+	END;
+END MODULE;

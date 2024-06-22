@@ -1,0 +1,79 @@
+
+
+CREATE COMPUTE MODULE MF_TX_JSON_PAY_PKB_Calc_Amt_and_Call_AB
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		
+		-- Keep Input Properties
+		SET Environment.Variables.correlId = InputRoot.MQMD.CorrelId;
+		SET Environment.Variables.inMessage = InputRoot.JSON.Data;
+		
+		-- Declare Input Reference
+		DECLARE iRef REFERENCE TO InputRoot.JSON.Data;
+		
+		-- Declare and sanity amount
+		DECLARE c_fee, t_pkb, t_swd, bblc_pkb, bblc_swd, bblc_c_fee CHARACTER;
+		SET c_fee = COALESCE(TRIM(iRef.CHARGE_FEE), '0');
+		SET t_pkb = SanityAndTotalIntToChar(iRef.TOTAL_PKB, iRef.TOTAL_PENALTY_PKB, 'ADD');
+		SET t_swd = SanityAndTotalIntToChar(iRef.TOTAL_SWD, iRef.TOTAL_PENALTY_SWD, 'ADD');
+		
+		-- Set buffer balance
+		SET bblc_pkb = '000101BFJA800';
+		SET bblc_swd = '0001017375800';
+		SET bblc_c_fee = '0001907524360';
+		
+		-- Propagating output
+		IF iRef.CHANNEL = '6010' THEN
+			DECLARE msg1, msg2, msg3 CHARACTER;
+			
+			IF c_fee = '0' THEN
+				SET msg1 = GenerateItaString(iRef, t_pkb, bblc_pkb);
+				SET msg2 = GenerateItaString(iRef, t_swd, bblc_swd);
+			ELSE
+				SET msg1 = GenerateItaString(iRef, c_fee, bblc_c_fee);
+				SET msg2 = GenerateItaString(iRef, t_pkb, bblc_pkb);
+				SET msg3 = GenerateItaString(iRef, t_swd, bblc_swd);
+			END IF;
+			
+			PROPAGATE TO TERMINAL 'out2';
+		ELSE
+			CREATE LASTCHILD OF OutputRoot DOMAIN 'JSON';
+			CREATE FIELD OutputRoot.JSON.Data IDENTITY (JSON.Object)Data;
+			DECLARE oRef REFERENCE TO OutputRoot.JSON.Data;
+			
+			SET oRef.CHANNEL_ID = iRef.CHANNEL_ID;
+			SET oRef.ACC_NUM = iRef.SENDER_ACCOUNT;
+			PROPAGATE TO TERMINAL 'out';
+		END IF;
+			
+		RETURN FALSE;
+	END;
+	
+	CREATE FUNCTION GenerateItaString (IN iRef REFERENCE, IN amount CHARACTER, IN bblc CHARACTER) RETURNS CHARACTER
+	BEGIN
+		DECLARE output, docRef CHARACTER;
+		SET docRef = iRef.CHANNEL || '-' || iRef.USER_ID || '-' || iRef.REF_TRX;
+		SET output = SPACE(38) || CAST(CURRENT_TIMESTAMP AS CHARACTER FORMAT 'yyMMddHHmmssSSSSSS') || SPACE(8) || 
+					RIGHT(SPACE(20) || iRef.SENDER_ACCOUNT, 20) || SPACE(33) || bblc || RIGHT(REPEAT('0', 15) || amount, 15) ||
+					RIGHT(SPACE(16) || iRef.REF_TRX, 16) || docRef || docRef ||  RIGHT(SPACE(35) || iRef.NARATIVE, 35) ||
+					RIGHT(SPACE(35) || iRef.NARATIVE2, 35) || SPACE(226);
+		RETURN output;
+	END;
+	
+	CREATE FUNCTION SanityAndTotalIntToChar(IN nc1 CHARACTER, IN nc2 CHARACTER, IN op CHARACTER) RETURNS CHARACTER
+	BEGIN
+		DECLARE ni1, ni2, o INTEGER;
+		
+		SET ni1 = CAST(COALESCE(TRIM(nc1), '0') AS INTEGER);
+		SET ni2 = CAST(COALESCE(TRIM(nc2), '0') AS INTEGER);
+		
+		CASE op
+			WHEN 'ADD' THEN
+				SET o = ni1 + ni2;
+			WHEN 'SUB' THEN
+				SET o = ni1 - ni2;
+		END CASE;
+		
+		RETURN CAST(o AS CHARACTER);
+	END;
+END MODULE;

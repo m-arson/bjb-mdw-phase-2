@@ -1,0 +1,47 @@
+CREATE PROCEDURE GetLastExceptionDetail(IN InputTree REFERENCE, OUT messageNumber INTEGER, OUT messageText CHAR)
+BEGIN
+	DECLARE ptrException REFERENCE TO InputTree;
+	DECLARE isRecoverableException BOOLEAN;
+	DECLARE isUserException BOOLEAN;
+	DECLARE isMessageException BOOLEAN;
+	DECLARE isSocketException BOOLEAN;
+	DECLARE isParserException BOOLEAN;
+	DECLARE isSocketTimeoutException BOOLEAN;
+	
+	WHILE lastmove(ptrException) DO
+			SET isRecoverableException = EXISTS (ptrException.RecoverableException.*[]);
+			SET isMessageException = EXISTS (ptrException.MessageException.*[]);
+			SET isUserException = EXISTS (ptrException.RecoverableException.UserException.*[]);
+			SET isSocketException = EXISTS (ptrException.RecoverableException.SocketException.*[]);
+			SET isParserException = EXISTS (ptrException.ParserException.*[]);
+			SET isSocketTimeoutException = EXISTS (ptrException.RecoverableException.SocketTimeoutException.*[]);
+			
+			IF isRecoverableException = TRUE THEN
+				IF isUserException = TRUE THEN 
+					SET messageNumber = ptrException.RecoverableException.UserException.Number;
+					SET messageText = ptrException.RecoverableException.UserException.Insert[1].Text;					
+				ELSEIF ptrException.RecoverableException.Number > 3379 AND ptrException.RecoverableException.Number < 3386 THEN
+					SET messageNumber = ptrException.RecoverableException.Number;
+					SET messageText = ptrException.RecoverableException.Insert[4].Text;					
+				ELSEIF isSocketException = TRUE THEN
+					SET messageNumber = ptrException.RecoverableException.SocketException.Number;
+					SET messageText = ptrException.RecoverableException.SocketException.Text;										
+				ELSEIF isSocketTimeoutException = TRUE THEN
+					SET messageNumber = ptrException.RecoverableException.SocketTimeoutException.Number;
+					SET messageText = ptrException.RecoverableException.SocketTimeoutException.Text;										
+				ELSE
+					SET messageNumber = ptrException.RecoverableException.Number;
+					SET messageText = ptrException.RecoverableException.Text; 						
+				END IF;
+				
+			ELSEIF isMessageException = TRUE THEN
+				SET messageNumber = ptrException.MessageException.Number;
+				SET messageText = ptrException.MessageException.Text;
+			ELSEIF isParserException = TRUE THEN
+				SET messageNumber = ptrException.ParserException.Number;
+				SET messageText = ptrException.ParserException.Text;
+				
+			END IF;
+		MOVE ptrException LASTCHILD;
+	END WHILE;
+END;

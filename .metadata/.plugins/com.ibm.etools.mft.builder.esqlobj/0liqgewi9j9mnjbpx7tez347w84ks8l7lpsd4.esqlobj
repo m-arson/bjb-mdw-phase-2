@@ -1,0 +1,51 @@
+/*EATE FUNCTION Main() RETURNS BOOLE*/
+	BEGIN
+		-- Keep the UUID
+		SET OutputLocalEnvironment.UUID = InputLocalEnvironment.UUID;
+		
+		-- Logging input
+		CALL PrepareLogMessage(OutputRoot, ApplicationLabel, MessageFlowLabel, NodeLabel, 'input', 'debug', InputExceptionList, InputLocalEnvironment, InputRoot);
+		PROPAGATE TO TERMINAL 'out1' DELETE NONE;
+		DELETE FIELD OutputRoot.BLOB;
+		
+		IF Environment.Variables.isDown
+		THEN
+			RETURN FALSE;
+		END IF;
+		
+		SET OutputRoot.MQMD.CorrelId = CAST(Environment.Variables.details.correlId AS BLOB);
+		SET OutputRoot.MQMD.ReplyToQ = Environment.Variables.details.dbParam.DestResponseQ;
+		SET OutputRoot.MQRFH2.usr.vs.coreTimeout = Environment.Variables.details.dbParam.Timeout;
+		SET OutputRoot.MQRFH2.usr.vs.uuid = InputLocalEnvironment.UUID;
+		
+		CREATE LASTCHILD OF OutputRoot DOMAIN 'JSON';
+		IF FIELDTYPE(InputRoot.JSON.Data) IS NOT NULL
+		THEN
+			SET OutputRoot.JSON.(JSON.Object)Data = InputRoot.JSON.Data;
+		ELSE
+			SET OutputRoot.JSON.(JSON.Object)Data = Environment.Variables.details.inMessage;
+		END IF;
+		
+		SET OutputLocalEnvironment.Destination.MQDestinationList.DestinationData[1].queueName = 
+			Environment.Variables.details.dbParam.DestRequestQ;
+		
+		-- Logging output
+		CALL PrepareLogMessage(OutputRoot, ApplicationLabel, MessageFlowLabel, NodeLabel, 'output', 'debug', OutputExceptionList, OutputLocalEnvironment, OutputRoot);
+		PROPAGATE TO TERMINAL 'out1' DELETE NONE;
+		DELETE FIELD OutputRoot.BLOB;
+		
+		
+		SET OutputRoot.MQMD.Expiry = Environment.Variables.details.qExpiry;
+		SET OutputRoot.MQRFH2.usr.vs.coreTimeout = Environment.Variables.details.dbParam.Timeout;
+		SET OutputRoot.MQRFH2.usr.vs.uuid = InputLocalEnvironment.UUID;
+		CREATE LASTCHILD OF OutputRoot DOMAIN 'JSON';
+		
+		IF FIELDTYPE(InputRoot.JSON.Data) IS NOT NULL
+		THEN
+			SET OutputRoot.JSON.(JSON.Object)Data = InputRoot.JSON.Data;
+		ELSE
+			SET OutputRoot.JSON.(JSON.Object)Data = Environment.Variables.details.inMessage;
+		END IF;
+		
+		RETURN TRUE;
+	END;

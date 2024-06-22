@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ecore:EPackage xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:ComIbmCompute.msgnode="ComIbmCompute.msgnode" xmlns:ComIbmMQGet.msgnode="ComIbmMQGet.msgnode" xmlns:ComIbmMQInput.msgnode="ComIbmMQInput.msgnode" xmlns:ComIbmMQOutput.msgnode="ComIbmMQOutput.msgnode" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" xmlns:eflow="http://www.ibm.com/wbi/2005/eflow" xmlns:utility="http://www.ibm.com/wbi/2005/eflow_utility" nsURI="MF_TX_JSON_INQ_PKC.msgflow" nsPrefix="MF_TX_JSON_INQ_PKC.msgflow">
+  <eClassifiers xmi:type="eflow:FCMComposite" name="FCMComposite_1" nodeLayoutStyle="SQUARE">
+    <eSuperTypes href="http://www.ibm.com/wbi/2005/eflow#//FCMBlock"/>
+    <eStructuralFeatures xmi:type="ecore:EAttribute" xmi:id="Property.PEM_ID" name="PEM_ID" lowerBound="1" defaultValueLiteral="PKC">
+      <eType xmi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    </eStructuralFeatures>
+    <eStructuralFeatures xmi:type="ecore:EAttribute" xmi:id="Property.MESSAGE_FORMAT" name="MESSAGE_FORMAT" lowerBound="1" defaultValueLiteral="JSON">
+      <eType xmi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    </eStructuralFeatures>
+    <eStructuralFeatures xmi:type="ecore:EAttribute" xmi:id="Property.TIMEOUT_SERVICE" name="TIMEOUT_SERVICE" lowerBound="1" defaultValueLiteral="30">
+      <eType xmi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EInt"/>
+    </eStructuralFeatures>
+    <eStructuralFeatures xmi:type="ecore:EAttribute" xmi:id="Property.Q_EXPIRY" name="Q_EXPIRY" lowerBound="1" defaultValueLiteral="864000">
+      <eType xmi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EInt"/>
+    </eStructuralFeatures>
+    <eStructuralFeatures xmi:type="ecore:EAttribute" xmi:id="Property.DB_SCHEMA" name="DB_SCHEMA" lowerBound="1" defaultValueLiteral="MDWSCHEMA">
+      <eType xmi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    </eStructuralFeatures>
+    <eStructuralFeatures xmi:type="ecore:EAttribute" xmi:id="Property.SVR_TYPE" name="SVR_TYPE" lowerBound="1" defaultValueLiteral="INQ">
+      <eType xmi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    </eStructuralFeatures>
+    <eStructuralFeatures xmi:type="ecore:EAttribute" xmi:id="Property.SOURCE_SYSTEM" name="SOURCE_SYSTEM" lowerBound="1" defaultValueLiteral="REST_PEMDA">
+      <eType xmi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    </eStructuralFeatures>
+    <eStructuralFeatures xmi:type="ecore:EAttribute" xmi:id="Property.TARGET_SYSTEM" name="TARGET_SYSTEM" lowerBound="1" defaultValueLiteral="PKC">
+      <eType xmi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    </eStructuralFeatures>
+    <translation xmi:type="utility:TranslatableString" key="MF_TX_JSON_INQ_PKC" bundleName="MF_TX_JSON_INQ_PKC" pluginId="BJB_MDW_SERVICE_SAMSAT"/>
+    <colorGraphic16 xmi:type="utility:GIFFileGraphic" resourceName="platform:/plugin/BJB_MDW_SERVICE_SAMSAT/icons/full/obj16/MF_TX_JSON_INQ_PKC.gif"/>
+    <colorGraphic32 xmi:type="utility:GIFFileGraphic" resourceName="platform:/plugin/BJB_MDW_SERVICE_SAMSAT/icons/full/obj30/MF_TX_JSON_INQ_PKC.gif"/>
+    <composition>
+      <nodes xmi:type="ComIbmMQOutput.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_1" location="433,-21" queueName="ADAPTER_REQ_Q" destinationMode="list" policyUrl="{COMMON_POLICY}:QM_BILLERSERVICE">
+        <translation xmi:type="utility:ConstantString" string="Adapter Req Q"/>
+      </nodes>
+      <nodes xmi:type="ComIbmMQGet.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_2" location="596,-16" queueName="ADAPTER_RES_Q" messageDomainProperty="XMLNSC" getWithCorrelID="true" policyUrl="{COMMON_POLICY}:QM_BILLERSERVICE">
+        <translation xmi:type="utility:ConstantString" string="Adapter Res Q"/>
+      </nodes>
+      <nodes xmi:type="ComIbmMQOutput.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_3" location="981,64" queueName="LOGGING.QL" policyUrl="{COMMON_POLICY}:QM_GENERAL">
+        <translation xmi:type="utility:ConstantString" string="LOGGING"/>
+      </nodes>
+      <nodes xmi:type="ComIbmMQInput.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_5" location="144,61" queueName="INQ_PKC_JSON_REQ.QL" messageDomainProperty="JSON">
+        <translation xmi:type="utility:ConstantString" string="Inq PKC Req"/>
+      </nodes>
+      <nodes xmi:type="ComIbmMQOutput.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_6" location="981,-20" queueName="PKC_RES" destinationMode="list" policyUrl="{COMMON_POLICY}:QM_CHANNELSERVICE">
+        <translation xmi:type="utility:ConstantString" string="Inq PKC Res"/>
+      </nodes>
+      <nodes xmi:type="ComIbmCompute.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_7" location="689,-20" computeExpression="esql://routine/#MF_TX_JSON_INQ_PKC_GetRes_from_Adapter_and_MapMessage.Main" computeMode="destinationAndMessage">
+        <translation xmi:type="utility:ConstantString" string="GetRes from Adapter and MapMessage"/>
+      </nodes>
+      <nodes xmi:type="ComIbmCompute.msgnode:FCMComposite_1" xmi:id="FCMComposite_1_8" location="236,62" dataSource="BJBDB" computeExpression="esql://routine/#MF_TX_JSON_INQ_PKC_MapMessage_and_SendTo_Adapter.Main" computeMode="destinationAndMessage">
+        <translation xmi:type="utility:ConstantString" string="MapMessage and SendTo Adapter"/>
+      </nodes>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_3" targetNode="FCMComposite_1_6" sourceNode="FCMComposite_1_7" sourceTerminalName="OutTerminal.out" targetTerminalName="InTerminal.in"/>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_5" targetNode="FCMComposite_1_3" sourceNode="FCMComposite_1_8" sourceTerminalName="OutTerminal.out1" targetTerminalName="InTerminal.in"/>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_7" targetNode="FCMComposite_1_1" sourceNode="FCMComposite_1_8" sourceTerminalName="OutTerminal.out" targetTerminalName="InTerminal.in"/>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_8" targetNode="FCMComposite_1_8" sourceNode="FCMComposite_1_5" sourceTerminalName="OutTerminal.out" targetTerminalName="InTerminal.in"/>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_9" targetNode="FCMComposite_1_3" sourceNode="FCMComposite_1_7" sourceTerminalName="OutTerminal.out1" targetTerminalName="InTerminal.in"/>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_10" targetNode="FCMComposite_1_7" sourceNode="FCMComposite_1_2" sourceTerminalName="OutTerminal.out" targetTerminalName="InTerminal.in"/>
+      <connections xmi:type="eflow:FCMConnection" xmi:id="FCMConnection_1" targetNode="FCMComposite_1_2" sourceNode="FCMComposite_1_8" sourceTerminalName="OutTerminal.out4" targetTerminalName="InTerminal.in"/>
+    </composition>
+    <propertyOrganizer>
+      <propertyDescriptor groupName="Group.Basic" configurable="true" userDefined="true" describedAttribute="Property.PEM_ID">
+        <propertyName xmi:type="utility:TranslatableString" key="Property.PEM_ID" bundleName="MF_TX_JSON_INQ_PKC" pluginId="BJB_MDW_SERVICE_SAMSAT"/>
+        <propertyDescriptor groupName="Group.Basic" configurable="true" userDefined="true" describedAttribute="Property.MESSAGE_FORMAT">
+          <propertyName xmi:type="utility:TranslatableString" key="Property.MESSAGE_FORMAT" bundleName="MF_TX_JSON_INQ_PKC" pluginId="BJB_MDW_SERVICE_SAMSAT"/>
+          <propertyDescriptor groupName="Group.Basic" configurable="true" userDefined="true" describedAttribute="Property.TIMEOUT_SERVICE">
+            <propertyName xmi:type="utility:TranslatableString" key="Property.TIMEOUT_SERVICE" bundleName="MF_TX_JSON_INQ_PKC" pluginId="BJB_MDW_SERVICE_SAMSAT"/>
+            <propertyDescriptor groupName="Group.Basic" configurable="true" userDefined="true" describedAttribute="Property.Q_EXPIRY">
+              <propertyName xmi:type="utility:TranslatableString" key="Property.Q_EXPIRY" bundleName="MF_TX_JSON_INQ_PKC" pluginId="BJB_MDW_SERVICE_SAMSAT"/>
+              <propertyDescriptor groupName="Group.Basic" configurable="true" userDefined="true" describedAttribute="Property.DB_SCHEMA">
+                <propertyName xmi:type="utility:TranslatableString" key="Property.DB_SCHEMA" bundleName="MF_TX_JSON_INQ_PKC" pluginId="BJB_MDW_SERVICE_SAMSAT"/>
+                <propertyDescriptor groupName="Group.Basic" configurable="true" userDefined="true" describedAttribute="Property.SVR_TYPE">
+                  <propertyName xmi:type="utility:TranslatableString" key="Property.SVR_TYPE" bundleName="MF_TX_JSON_INQ_PKC" pluginId="BJB_MDW_SERVICE_SAMSAT"/>
+                  <propertyDescriptor groupName="Group.Basic" configurable="true" userDefined="true" describedAttribute="Property.SOURCE_SYSTEM">
+                    <propertyName xmi:type="utility:TranslatableString" key="Property.SOURCE_SYSTEM" bundleName="MF_TX_JSON_INQ_PKC" pluginId="BJB_MDW_SERVICE_SAMSAT"/>
+                    <propertyDescriptor groupName="Group.Basic" configurable="true" userDefined="true" describedAttribute="Property.TARGET_SYSTEM">
+                      <propertyName xmi:type="utility:TranslatableString" key="Property.TARGET_SYSTEM" bundleName="MF_TX_JSON_INQ_PKC" pluginId="BJB_MDW_SERVICE_SAMSAT"/>
+                    </propertyDescriptor>
+                  </propertyDescriptor>
+                </propertyDescriptor>
+              </propertyDescriptor>
+            </propertyDescriptor>
+          </propertyDescriptor>
+        </propertyDescriptor>
+      </propertyDescriptor>
+    </propertyOrganizer>
+    <stickyBoard/>
+  </eClassifiers>
+</ecore:EPackage>

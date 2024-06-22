@@ -1,0 +1,33 @@
+CREATE COMPUTE MODULE MF_TX_JSON_PAY_PKB_Validate_Resp
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		-- Keep the UUID
+		SET OutputLocalEnvironment.UUID = InputLocalEnvironment.UUID;
+		
+		DECLARE iRef REFERENCE TO InputRoot.JSON.Data;
+		SET OutputRoot.MQMD.CorrelId = CAST(Environment.Variables.details.correlId AS BLOB);
+		SET OutputRoot.MQMD.Expiry = Q_EXPIRY;
+		
+		IF iRef.RESPONSE_CODE = '0000' THEN
+			
+		ELSE
+			
+		END IF;
+		
+		CREATE LASTCHILD OF OutputRoot DOMAIN 'JSON';
+		CREATE FIELD OutputRoot.JSON.Data IDENTITY (JSON.Object)Data;
+		DECLARE oRef REFERENCE TO OutputRoot.JSON.Data;
+		
+		SET oRef = Environment.Variables.inMessage;
+		SET oRef.RESPONSE_TIME = CAST(CURRENT_TIMESTAMP AS CHARACTER FORMAT 'yyyyMMddHHmmss');
+		SET oRef.RESPONSE_CODE = iRef.RESPONSE_CODE;
+		SET oRef.RESPONSE_MESSAGE = iRef.RESPONSE_MESSAGE;
+		
+		DECLARE txQueueRes CHARACTER;
+		SET txQueueRes = SUBSTRING(Environment.Variables.details.dbParam.TxQueue AFTER '|');
+		SET OutputLocalEnvironment.Destination.MQ.DestinationData[1].queueName = txQueueRes;
+		
+		PROPAGATE TO TERMINAL 'out2';
+		RETURN FALSE;
+	END;
+END MODULE;

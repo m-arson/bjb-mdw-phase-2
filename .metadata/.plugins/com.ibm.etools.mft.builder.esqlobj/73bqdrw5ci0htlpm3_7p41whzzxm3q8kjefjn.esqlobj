@@ -1,0 +1,9 @@
+/*EATE FUNCTION Main() RETURNS BOOLE*/
+	BEGIN
+		
+		SET SESSION.Data[] = NULL;
+		
+		SET OutputRoot.JSON.Data = SESSION.Data;
+		
+		RETURN TRUE;
+	END;

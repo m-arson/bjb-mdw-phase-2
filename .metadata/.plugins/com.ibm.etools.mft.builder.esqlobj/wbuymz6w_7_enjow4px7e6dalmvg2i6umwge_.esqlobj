@@ -1,0 +1,24 @@
+CREATE PROCEDURE GetErrorDetailsByF039(IN Source REFERENCE, IN Dest REFERENCE, IN F039 CHARACTER, IN sourceSystem CHARACTER, IN targetSystem CHARACTER)
+BEGIN
+	SET Dest.Field = THE(
+		SELECT
+			I.MESSAGE_ID,
+			I.COND1,
+			I.COND2,
+			I.COND3,
+			I.F039,
+			I.RC,
+			I.HTTP_STATUS,
+			I.RC_GROUP,
+			I.MESSAGE,
+			I.Desc,
+			I.SourceSystem,
+			I.TargetSystem,
+			I.SourceMessage,
+			I.DestMessage
+		FROM Source.Field[] AS I
+		WHERE
+			I.F039 = F039 AND
+			I.SourceSystem = sourceSystem
+			AND I.TargetSystem = targetSystem);	
+END;

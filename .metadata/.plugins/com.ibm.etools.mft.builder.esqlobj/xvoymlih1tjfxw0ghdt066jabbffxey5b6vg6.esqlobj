@@ -1,0 +1,195 @@
+/*EATE FUNCTION Main() RETURNS BOOLE*/
+	BEGIN
+		
+		SET Environment.Variables.CorrelId = InputRoot.MQMD.CorrelId;
+		SET Environment.Variables.Timeout = CAST(InputRoot.MQRFH2.usr.vs.coreTimeout AS INT) * 1000;
+		SET Environment.Variables.Uuid = InputRoot.MQRFH2.usr.vs.uuid;
+		SET Environment.Variables.ReplyToQ = InputRoot.MQMD.ReplyToQ;
+		
+		SET InputLocalEnvironment.UUID = Environment.Variables.Uuid;
+		SET OutputLocalEnvironment.UUID = Environment.Variables.Uuid;
+		
+		IF InputLocalEnvironment.Variables.type = 'ECHO' THEN
+			SET Environment.Variables.type = 'ECHO';
+		END IF;
+		
+		CALL PrepareLogMessage(OutputRoot, ApplicationLabel, MessageFlowLabel, NodeLabel, 'input', 'info', InputExceptionList, InputLocalEnvironment, InputRoot);
+		PROPAGATE TO TERMINAL 'out1' DELETE NONE;
+		DELETE FIELD OutputRoot.BLOB;
+		
+	
+		-- <Build ISO Message From DFDL>
+		CREATE FIRSTCHILD OF InputRoot.XMLNSC.isomsg NAME 'Length' VALUE '9999';
+		
+		SET OutputRoot.Properties.MessageType = '{}:isomsg';
+		CREATE LASTCHILD OF OutputRoot DOMAIN('DFDL');
+		DECLARE InRef REFERENCE TO InputRoot.XMLNSC;
+
+		SET OutputRoot.DFDL = InRef;
+		CREATE NEXTSIBLING OF OutputRoot.DFDL.isomsg.MTI NAME 'PrimaryBitmap';
+		DECLARE DFDLPointer REFERENCE TO OutputRoot.DFDL.isomsg.PrimaryBitmap;
+		
+		-- <Populate Primary Bitmap ISO>
+		CALL PopulatePrimaryBitmap(DFDLPointer);
+		-- </Populate Primary Bitmap ISO>
+
+		DECLARE SecondaryBitmap BOOLEAN FALSE;
+		IF CAST(SUBSTRING(FIELDNAME(OutputRoot.DFDL.isomsg.*[<]) AFTER 'd') AS INT) > 64 THEN
+			SET SecondaryBitmap = TRUE;
+		END IF;
+		
+		-- <Check There is SecondaryBitmap>
+		IF SecondaryBitmap THEN
+			-- This means a SecondaryBitmap will be required
+			CREATE NEXTSIBLING OF OutputRoot.DFDL.isomsg.PrimaryBitmap NAME 'SecondaryBitmap';
+			MOVE DFDLPointer TO OutputRoot.DFDL.isomsg.SecondaryBitmap;
+			CALL PopulateSecondaryBitmap(DFDLPointer);
+
+			SET OutputRoot.DFDL.isomsg.PrimaryBitmap.Bits001to004 = '8';
+		ELSE
+			MOVE DFDLPointer TO OutputRoot.DFDL.isomsg.PrimaryBitmap;
+			-- SecondaryBitmap is not present. Logical Bit001 will already be initialised to 0.
+		END IF;
+		-- </Check There is SecondaryBitmap>
+
+		CALL UpdateBitmapsBasedOnAvailableFields(DFDLPointer);
+		-- Serialize DFDL to BLOB
+		SET OutputRoot.BLOB.BLOB = ASBITSTREAM(OutputRoot.DFDL CCSID 1208 SET '{MDW_ACE_SLIB}' TYPE '{}:isomsg' OPTIONS RootBitStream);
+		DELETE FIELD OutputRoot.DFDL;
+		-- ISONL = ISO WITH DEFAULT LENGTH
+		DECLARE ISONL CHARACTER CAST(OutputRoot.BLOB.BLOB AS CHARACTER CCSID 1208 Encoding 815);
+
+		DECLARE ISO CHARACTER;
+		CALL GenerateISOLength(ISONL , ISO);
+		-- </Build ISO Message From DFDL>
+		
+		DELETE FIELD OutputRoot.BLOB;
+		
+		-- <Send ISO To VLINK>
+		SET OutputRoot.BLOB.BLOB = CAST(ISO AS BLOB CCSID 1208);
+		
+		CALL PrepareLogMessage(OutputRoot, ApplicationLabel, MessageFlowLabel, NodeLabel, 'output', 'info', OutputExceptionList, OutputLocalEnvironment, OutputRoot);
+		PROPAGATE TO TERMINAL 'out1' DELETE NONE;
+		DELETE FIELD OutputRoot.BLOB;
+		
+		-- <Send ISO To VLINK>
+		SET OutputRoot.BLOB.BLOB = CAST(ISO AS BLOB CCSID 1208);
+		
+		SET OutputLocalEnvironment.Destination.TCPIP.Output.ReplyId = CAST(InputRoot.MQMD.CorrelId AS CHARACTER) || '|' || Environment.Variables.Uuid;
+		
+		RETURN TRUE;
+		-- </Send ISO To VLINK>
+	END;
+
+	CREATE PROCEDURE GenerateThreeDigitIndex(IN IndexInt INTEGER, OUT IndexChar CHAR)
+	BEGIN
+		SET IndexChar =
+		CASE
+		WHEN IndexInt < 10 THEN ('00' || CAST(IndexInt AS CHAR))
+		WHEN IndexInt < 100 THEN ('0' || CAST(IndexInt AS CHAR))
+		ELSE CAST(IndexInt AS CHAR)
+		END;
+	END;
+
+	CREATE PROCEDURE RemoveUnrequiredXMLAttributes(INOUT InRef REFERENCE)
+	BEGIN
+		SET InRef.XMLNSC.*:XmlDeclaration = NULL;
+		DECLARE NumberRootAttributes INTEGER CARDINALITY(InRef.XMLNSC.isomsg.(XMLNSC.Attribute)*[]);
+		DECLARE I1 INTEGER 1;
+		WHILE I1 <= NumberRootAttributes DO
+			SET InRef.XMLNSC.isomsg.(XMLNSC.Attribute)*[1] = NULL;
+			SET I1 = I1 + 1;
+		END WHILE;
+	END;
+
+	CREATE PROCEDURE PopulatePrimaryBitmap(INOUT DFDLPointer REFERENCE)
+	BEGIN
+		DECLARE I2 INTEGER 1;
+		DECLARE IndexChar1 CHAR;
+		DECLARE IndexChar2 CHAR;
+		-- Create unpacked PrimaryBitmap structure, with all bits set to 0
+		WHILE I2 < 65 DO
+			CALL GenerateThreeDigitIndex(I2, IndexChar1);
+			CALL GenerateThreeDigitIndex(I2+3, IndexChar2);
+			CREATE LASTCHILD OF DFDLPointer NAME ('Bits' || IndexChar1 || 'to' || IndexChar2) VALUE '0';
+			SET I2 = I2 + 4;
+		END WHILE;
+	END;
+
+	CREATE PROCEDURE PopulateSecondaryBitmap(INOUT DFDLPointer REFERENCE)
+	BEGIN
+		DECLARE J INTEGER 65;
+		DECLARE IndexChar1 CHAR;
+		DECLARE IndexChar2 CHAR;
+		WHILE J < 129 DO
+			-- Create unpacked SecondaryBitmap structure, with all bits set to 0
+			CALL GenerateThreeDigitIndex(J, IndexChar1);
+			CALL GenerateThreeDigitIndex(J+3, IndexChar2);
+			CREATE LASTCHILD OF DFDLPointer NAME ('Bits' || IndexChar1 || 'to' || IndexChar2) VALUE '0';
+			SET J = J + 4;
+		END WHILE;
+	END;
+
+	CREATE PROCEDURE UpdateBitmapsBasedOnAvailableFields(INOUT DFDLPointer REFERENCE)
+	BEGIN
+		-- Loop over the data fields which are present to update the Bitmaps ...
+		DECLARE BitName CHAR;
+		DECLARE BitMapName CHAR 'PrimaryBitmap';
+		DECLARE CurrentFieldName CHAR;
+		DECLARE CurrentFieldNumber INT;
+		DECLARE CurrentFieldBase INT;
+		DECLARE IndexChar1 CHAR;
+		DECLARE IndexChar2 CHAR;
+		DECLARE Value INT;
+		DECLARE CharValue CHAR;
+
+		MOVE DFDLPointer NEXTSIBLING;
+		WHILE LASTMOVE(DFDLPointer) DO
+			-- Get field name (eg PrimaryAccountNumber_002)
+			SET CurrentFieldName = FIELDNAME(DFDLPointer);
+			-- Get the numeric part (eg 002)
+			SET CurrentFieldNumber = CAST(SUBSTRING(CurrentFieldName AFTER 'd') AS INT);
+			-- Work out which BitsXXXtoYYY field contains the bit for the field
+			-- (eg the bit for _002 is in Bits001to004)
+			SET CurrentFieldBase = FLOOR((CurrentFieldNumber - 1) / 4) * 4 + 1;
+			-- Calculate the value to represent the bit as set - 8, 4, 2 or 1
+			-- (eg, _002 is 2nd bit in Bits001to004 so has value 4)
+			SET Value = CAST(POWER(2, 3 - MOD(CurrentFieldNumber - 1, 4)) AS INT);
+			-- Compute the correct BitsXXXtoYYY name
+			CALL GenerateThreeDigitIndex(CurrentFieldBase, IndexChar1);
+			CALL GenerateThreeDigitIndex(CurrentFieldBase + 3, IndexChar2);
+			SET BitName = 'Bits' || IndexChar1 || 'to' || IndexChar2;
+			IF CurrentFieldNumber > 64 THEN
+				SET BitMapName = 'SecondaryBitmap';
+			END IF;
+			-- Add the bit value to the existing value
+			SET CharValue = OutputRoot.DFDL.isomsg.{BitMapName}.{BitName};
+			SET CharValue = '000000000000000' || CharValue; -- Make 16 long for CAST to INT
+			SET Value = CAST(CAST(CharValue AS BLOB) AS INT) + Value;
+			SET CharValue = CAST(CAST(Value AS BLOB) AS CHAR);
+			SET CharValue = UPPER(SUBSTRING(CharValue FROM 18 FOR 1)); -- Extract n from X'000000000000000n'
+			SET OutputRoot.DFDL.isomsg.{BitMapName}.{BitName} = CharValue;
+
+			MOVE DFDLPointer NEXTSIBLING;
+		END WHILE;
+	END;
+
+	CREATE PROCEDURE GenerateISOLength (IN ISONL CHARACTER, INOUT ISO CHARACTER)
+	BEGIN
+		-- ISO = DELETE DEFAULT LENGTH BLOB
+		SET ISO = SUBSTRING (ISONL AFTER '9999');
+		-- LISO = REAL LENGTH OF ISO
+		DECLARE LISO INTEGER LENGTH(ISO);
+
+		IF LISO < 10 THEN
+			SET ISO = '000' || CAST(LISO AS CHARACTER) || ISO;
+		ELSEIF LISO < 100 THEN
+			SET ISO = '00' || CAST(LISO AS CHARACTER) || ISO;
+		ELSEIF LISO < 1000 THEN
+			SET ISO = '0' || CAST(LISO AS CHARACTER) || ISO;
+		ELSE
+			SET ISO = CAST(LISO AS CHARACTER) || ISO;
+		END IF;
+
+	END;
+

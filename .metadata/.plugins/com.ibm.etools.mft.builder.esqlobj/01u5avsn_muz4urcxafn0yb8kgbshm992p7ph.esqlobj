@@ -1,0 +1,65 @@
+CREATE PROCEDURE FormatLogs(
+	IN level CHARACTER, IN type_ CHARACTER, IN appLabel CHARACTER, IN msgFlowLabel CHARACTER, IN nodeLabel CHARACTER,
+	IN exceptList REFERENCE, IN localEnv REFERENCE, IN rootMsg REFERENCE, IN ts CHARACTER, IN buffer REFERENCE)
+BEGIN
+	
+	IF HOSTNAME = '' THEN
+		X: BEGIN ATOMIC READ WRITE
+			SET HOSTNAME = GetHostName();
+		END X;
+	END IF;
+	
+	IF FIELDNAME(buffer.Variables) IS NULL
+	THEN
+		CREATE FIELD buffer.Variables;
+	END IF;
+	
+	IF FIELDNAME(buffer.Variables.Log) IS NOT NULL
+	THEN
+		DELETE FIELD buffer.Variables.Log;
+	END IF;
+	
+	CREATE FIELD buffer.Variables.Log;
+	CREATE LASTCHILD OF buffer.Variables.Log DOMAIN 'JSON';
+	CREATE FIELD buffer.Variables.Log.JSON.Data IDENTITY (JSON.Object)Data;
+	DECLARE outMsg REFERENCE TO buffer.Variables.Log.JSON.Data;
+	
+	SET outMsg."@timestamp" = ts;
+	SET outMsg."@version" = '1';
+	SET outMsg.message = LOWER(type_);
+	SET outMsg.logger_name = 'bjb.' || LOWER(appLabel) || '.' || LOWER(msgFlowLabel) || '.' || LOWER(nodeLabel);
+	SET outMsg.thread_name = THREAD;
+	SET outMsg.level = level;
+	
+	CASE LOWER(level)	
+		WHEN DEBUG_LABEL THEN
+			SET outMsg.level_value = DEBUG_LEVEL;
+		WHEN INFO_LABEL THEN
+			SET outMsg.level_value = INFO_LEVEL;
+		WHEN ERROR_LABEL THEN
+			SET outMsg.level_value = ERROR_LEVEL;
+	END CASE;
+	
+	SET outMsg.HOSTNAME = HOSTNAME;
+	SET outMsg.logType = UPPER(type_);
+	
+	IF level = INFO_LABEL THEN
+		IF LOWER(type_) = TYPE_IN THEN
+			SET outMsg.node = UPPER(appLabel) || '.' || UPPER(msgFlowLabel) || '.' || UPPER(nodeLabel) || '.Input';
+		ELSEIF LOWER(type_) = TYPE_OUT THEN
+			SET outMsg.node = UPPER(appLabel) || '.' || UPPER(msgFlowLabel) || '.' || UPPER(nodeLabel) || '.Output';
+		END IF;
+	ELSE
+		SET outMsg.node = UPPER(appLabel) || '.' || UPPER(msgFlowLabel) || '.' || UPPER(nodeLabel);
+	END IF;
+	
+	CREATE FIELD outMsg.data.Root;
+	DECLARE rootMsgRef REFERENCE TO outMsg.data.Root;
+	
+	IF LOWER(type_) = TYPE_EXCEPTION THEN
+		SET rootMsgRef.ExceptionList = exceptList;
+	END IF;
+	
+	SET rootMsgRef.LocalEnvironment = localEnv;
+	SET rootMsgRef.Root = rootMsg;
+END;

@@ -1,0 +1,29 @@
+/*EATE FUNCTION Main() RETURNS BOOLE*/
+	BEGIN
+		
+		-- Keep the UUID
+		SET OutputLocalEnvironment.UUID = InputLocalEnvironment.UUID;
+		
+		-- Logging Input
+		CALL PrepareLogMessage(OutputRoot, ApplicationLabel, MessageFlowLabel, NodeLabel, 'input', 'debug', InputExceptionList, InputLocalEnvironment, InputRoot);
+		PROPAGATE TO LABEL 'LOGGING' DELETE NONE;
+		DELETE FIELD OutputRoot.BLOB;
+		
+		SET OutputRoot.MQMD.CorrelId = Environment.Variables.details.correlId;
+		SET OutputRoot.JSON.Data = Environment.Variables.details.inMessage;
+		
+		-- Logging Output
+		CALL PrepareLogMessage(OutputRoot, ApplicationLabel, MessageFlowLabel, NodeLabel, 'output', 'debug', OutputExceptionList, OutputLocalEnvironment, OutputRoot);
+		PROPAGATE TO LABEL 'LOGGING' DELETE NONE;
+		DELETE FIELD OutputRoot.BLOB;
+		
+		SET OutputRoot.MQRFH2.usr.vs.details = Environment.Variables.details;
+		SET OutputRoot.MQMD.Expiry = Q_EXPIRY;
+		SET OutputRoot.MQRFH2.usr.vs.details.uuid = Environment.Variables.details.uuid;
+		SET OutputRoot.JSON.Data = Environment.Variables.details.inMessage;
+		
+		SET OutputLocalEnvironment.Destination.MQDestinationList.DestinationData[1].queueName =
+			Environment.Variables.details.dbParam.TxQueueReq;
+			
+		RETURN TRUE;
+	END;

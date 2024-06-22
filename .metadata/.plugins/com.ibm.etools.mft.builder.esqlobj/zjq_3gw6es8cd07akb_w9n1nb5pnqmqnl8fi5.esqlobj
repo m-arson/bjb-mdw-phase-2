@@ -1,0 +1,45 @@
+CREATE COMPUTE MODULE MF_MAIN_Compute
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		
+		DECLARE inVal ROW;
+		CALL CheckSessionAvailability(InputRoot.JSON.Data.IP, SESSION, inVal);
+		
+		IF inVal.Status THEN
+			X: BEGIN ATOMIC READ WRITE
+				
+			END X;
+		END IF;
+		RETURN TRUE;
+	END;
+	
+	CREATE FUNCTION GetSessionLength (IN S REFERENCE) RETURNS INTEGER
+	BEGIN
+		IF S = NULL THEN
+			RETURN 0;
+		ELSE
+			DECLARE L INTEGER;
+			SET L = CARDINALITY(S.Data[]);
+			RETURN L;	
+		END IF;
+	END;
+	
+	CREATE PROCEDURE CheckSessionAvailability(IN IP CHARACTER, IN S REFERENCE, IN T REFERENCE)
+	BEGIN
+		DECLARE I, L INTEGER;
+		SET I = 1;
+		SET L = GetSessionLength(S);
+		
+		IF L <> 0 THEN
+			WHILE I < L DO
+				IF S.Data[I].IP = IP THEN
+					SET T.Status = TRUE;
+					SET T.Index = I;
+				END IF;
+				SET I = I + 1;
+			END WHILE;
+		END IF;
+		SET T.Status = FALSE;
+	END;
+	
+END MODULE;

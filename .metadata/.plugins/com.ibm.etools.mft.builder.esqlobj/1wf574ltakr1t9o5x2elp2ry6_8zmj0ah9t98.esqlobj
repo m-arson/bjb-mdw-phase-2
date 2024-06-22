@@ -1,0 +1,12 @@
+CREATE COMPUTE MODULE MF_TX_JSON_PAY_PKB_Posting_Log
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		DECLARE oriMsgRef REFERENCE TO Environment.Variables.inMessage;
+		DECLARE iRef REFERENCE TO InputRoot.JSON.Data;
+		
+		CALL GeneratePostingMessage(oriMsgRef, iRef, OutputRoot);
+		
+		RETURN TRUE;
+	END;
+	
+	CREATE PROCEDURE GeneratePostingMessage(IN oriMsgRef REFERENCE, IN iRef REFERENCE, IN oRoot REFERENCE)

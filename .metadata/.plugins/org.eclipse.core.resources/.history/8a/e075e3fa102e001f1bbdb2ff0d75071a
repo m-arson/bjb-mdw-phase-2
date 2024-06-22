@@ -1,0 +1,47 @@
+
+PATH id.co.bankbjb.mdw.lib;
+
+CREATE COMPUTE MODULE MF_TCP_PKB_ADAPTER_Cannot_Put_Hadling
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		
+		-- Keep the UUID
+		SET InputLocalEnvironment.UUID = Environment.Variables.Uuid;
+		SET OutputLocalEnvironment.UUID = InputLocalEnvironment.UUID;
+		
+		-- Logging Input
+		CALL PrepareLogMessage(OutputRoot, ApplicationLabel, MessageFlowLabel, NodeLabel, 'input', 'debug', InputExceptionList, InputLocalEnvironment, InputRoot);
+		PROPAGATE TO LABEL 'LOGGING' DELETE NONE;
+		DELETE FIELD OutputRoot.BLOB;
+		
+		-- Set Correl ID & Reply Q
+		SET OutputRoot.MQMD.CorrelId = Environment.Variables.CorrelId;
+		SET OutputRoot.MQMD.ReplyToQ = Environment.Variables.ReplyToQ;
+		
+		-- Build Output Message
+		CREATE LASTCHILD OF OutputRoot DOMAIN 'XMLNSC';
+		SET OutputRoot.XMLNSC = Environment.Variables.inMessage;
+		SET OutputRoot.XMLNSC.isomsg.Field039 = '91';
+		
+		-- Keep Output Message
+		DECLARE outData ROW;
+		CREATE LASTCHILD OF outData DOMAIN 'XMLNSC';
+		SET outData.XMLNSC = OutputRoot.XMLNSC;
+		
+		
+		-- Set Queue Destination
+		SET OutputLocalEnvironment.Destination.MQDestinationList.DestinationData[1].queueName = Environment.Variables.ReplyToQ;
+		
+		-- Logging Output
+		CALL PrepareLogMessage(OutputRoot, ApplicationLabel, MessageFlowLabel, NodeLabel, 'output', 'info', OutputExceptionList, OutputLocalEnvironment, OutputRoot);
+		PROPAGATE TO LABEL 'LOGGING' DELETE NONE;
+		DELETE FIELD OutputRoot.BLOB;
+		
+		-- Reassign Output Message
+		SET OutputRoot.MQMD.Expiry = Q_EXPIRY;
+		CREATE LASTCHILD OF OutputRoot DOMAIN 'XMLNSC';
+		SET OutputRoot.XMLNSC = outData.XMLNSC;
+		
+		RETURN TRUE;
+	END;
+END MODULE;

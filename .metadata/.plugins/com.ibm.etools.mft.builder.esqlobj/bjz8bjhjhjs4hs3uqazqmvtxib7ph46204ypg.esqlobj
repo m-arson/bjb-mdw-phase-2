@@ -1,0 +1,16 @@
+/*EATE FUNCTION Main() RETURNS BOOLE*/
+	BEGIN
+		
+		-- Keep the UUID
+	
+		
+		IF Environment.Variables.type = 'ECHO' THEN
+			RETURN FALSE;
+		END IF;
+		
+		SET OutputRoot.MQMD.CorrelId = Environment.Variables.correlId;
+		SET OutputLocalEnvironment.MQ.GET.QueueName = 'PKB_JABAR_TMP.QL';
+		SET OutputLocalEnvironment.MQ.GET.MQGMO.WaitInterval = Environment.Variables.timeout;
+		
+		RETURN TRUE;
+	END;

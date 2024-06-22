@@ -1,0 +1,16 @@
+
+PATH id.co.bankbjb.mdw.lib;
+
+CREATE COMPUTE MODULE SF_LOGGING_Log_to_File
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		CREATE FIELD Environment.inData;
+		CREATE LASTCHILD OF Environment.inData DOMAIN('JSON') PARSE(InputRoot.BLOB.BLOB);
+		DECLARE inRef REFERENCE TO Environment.inData.JSON.Data;
+		
+		CALL FormatLogs(inRef.level, inRef.type, inRef.appName, inRef.mfLabel, inRef.nodeLabel, inRef.ExceptionList, inRef.LocalEnvironment, inRef.Root, inRef.Timestamp, Environment);
+		CALL LogToFile(Environment.Variables.Log.JSON.Data, inRef.appName, inRef.level);
+		
+		RETURN TRUE;
+	END;
+END MODULE;

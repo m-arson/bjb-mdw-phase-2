@@ -1,0 +1,21 @@
+
+
+CREATE COMPUTE MODULE MF_TX_JSON_PAY_PKB_Validate_Resp_and_SendTo_Adapter
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		
+		-- Keep the UUID
+		SET OutputLocalEnvironment.UUID = InputLocalEnvironment.UUID;
+		
+		DECLARE iRef REFERENCE TO InputRoot.JSON.Data;
+		
+		CREATE LASTCHILD OF OutputRoot DOMAIN 'XMLNSC';
+		CREATE FIELD OutputRoot.XMLNSC.isomsg;
+		DECLARE oRef REFERENCE TO OutputRoot.XMLNSC.isomsh;
+		
+		SET oRef.MTI = '0200';
+		SET oRef.
+		
+		RETURN TRUE;
+	END;
+END MODULE;

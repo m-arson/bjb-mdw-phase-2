@@ -1,0 +1,6 @@
+/*EATE FUNCTION Main() RETURNS BOOLE*/
+	BEGIN
+		-- Logging Exception
+		CALL logToFile(CAST(InputRoot.BLOB.BLOB AS CHARACTER CCSID 1208), ApplicationLabel);
+		RETURN TRUE;
+	END;

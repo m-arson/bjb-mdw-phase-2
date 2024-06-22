@@ -1,0 +1,23 @@
+CREATE COMPUTE MODULE MF_MAIN_REST_SAMSAT_SRVC_Process_Resp_Message
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+	
+		-- Keep the UUID
+		SET OutputLocalEnvironment.UUID = InputLocalEnvironment.UUID;
+		
+		-------------- PREPARE FOR INPUT LOGGING -------------------------------------
+
+		-------------- PREPARE FOR INPUT LOGGING -------------------------------------
+		
+		
+		SET OutputRoot.JSON.Data = InputRoot.JSON.Data;
+		
+		
+		-------------- PREPARE FOR OUTPUT LOGGING -------------------------------------
+
+		-------------- PREPARE FOR OUTPUT LOGGING -------------------------------------
+
+
+		RETURN TRUE;
+	END;
+END MODULE;

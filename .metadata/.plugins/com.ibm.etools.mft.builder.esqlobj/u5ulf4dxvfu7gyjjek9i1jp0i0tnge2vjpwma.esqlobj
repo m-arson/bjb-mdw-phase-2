@@ -1,0 +1,14 @@
+/*EATE FUNCTION Main() RETURNS BOOLE*/
+	BEGIN
+		
+		DECLARE tcpIn REFERENCE TO InputLocalEnvironment.TCPIP.Input.ConnectionDetails;
+		IF SESSION IS NULL THEN
+			SET SESSION.COND01.Id = tcpIn.Id;
+			SET SESSION.COND01.Port = tcpIn.Port;
+		ELSE
+			DECLARE inx INTEGER;
+			SET inx = CARDINALITY(SESSION.*[]);
+		END IF;
+		
+		RETURN TRUE;
+	END;

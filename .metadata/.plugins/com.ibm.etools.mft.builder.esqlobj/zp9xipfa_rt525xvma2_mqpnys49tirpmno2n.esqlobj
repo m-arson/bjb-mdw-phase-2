@@ -1,0 +1,7 @@
+CREATE PROCEDURE logToFile(IN message CHARACTER, IN logger_name CHARACTER)
+BEGIN
+	DECLARE RC BOOLEAN;
+	
+	CALL initializeLog4j(LOG4J_CONFIG);
+	CALL log4j2('', logger_name, 'INFO', message) INTO RC;
+END;

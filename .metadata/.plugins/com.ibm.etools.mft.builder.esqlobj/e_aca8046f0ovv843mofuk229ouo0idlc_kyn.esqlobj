@@ -1,0 +1,11 @@
+/*EATE FUNCTION Main() RETURNS BOOLE*/
+	BEGIN
+		
+		SET OutputRoot.JSON.Data.(JSON.Array)Sessions.Item[] = (SELECT * FROM SESSION.Data[]);
+		SET OutputRoot.JSON.Data.ReqMessage = InputRoot.JSON.Data;
+		SET OutputRoot.JSON.Data.ResMessage = InputRoot.JSON.Data;
+		SET OutputRoot.JSON.Data.ResMessage.MTI = LEFT(InputRoot.JSON.Data.MTI, 2) || '10';
+		
+		SET OutputRoot.BLOB.BLOB = CAST(ASBITSTREAM(OutputRoot.JSON.Data CCSID 1208) AS BLOB CCSID 819);
+		DELETE FIELD OutputRoot.JSON;
+	END;

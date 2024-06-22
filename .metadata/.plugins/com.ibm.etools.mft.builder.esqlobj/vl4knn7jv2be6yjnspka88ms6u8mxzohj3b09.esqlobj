@@ -1,0 +1,41 @@
+CREATE COMPUTE MODULE SF_ENDPOINT_Core_Adapter_Res
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		
+		-- Keep the UUID
+		SET OutputLocalEnvironment.UUID = InputLocalEnvironment.UUID;
+		
+		-- Logging input
+--		SET OutputRoot.MQRFH2.usr.vs.log4jConfig = ApplicationLabel;
+--		CALL LogInputDebug(InputExceptionList, InputLocalEnvironment, InputRoot, OutputRoot);
+--		PROPAGATE TO TERMINAL 'out1' DELETE NONE;
+--		DELETE FIELD OutputRoot.MQRFH2;
+--		DELETE FIELD OutputRoot.BLOB;
+		CALL PrepareLogMessage(OutputRoot, ApplicationLabel, MessageFlowLabel, NodeLabel, 'input', 'debug', InputExceptionList, InputLocalEnvironment, InputRoot);
+		PROPAGATE TO TERMINAL 'out1' DELETE NONE;
+		DELETE FIELD OutputRoot.BLOB;
+		
+		IF Environment.Variables.isDown
+		THEN
+			RETURN FALSE;
+		END IF;
+		
+		CREATE LASTCHILD OF OutputRoot DOMAIN 'JSON';
+		SET OutputRoot.JSON.(JSON.Object)Data = InputRoot.JSON.Data;
+		
+		-- Logging output
+--		SET OutputRoot.MQRFH2.usr.vs.log4jConfig = ApplicationLabel;
+--		CALL LogOutputDebug(OutputExceptionList, OutputLocalEnvironment, OutputRoot, OutputRoot);
+--		PROPAGATE TO TERMINAL 'out1' DELETE NONE;
+--		DELETE FIELD OutputRoot.MQRFH2;
+--		DELETE FIELD OutputRoot.BLOB;
+		CALL PrepareLogMessage(OutputRoot, ApplicationLabel, MessageFlowLabel, NodeLabel, 'output', 'debug', OutputExceptionList, OutputLocalEnvironment, OutputRoot);
+		PROPAGATE TO TERMINAL 'out1' DELETE NONE;
+		DELETE FIELD OutputRoot.BLOB;
+		
+		CREATE LASTCHILD OF OutputRoot DOMAIN 'JSON';
+		SET OutputRoot.JSON.(JSON.Object)Data = InputRoot.JSON.Data;
+		
+		RETURN TRUE;
+	END;
+END MODULE;

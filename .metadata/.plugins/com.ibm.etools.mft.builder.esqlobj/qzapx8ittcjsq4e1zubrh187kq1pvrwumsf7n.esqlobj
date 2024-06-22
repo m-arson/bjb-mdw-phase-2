@@ -1,0 +1,25 @@
+CREATE PROCEDURE GetErrorDetails(IN Source REFERENCE, IN Dest REFERENCE,
+	IN messageId CHARACTER, IN sourceSystem CHARACTER, IN targetSystem CHARACTER)
+BEGIN
+	SET Dest.Field = THE(
+		SELECT
+			I.MESSAGE_ID,
+			I.COND1,
+			I.COND2,
+			I.COND3,
+			I.F039,
+			I.RC,
+			I.HTTP_STATUS,
+			I.RC_GROUP,
+			I.MESSAGE,
+			I.Desc,
+			I.SourceSystem,
+			I.TargetSystem,
+			I.SourceMessage,
+			I.DestMessage
+		FROM Source.Field[] AS I
+		WHERE
+			I.MESSAGE_ID = messageId AND
+			I.SourceSystem = sourceSystem
+			AND I.TargetSystem = targetSystem);	
+END;

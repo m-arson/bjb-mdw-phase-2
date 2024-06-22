@@ -1,0 +1,134 @@
+/*EATE FUNCTION Main() RETURNS BOOLE*/
+	BEGIN
+		-- Save input data and other propeties
+		SET Environment.Variables.details = InputRoot.MQRFH2.usr.vs.details;
+		SET Environment.Variables.details.correlId = InputRoot.MQMD.CorrelId;
+		SET Environment.Variables.details.timeoutMDW = TIMEOUT_SERVICE;
+		SET Environment.Variables.inMessage = InputRoot.JSON.Data;
+		-- Set flow UUID
+		SET InputLocalEnvironment.UUID = Environment.Variables.details.uuid;
+		SET OutputLocalEnvironment.UUID = InputLocalEnvironment.UUID;
+		-- Check and load table error map
+		IF NOT EXISTS(T_ERROR_MAP.Field[]) THEN
+			DECLARE dataSource CHARACTER DataSource;
+			SET Environment.Variables.DB.T_ERROR_MAP.Field[] = PASSTHRU('SELECT * FROM ' || DB_SCHEMA || '.T_ERROR_MAP' TO Database.{dataSource});
+
+			DECLARE I INTEGER 1;
+			DECLARE J INTEGER CARDINALITY(Environment.Variables.DB.T_ERROR_MAP.Field[]);
+
+			WHILE I <= J DO
+				SET T_ERROR_MAP.Field[I] = Environment.Variables.DB.T_ERROR_MAP.Field[I];
+				SET I = I + 1;
+			END WHILE;
+
+			DELETE FIELD Environment.Variables.DB;
+		END IF;
+		-- Load Service destination parameter
+		IF SERVICE_PARAM IS NULL OR TRIM(SERVICE_PARAM) = ''
+			THEN
+			DECLARE dataSource CHARACTER DataSource;
+			SET Environment.Variables.SERVICE_PARAM[] =
+			PASSTHRU('SELECT * FROM ' || DB_SCHEMA || '.T_PARAMETER WHERE "ServiceName" = ' || SERVICE_NAME TO Database.{dataSource});
+			SET SERVICE_PARAM = Environment.Variables.SERVICE_PARAM;
+			SET SERVICE_PARAM.TxQueueRes = SUBSTRING(Environment.Variables.SERVICE_PARAM.TxQueue AFTER '|');
+		END IF;
+
+		SET Environment.Variables.details.dbParam = SERVICE_PARAM;
+		DELETE FIELD Environment.Variables.SERVICE_PARAM;
+		
+		-- Logging input
+		CALL PrepareLogMessage(OutputRoot, ApplicationLabel, MessageFlowLabel, NodeLabel, 'input', 'debug', InputExceptionList, InputLocalEnvironment, InputRoot);
+		PROPAGATE TO TERMINAL 'out1' DELETE NONE;
+		DELETE FIELD OutputRoot.BLOB;
+		
+		-- Declare I/O Reference
+		CREATE LASTCHILD OF OutputRoot DOMAIN 'JSON';
+		CREATE FIELD OutputRoot.JSON.Data IDENTITY (JSON.Object)Data;
+		DECLARE outRef REFERENCE TO OutputRoot.JSON.Data;
+		DECLARE inRef REFERENCE TO InputRoot.JSON.Data;
+		DECLARE envReff REFERENCE TO Environment.Variables.details;
+		DECLARE ts CHARACTER CAST(CURRENT_TIMESTAMP AS CHARACTER FORMAT 'yyyyMMddHHMMss');
+		DECLARE st CHARACTER ST;
+		
+		X: BEGIN ATOMIC READ WRITE
+			SET ST = ST + 1;
+		END X;
+		
+		DECLARE outData ROW;
+		
+		-- Mapping the request to backend
+		CALL Split(envReff.dbParam.Param2, Environment, '|');
+
+		SET outRef.SPPW = COALESCE(Environment.Split[7], '');
+		SET outRef.PC = COALESCE(Environment.Split[1], '');
+		SET outRef.SPPU = COALESCE(Environment.Split[6], '');
+		
+		SET outRef.MPI.ZLCTP = COALESCE(inRef.CUS_TYPE, '');
+		SET outRef.MPI.ZLCPNC = COALESCE(inRef.CUSTOMER, '');
+		SET outRef.MPI.ZLCUN = COALESCE(inRef.CUS_NAME, '');
+		SET outRef.MPI.ZLDAS = COALESCE(inRef.CUS_SRT_NAME, '');
+		SET outRef.MPI.ZLBRNM = COALESCE(inRef.BRANCH, '');
+		SET outRef.MPI.ZLCUB = COALESCE(inRef.BLKD_DEAL, '');
+		SET outRef.MPI.ZLCRB1 = COALESCE(inRef.TAX_REF1, '');
+		SET outRef.MPI.ZLCRB2 = COALESCE(inRef.TAX_REF2, '');
+		SET outRef.MPI.ZLCNAP = COALESCE(inRef.PRT_CRTY, '');
+		SET outRef.MPI.ZLCNAL = COALESCE(inRef.RSDN_CTRY, '');
+		SET outRef.MPI.ZLCUD = COALESCE(inRef.DECS_LIQD, '');
+		SET outRef.MPI.ZLCUC = COALESCE(inRef.ACC_CLSD, '');
+		SET outRef.MPI.ZLCUZ = COALESCE(inRef.ACC_INKV, '');
+		SET outRef.MPI.ZLACO = COALESCE(inRef.ACC_OFCR, '');
+		SET outRef.MPI.ZLCNAR = COALESCE(inRef.RISK_CTRY, '');
+		SET outRef.MPI.ZLCNAI = COALESCE(inRef.INIRSK_CTRY, '');
+		SET outRef.MPI.ZLLNM = COALESCE(inRef.LANG, '');
+		SET outRef.MPI.ZLMTB = COALESCE(inRef.MAIL_BRCH, '');
+		SET outRef.MPI.ZLYETX = COALESCE(inRef.EXMPT_TAX, '');
+		SET outRef.MPI.ZLCSSA = COALESCE(inRef.CPY_STAT, '');
+		SET outRef.MPI.ZLFCYC = COALESCE(inRef.FRC_CYCL_STAT, '');
+		SET outRef.MPI.ZLCS = COALESCE(inRef.CONSD_STAT, '');
+		SET outRef.MPI.ZLDRCZ = COALESCE(inRef.FRNT_OFFC, '');
+		SET outRef.MPI.ZLRETZ = COALESCE(inRef.RTL_BRCH, '');
+		SET outRef.MPI.ZLTRIZ = COALESCE(inRef.TRD_FINC, '');
+
+		SET outRef.MT = COALESCE(Environment.Split[4], '');
+		SET outRef.SID = COALESCE(InputLocalEnvironment.UUID, '');
+		SET outRef.CID = COALESCE(inRef.CHANNEL_ID, '');
+		SET outRef.ST = COALESCE(SUBSTRING(ts FROM 8 FOR 6) || SUBSTRING('00000' || st FROM LENGTH(st)+1), '');
+		SET outRef.FC = COALESCE(Environment.Split[8], '');
+		SET outRef.DT = COALESCE(ts, '');
+		SET outRef.PCC = COALESCE(Environment.Split[2], '');
+		SET outRef.MC = COALESCE(Environment.Split[3], '');
+		SET outRef.CC = COALESCE(Environment.Split[5], '');
+
+		CREATE LASTCHILD OF outData DOMAIN 'JSON';
+		CREATE FIELD outData.JSON.Data IDENTITY (JSON.Object)Data;
+		SET outData.JSON.Data = outRef;
+
+		DELETE FIELD Environment.Split;
+		
+		-- Logging output
+		CALL PrepareLogMessage(OutputRoot, ApplicationLabel, MessageFlowLabel, NodeLabel, 'output', 'debug', OutputExceptionList, OutputLocalEnvironment, OutputRoot);
+		PROPAGATE TO TERMINAL 'out1' DELETE NONE;
+		DELETE FIELD OutputRoot.BLOB;
+		
+		-- Reassign the value
+		CREATE LASTCHILD OF OutputRoot DOMAIN 'JSON';
+		CREATE FIELD OutputRoot.JSON.Data IDENTITY (JSON.Object)Data;
+		SET OutputRoot.JSON.Data = outData.JSON.Data;
+
+
+		RETURN TRUE;
+	END;
+
+	CREATE PROCEDURE CopyMessageHeaders() BEGIN
+		DECLARE I INTEGER 1;
+		DECLARE J INTEGER;
+		SET J = CARDINALITY(InputRoot.*[]);
+		WHILE I < J DO
+			SET OutputRoot.*[I] = InputRoot.*[I];
+			SET I = I + 1;
+		END WHILE;
+	END;
+
+	CREATE PROCEDURE CopyEntireMessage() BEGIN
+		SET OutputRoot = InputRoot;
+	END;

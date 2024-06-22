@@ -1,0 +1,23 @@
+BROKER SCHEMA id.co.bankbjb.mdw.core.services
+
+
+CREATE COMPUTE MODULE MF_TX_MDW_TH_Reload_Cache
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		DECLARE dataSource CHARACTER DataSource;
+		
+		SET Environment.Variables.DB.T_ERROR_MAP.Field[] = PASSTHRU('SELECT * FROM ' || DB_SCHEMA || '.T_ERROR_MAP' TO Database.{dataSource});
+		
+		DECLARE I INTEGER 1;
+		DECLARE J INTEGER CARDINALITY(Environment.Variables.DB.T_ERROR_MAP.Field[]);
+		
+		WHILE I <= J DO
+			SET T_ERROR_MAP.Field[I] = Environment.Variables.DB.T_ERROR_MAP.Field[I];
+			SET I = I + 1;
+		END WHILE;
+		
+		SET OutputRoot.JSON.Data.Message = 'Cache loaded successfully';
+		
+		RETURN TRUE;
+	END;
+END MODULE;

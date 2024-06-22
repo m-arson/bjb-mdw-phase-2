@@ -1,0 +1,10 @@
+CREATE COMPUTE MODULE MF_TCP_PKB_ADAPTER_Cannot_Put_Hadling
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		
+		SET OutputRoot.MQMD.CorrelId = Environment.Variables.correlId;
+		SET OutputRoot.JSON.Data.RC = '0091';
+		
+		RETURN TRUE;
+	END;
+END MODULE;

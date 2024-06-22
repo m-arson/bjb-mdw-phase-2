@@ -1,0 +1,9 @@
+CREATE PROCEDURE GenerateThreeDigitIndex(IN IndexInt INTEGER, OUT IndexChar CHAR)
+	BEGIN
+		SET IndexChar =
+		CASE
+			WHEN IndexInt < 10 THEN ('00' || CAST(IndexInt AS CHAR))
+			WHEN IndexInt < 100 THEN ('0' || CAST(IndexInt AS CHAR))
+			ELSE CAST(IndexInt AS CHAR)
+		END;
+	END;

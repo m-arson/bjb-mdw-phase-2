@@ -1,0 +1,4 @@
+CREATE PROCEDURE GetThreadName()
+    RETURNS CHARACTER
+    LANGUAGE JAVA
+    EXTERNAL NAME "id.co.bankbjb.lib.ThreadProvider.getThreadName";

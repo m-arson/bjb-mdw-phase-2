@@ -1,0 +1,34 @@
+CREATE COMPUTE MODULE MF_TCP_PKB_ADAPTER_Set_Timeout_Backend
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		
+		-- Keep the UUID
+		SET InputLocalEnvironment.UUID = Environment.Variables.Uuid;
+		SET OutputLocalEnvironment.UUID = Environment.Variables.Uuid;
+		
+		-- Logging Input
+		CALL PrepareLogMessage(OutputRoot, ApplicationLabel, MessageFlowLabel, NodeLabel, 'input', 'debug', InputExceptionList, InputLocalEnvironment, InputRoot);
+		PROPAGATE TO LABEL 'LOGGING' DELETE NONE;
+		DELETE FIELD OutputRoot.BLOB;
+		
+		-- Check Request Type
+		IF Environment.Variables.REQ_TYPE IN ('ECHO', 'SIGN_ON') THEN
+			DELETE FIELD Environment.Variables.REQ_TYPE;
+			RETURN FALSE;
+		END IF;
+		
+		-- Set MQ Get Correl ID & Wait Interval
+		SET OutputRoot.MQMD.CorrelId = Environment.Variables.CorrelId;
+		SET OutputLocalEnvironment.MQ.GET.QueueName = TMP_ADAPTER_Q;
+		SET OutputLocalEnvironment.MQ.GET.MQGMO.WaitInterval = Environment.Variables.Timeout;
+		
+		SET OutputLocalEnvironment.Destionation.MQ.MQDestionationList[1].QueueName = TMP_ADAPTER_Q;
+		
+		-- Logging Output
+		CALL PrepareLogMessage(OutputRoot, ApplicationLabel, MessageFlowLabel, NodeLabel, 'output', 'debug', OutputExceptionList, OutputLocalEnvironment, OutputRoot);
+		PROPAGATE TO LABEL 'LOGGING' DELETE NONE;
+		DELETE FIELD OutputRoot.BLOB;
+		
+		RETURN TRUE;
+	END;
+END MODULE;

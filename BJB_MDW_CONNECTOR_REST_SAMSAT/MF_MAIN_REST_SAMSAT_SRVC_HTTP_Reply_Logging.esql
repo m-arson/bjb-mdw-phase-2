@@ -1,0 +1,16 @@
+
+PATH id.co.bankbjb.mdw.lib;
+
+CREATE COMPUTE MODULE MF_MAIN_REST_SAMSAT_SRVC_HTTP_Reply_Logging
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		-- Keep the UUID
+		SET OutputLocalEnvironment.UUID = InputLocalEnvironment.UUID;
+		
+		-- Logging Reply
+		CALL PrepareLogMessage(OutputRoot, ApplicationLabel, MessageFlowLabel, NodeLabel, 'http_reply_done', 'info', InputExceptionList, InputLocalEnvironment, InputRoot);
+		PROPAGATE TO LABEL 'LOGGING';
+		RETURN FALSE;
+		
+	END;
+END MODULE;

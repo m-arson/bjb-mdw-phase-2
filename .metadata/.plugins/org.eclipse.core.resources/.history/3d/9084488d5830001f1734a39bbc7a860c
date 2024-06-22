@@ -1,0 +1,18 @@
+
+
+CREATE COMPUTE MODULE MF_TX_JSON_PAY_PKB_Validate_and_Build_Resp
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		
+		-- Keep the UUID
+		SET OutputLocalEnvironment.UUID = InputLocalEnvironment.UUID;
+		
+		-- Set Correl ID Output
+		SET OutputRoot.MQMD.CorrelId = CAST(Environment.Variables.details.correlId AS BLOB);
+		
+		DECLARE iRef REFERENCE TO InputRoot.JSON.Data;
+		DECLARE oriMsgRef REFERENCE TO Environment.Variables.inMessage;
+		
+		RETURN TRUE;
+	END;
+END MODULE;

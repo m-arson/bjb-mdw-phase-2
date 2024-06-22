@@ -1,0 +1,47 @@
+/*EATE FUNCTION Main() RETURNS BOOLE*/
+	BEGIN
+		
+		IF SESSION.Data IS NULL THEN
+			CALL PopulateSession(SESSION, Environment);
+		END IF;
+		
+		
+		DECLARE iRef REFERENCE TO InputLocalEnvironment.TCPIP.Input.ConnectionDetails;
+		
+		DECLARE isAvail BOOLEAN FALSE;
+		DECLARE sessionBuffer, tmpSessionBuffer ROW;
+		CALL GetSessionIndex(iRef.ClientDetails.Address, SESSION, sessionBuffer);
+		
+		IF sessionBuffer.Avail THEN
+			SET tmpSessionBuffer = SESSION.Data[sessionBuffer.Index];
+			SET isAvail = TRUE;
+		END IF;
+		
+		IF sessionBuffer.Index = 0 THEN
+			
+		END IF;
+		
+		
+	
+		IF sessionBuffer.Index > 0 THEN
+			SET SESSION.Data[sessionBuffer.Index].Id = iRef.Id;
+			SET SESSION.Data[sessionBuffer.Index].Port = iRef.Port;
+			SET SESSION.Data[sessionBuffer.Index].Address = iRef.ClientDetails.Address;
+		END IF;
+		
+		IF isAvail THEN
+			SET OutputLocalEnvironment.Destination.TCPIP.Output.Id = tmpSessionBuffer.Id;
+			SET OutputLocalEnvironment.Destination.TCPIP.Output.Port = tmpSessionBuffer.Port;
+			RETURN TRUE;
+		END IF;
+		
+		RETURN FALSE;
+	END;
+	
+	CREATE PROCEDURE Populate
+	
+	CREATE FUNCTION GetSessionLength(IN S REFERENCE) RETURNS INTEGER
+	BEGIN
+		IF S = NULL THEN
+			RETURN 0;
+		ELSE

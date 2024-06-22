@@ -1,0 +1,19 @@
+CREATE COMPUTE MODULE MF_MAIN_Compute
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		
+		X: BEGIN ATOMIC READ WRITE
+			SET SESSION.Data[1].Name = 'Name1';
+			SET SESSION.Data[1].Gender = 'M';
+			
+			SET SESSION.Data[2].Name = 'Name2';
+			SET SESSION.Data[2].Gender = 'F';
+		END X;
+		
+		SET Environment.Variables.Data[] = (SELECT S FROM SESSION.Data[] AS S WHERE s.Name = 'Name2');
+		
+		SET OutputRoot.JSON.(JSON.Array)Data.Item[] = Environment.Variables.Data[];
+		
+		RETURN TRUE;
+	END;
+END MODULE;

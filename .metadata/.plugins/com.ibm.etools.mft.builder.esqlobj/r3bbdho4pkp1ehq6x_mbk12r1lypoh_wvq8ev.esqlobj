@@ -1,0 +1,33 @@
+CREATE COMPUTE MODULE MF_TCP_PKB_ADAPTER_Process_Response
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+
+		SET Environment.Variables.replyId = SUBSTRING(InputLocalEnvironment.TCPIP.Input.ConnectionDetails.ReplyId BEFORE '|');
+		SET Environment.Variables.uuid = SUBSTRING(InputLocalEnvironment.TCPIP.Input.ConnectionDetails.ReplyId AFTER '|');
+
+		SET InputLocalEnvironment.UUID = Environment.Variables.uuid;
+		SET OutputLocalEnvironment.UUID = Environment.Variables.uuid;
+
+		CALL PrepareLogMessage(OutputRoot, ApplicationLabel, MessageFlowLabel, NodeLabel, 'input', 'info', InputExceptionList, InputLocalEnvironment, InputRoot);
+		PROPAGATE TO TERMINAL 'out1' DELETE NONE;
+		DELETE FIELD OutputRoot.BLOB;
+
+
+		DECLARE mti CHARACTER CAST(InputRoot.DFDL.isomsg.MTI AS CHARACTER);
+
+		IF mti <> '0810' OR mti <> '0800' THEN
+			SET OutputRoot.MQMD.CorrelId = CAST(Environment.Variables.replyId AS BLOB);
+			CREATE LASTCHILD OF OutputRoot DOMAIN 'XMLNSC';
+			SET OutputRoot.XMLNSC.isomsg = InputRoot.DFDL.isomsg;
+			
+			CALL PrepareLogMessage(OutputRoot, ApplicationLabel, MessageFlowLabel, NodeLabel, 'input', 'info', InputExceptionList, InputLocalEnvironment, InputRoot);
+			PROPAGATE TO TERMINAL 'out1' DELETE NONE;
+			DELETE FIELD OutputRoot.BLOB;
+			
+			PROPAGATE TO TERMINAL 'out';
+
+		END IF;
+
+		RETURN FALSE;
+	END;
+END MODULE;

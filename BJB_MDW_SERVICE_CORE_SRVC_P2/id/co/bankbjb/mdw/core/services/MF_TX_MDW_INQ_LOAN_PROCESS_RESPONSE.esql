@@ -1,0 +1,51 @@
+BROKER SCHEMA id.co.bankbjb.mdw.core.services
+PATH id.co.bankbjb.mdw.lib;
+
+CREATE COMPUTE MODULE MF_TX_MDW_INQ_LOAN_PROCESS_RESPONSE
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		SET OutputLocalEnvironment.UUID = InputLocalEnvironment.UUID;
+		
+		-- Logging Input
+		SET OutputRoot.MQRFH2.usr.vs.log4jConfig = ApplicationLabel;
+		CALL LogInputInfo(InputExceptionList, InputLocalEnvironment, InputRoot, OutputRoot);
+		PROPAGATE TO TERMINAL 'out2' DELETE NONE;
+		DELETE FIELD OutputRoot.MQRFH2;
+		DELETE FIELD OutputRoot.BLOB;
+		SET Environment.errReff = 'BIGDATA';
+		
+		-- Get CIF to request big data
+		DECLARE CIF CHARACTER COALESCE(SUBSTRING(InputRoot.JSON.Data.ACC_NUM_IN FROM 5 FOR 6), '');
+		
+		-- Validate the response of AC
+		IF CIF = '' THEN
+			SET OutputLocalEnvironment.Destination.MQDestinationList.DestinationData[1].queueName = SERVICE_PARAM.TxQueueRes;
+			SET OutputRoot.MQMD.CorrelId = CAST(Environment.Variables.details.correlId AS BLOB);
+			SET OutputRoot.JSON.Data = InputRoot.JSON.Data;
+			PROPAGATE TO TERMINAL 'out1' DELETE NONE;
+			RETURN FALSE;
+		END IF;
+		
+		
+		-- Prepare the properties to send get request to big data
+		CALL Split(Environment.Variables.details.dbParam.Param3, Environment, '|');
+		
+		SET OutputLocalEnvironment.Destination.HTTP.RequestURL = Environment.Split[1] || CIF;
+		SET OutputLocalEnvironment.Destination.HTTP.SSLProtocol = Environment.Split[2];
+		SET OutputLocalEnvironment.Destination.HTTP.SSLCiphers = Environment.Split[3];
+		SET OutputLocalEnvironment.Destination.HTTP.RequestLine.Method = 'GET';
+		SET OutputLocalEnvironment.Destination.HTTP.FollowRedirection = TRUE;
+		SET OutputLocalEnvironment.Destination.HTTP.Timeout = Environment.Variables.details.dbParam.Timeout;
+		
+		-- Logging output
+		SET OutputRoot.MQRFH2.usr.vs.log4jConfig = ApplicationLabel;
+		CALL LogOutputDebug(OutputExceptionList, OutputLocalEnvironment, OutputRoot, OutputRoot);
+		PROPAGATE TO TERMINAL 'out2' DELETE NONE;
+		DELETE FIELD OutputRoot.MQRFH2;
+		DELETE FIELD OutputRoot.BLOB;
+		
+		SET Environment.errRef = 'BIGDATA';
+		
+		RETURN TRUE;
+	END;
+END MODULE;
