@@ -1,0 +1,153 @@
+/*EATE FUNCTION Main() RETURNS BOOLE*/
+	BEGIN
+		
+		-- Keep the UUID
+		SET OutputLocalEnvironment.UUID = InputLocalEnvironment.UUID;
+		
+		-- Logging Input
+		CALL PrepareLogMessage(OutputRoot, ApplicationLabel, MessageFlowLabel, NodeLabel, 'input', 'debug', InputExceptionList, InputLocalEnvironment, InputRoot);
+		PROPAGATE TO TERMINAL 'out1' DELETE NONE;
+		DELETE FIELD OutputRoot.BLOB;
+		
+		DECLARE iRef REFERENCE TO InputRoot.XMLNSC.isomsg;
+		
+		IF iRef.Field039 = '00' THEN
+			
+			-- Set MQ Correl ID
+			SET OutputRoot.MQMD.CorrelId = CAST(Environment.Variables.details.correlId AS BLOB);
+			
+			-- Propagate to Posting Log
+			CREATE LASTCHILD OF OutputRoot DOMAIN 'XMLNSC';
+			SET OutputRoot.XMLNSC = InputRoot.XMLNSC;
+			PROPAGATE TO TERMINAL 'out3' DELETE NONE;
+			DELETE FIELD OutputRoot.XMLNSC;
+			
+			-- Process to return Output
+			CREATE LASTCHILD OF OutputRoot DOMAIN 'JSON';
+			CREATE FIELD OutputRoot.JSON.Data IDENTITY (JSON.Object)Data;
+			DECLARE oRef REFERENCE TO OutputRoot.JSON.Data;
+			
+			-- Set Output Message
+			SET oRef = Environment.Variables.inMessage;
+			SET oRef.RESPONSE_CODE = '0000';
+			SET oRef.RESPONSE_MESSAGE = 'Success';
+			SET oRef.RESPONSE_TIME = CAST(CURRENT_TIMESTAMP AS CHARACTER FORMAT 'yyyyMMddHHmmss');
+			
+			-- Set Destination Queue
+			DECLARE txQueueRes CHARACTER;
+			SET txQueueRes = SUBSTRING(Environment.Variables.details.dbParam.TxQueue AFTER '|');
+			SET OutputLocalEnvironment.Destination.MQ.DestinationData[1].queueName = txQueueRes;
+			
+			CREATE FIELD Environment.Variables.outMessage;
+			CREATE LASTCHILD OF Environment.Variables.outMessage DOMAIN 'JSON';
+			CREATE FIELD Environment.Variables.outMessage.JSON.Data IDENTITY (JSON.Object)Data;
+			
+			SET Environment.Variables.outMessage.JSON.Data = oRef;
+			
+			-- Logging Output
+			CALL PrepareLogMessage(OutputRoot, ApplicationLabel, MessageFlowLabel, NodeLabel, 'output', 'info', OutputExceptionList, OutputLocalEnvironment, OutputRoot);
+			PROPAGATE TO TERMINAL 'out1' DELETE NONE;
+			DELETE FIELD OutputRoot.BLOB;
+			
+			CREATE LASTCHILD OF OutputRoot DOMAIN 'JSON';
+			CREATE FIELD OutputRoot.JSON.Data IDENTITY (JSON.Object)Data;
+			
+			SET OutputRoot.JSON.Data = Environment.Variables.outMessage.JSON.Data;
+			
+			PROPAGATE TO TERMINAL 'out';
+			
+		ELSE
+			-- Prepare for reversal
+			DECLARE oriMsgRef REFERENCE TO Environment.Variables.inMessage;
+			DECLARE evRef REFERENCE TO Environment.Variables;
+			DECLARE msg1, msg2, msg3 CHARACTER;
+			
+			IF evRef.CHARGE_FEE = '0' THEN
+				SET msg1 = GenerateItaReversalString(iRef, evRef.TOTAL_PKB, evRef.BUFFER_BALANCE_PKB, evRef.DEBIT_CODE, evRef.CREDIT_CODE);
+				SET msg2 = GenerateItaReversalString(iRef, evRef.TOTAL_SWD, evRef.BUFFER_BALANCE_SWD, evRef.DEBIT_CODE, evRef.CREDIT_CODE);
+				SET msg3 = NULL;
+			ELSE
+				SET msg1 = GenerateItaReversalString(iRef, evRef.CHARGE_FEE, evRef.BUFFER_BALANCE_CHARGE_FEE, evRef.DEBIT_CODE, evRef.CREDIT_CODE);
+				SET msg2 = GenerateItaReversalString(iRef, evRef.TOTAL_PKB, evRef.BUFFER_BALANCE_PKB, evRef.DEBIT_CODE, evRef.CREDIT_CODE);
+				SET msg3 = GenerateItaReversalString(iRef, evRef.TOTAL_SWD, evRef.BUFFER_BALANCE_SWD, evRef.DEBIT_CODE, evRef.CREDIT_CODE);
+			END IF;
+			
+			-- Set Output Message & Propagate to ITA MULTIPOSTING REVERSAL Queue
+			SET OutputRoot.MQMD.CorrelId = CAST(evRef.details.correlId AS BLOB);
+			SET OutputRoot.MQMD.Expiry = Q_EXPIRY;
+			SET OutputRoot.MQRFH2.usr.vs.details.uuid = evRef.details.uuid;
+			
+			CREATE LASTCHILD OF OutputRoot DOMAIN 'JSON';
+			CREATE FIELD OutputRoot.JSON.Data IDENTITY (JSON.Object)Data;
+			DECLARE oRef REFERENCE TO OutputRoot.JSON.Data;
+			
+			SET oRef.REF_NO = oriMsgRef.REF_NO;
+			SET oRef.REQUEST_TIME = oriMsgRef.REQUEST_TIME;
+			SET oRef.MODULE_CODE = oriMsgRef.MODULE_CODE;
+			SET oRef.CHANNEL_ID = oriMsgRef.CHANNEL_ID;
+			SET oRef.MESSAGE1 = msg1;
+			SET oRef.MESSAGE2 = msg2;
+			
+			IF oRef.MESSAGE IS NOT NULL THEN
+				SET oRef.MESSAGE3 = msg3;
+			END IF;
+			
+			DECLARE destReqQ, destResQ CHARACTER;
+			DECLARE waitTime INTEGER;
+			
+			SET destReqQ = SUBSTRING(evRef.details.dbParam.TxQueue2 BEFORE '|');
+			SET destResQ = SUBSTRING(evRef.details.dbParam.TxQueue2 AFTER '|');
+			SET waitTime = TIMEOUT_SERVICE * 1000;
+			
+			SET OutputLocalEnvironment.Destination.MQ.DestinationData[1].queueName = destReqQ;
+			SET OutputLocalEnvironment.MQ.GET.QueueName = destResQ;
+			SET OutputLocalEnvironment.MQ.GET.MQGMO.WaitInterval = waitTime;
+			
+			SET Environment.Variables.outMessage.JSON.Data = oRef;
+			
+			-- Logging Output
+			CALL PrepareLogMessage(OutputRoot, ApplicationLabel, MessageFlowLabel, NodeLabel, 'output', 'debug', OutputExceptionList, OutputLocalEnvironment, OutputRoot);
+			PROPAGATE TO TERMINAL 'out1' DELETE NONE;
+			DELETE FIELD OutputRoot.BLOB;
+			
+			CREATE LASTCHILD OF OutputRoot DOMAIN 'JSON';
+			CREATE FIELD OutputRoot.JSON.Data IDENTITY (JSON.Object)Data;
+			
+			SET OutputRoot.JSON.Data = Environment.Variables.outMessage.JSON.Data;
+			
+			PROPAGATE TO TERMINAL 'out2';
+		END IF;
+		
+		RETURN FALSE;
+	END;
+	
+	CREATE FUNCTION GenerateItaString (IN iRef REFERENCE, IN amount CHARACTER, IN bblc CHARACTER, IN debitCode CHARACTER, IN creditCode CHARACTER, IN chl CHARACTER, IN msgType INTEGER) RETURNS CHARACTER
+	BEGIN
+		DECLARE outBuf, docRef, ntrvRef CHARACTER;
+		
+		SET docRef = LEFT(chl || '-' || iRef.USER_ID || '-' || iRef.REF_TRX || SPACE(16), 16);
+		CASE msgType
+			WHEN 1 THEN
+				SET ntrvRef = LEFT('BY ' || iRef.NARATIVE || SPACE(35), 35) || LEFT(iRef.NARATIVE2 || SPACE(35), 35);
+			WHEN 2 THEN
+				SET ntrvRef = LEFT(iRef.NARATIVE || SPACE(35), 35) || LEFT(iRef.NARATIVE || SPACE(35), 35);
+			WHEN 3 THEN
+				SET ntrvRef = LEFT(iRef.NARATIVE2 || SPACE(35), 35) || LEFT(iRef.NARATIVE2 || SPACE(35), 35);
+		END CASE;
+		SET outBuf = SPACE(38) ||
+					 CAST(CURRENT_TIMESTAMP AS CHARACTER FORMAT 'yyMMddHHmmssSSSSSS') ||
+					 SPACE(8) || 
+					 LEFT(iRef.SENDER_ACCOUNT || SPACE(20), 20) ||
+					 SPACE(33) ||
+					 bblc ||
+					 RIGHT(REPLICATE('0', 15) || amount, 15) ||
+					 LEFT(iRef.REF_TRX || SPACE(16), 16) ||
+					 docRef ||
+					 docRef ||
+					 ntrvRef ||
+					 LEFT(iRef.BILL_NO || SPACE(35), 35) ||
+					 SPACE(191) ||
+					 debitCode ||
+					 creditCode;
+		RETURN outBuf;
+	END;

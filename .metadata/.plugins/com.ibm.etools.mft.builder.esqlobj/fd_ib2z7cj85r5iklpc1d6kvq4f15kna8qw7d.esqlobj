@@ -1,0 +1,18 @@
+CREATE COMPUTE MODULE MF_TCP_PKC_ADAPTER_echo_handler
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		
+		SET OutputLocalEnvironment.UUID = BASE64ENCODE(CAST(CURRENT_TIMESTAMP AS CHARACTER FORMAT 'yy-MM-dd HH:mm:ss.SSSSSS'));
+		
+		DECLARE dtime CHARACTER CAST(CURRENT_TIMESTAMP AS CHARACTER FORMAT 'yyyymmddHHMMssSSS');
+		
+		SET OutputRoot.XMLNSC.isomsg.MTI = '0800';
+		SET OutputRoot.XMLNSC.isomsg.Field007 = SUBSTRING(dtime FROM 5 FOR 10);
+		SET OutputRoot.XMLNSC.isomsg.Field011 = RIGHT(dtime,6);
+		SET OutputRoot.XMLNSC.isomsg.Field070 = '301';
+		
+		SET OutputLocalEnvironment.Variables.REQ_TYPE = 'ECHO';
+		
+		RETURN TRUE;
+	END;
+END MODULE;

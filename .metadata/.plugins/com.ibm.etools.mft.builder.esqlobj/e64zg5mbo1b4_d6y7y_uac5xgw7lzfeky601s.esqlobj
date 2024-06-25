@@ -1,0 +1,42 @@
+CREATE COMPUTE MODULE MF_MAIN_Manage_Session
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		
+		DECLARE tcpInRef REFERENCE TO InputLocalEnvironment.TCPIP.Input.ConnectionDetails;
+		DECLARE cnt INTEGER;
+		
+		IF FIELDNAME(SESSION.Data) IS NULL THEN		
+			CALL PopulateSessionRow(SESSION, Environment);
+		END IF;
+		
+		SET cnt = CARDINALITY(SESSION.Data[]);
+		
+		IF cnt = 0 THEN
+			PROPAGATE TO TERMINAL 'out';	
+		END IF;
+		
+		DECLARE IsValidIPAdddress
+		
+		RETURN FALSE;
+	END;
+	
+	CREATE PROCEDURE PopulateSessionRow(IN sess REFERENCE, IN env REFERENCE)
+	BEGIN
+		CREATE FIELD Environment.SESSION.Data;
+		SET Environment.SESSION.Data[] =
+			SELECT
+				T.ID, T.IP, T.CONN_ID, T.MDW_PORT, T.SYSNAME, T.PARAM1, T.PARAM2,T.PARAM3
+			FROM
+				Database.{'T_CONN_ID'} AS T;
+		
+		DECLARE I, J INTEGER;
+		SET I = 1;
+		SET J = CARDINALITY(Environment.SESSION.Data[]);
+		
+		WHILE I <= J DO
+			SET SESSION.Data[I] = Environment.SESSION.Data[I];
+			SET SESSION.Data[I].IS_ACTIVE = FALSE;
+			SET I = I + 1;
+		END WHILE;
+	END;
+END MODULE;

@@ -6,6 +6,7 @@
 		<item key="SmartImportRootWizardPage.STORE_NESTED_PROJECTS" value="true"/>
 		<item key="SmartImportRootWizardPage.STORE_CONFIGURE_NATURES" value="true"/>
 		<list key="org.eclipse.ui.internal.wizards.datatransfer.SmartImportRootWizardPage.knownSources">
+			<item value="C:\Users\Arson Marianus\Documents\BJBMDW-PHASE-1\BJB_MDW_ADAPTER_CORE"/>
 			<item value="C:\Users\Arson Marianus\Documents\BJBMDW-PHASE-2"/>
 		</list>
 	</section>

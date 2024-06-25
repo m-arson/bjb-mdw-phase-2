@@ -36,10 +36,7 @@ CREATE COMPUTE MODULE MF_TX_MDW_ANC_Mapping_Res_Core
 			SET outRef.RESPONSE_MESSAGE = errorMap.Field.MESSAGE;
 			SET httpStatus = errorMap.Field.HTTP_STATUS;
 		ELSE
-	        SET outRef.CHANNEL_ID = COALESCE(inRef.CID, '');
-	        SET outRef.AUTH_TOKEN = COALESCE(Environment.Variables.inMessage.AUTH_TOKEN, '');
-	        SET outRef.REF_NO = COALESCE(Environment.Variables.inMessage.REF_NO, '');
-	        SET outRef.MODULE_CODE = COALESCE(inRef.MC, '');
+	        SET outRef = Environment.Variables.inMessage;
 	        
 			SET outRef.CIF = COALESCE(inRef.MPO."0".ZLCUS, '');
 			SET outRef.CUS_TYPE = COALESCE(inRef.MPO."0".ZLCTP, '');
@@ -53,7 +50,7 @@ CREATE COMPUTE MODULE MF_TX_MDW_ANC_Mapping_Res_Core
 			SET outRef.RSDN_CTRY = COALESCE(inRef.MPO."0".ZLCNAL, '');
 			SET outRef.DECS_LIQD = COALESCE(inRef.MPO."0".ZLCUD, '');
 			SET outRef.ACC_CLSD = COALESCE(inRef.MPO."0".ZLCUC, '');
-			SET outRef.ACC_INKV = COALESCE(inRef.MPO."0".ZLCUS, '');
+			SET outRef.ACC_INKV = COALESCE(inRef.MPO."0".ZLCUZ, '');
 			SET outRef.ACC_OFCR = COALESCE(inRef.MPO."0".ZLACO, '');
 			SET outRef.RISK_CTRY = COALESCE(inRef.MPO."0".ZLCNAR, '');
 			SET outRef.INIRSK_CTRY = COALESCE(inRef.MPO."0".ZLCNAI, '');

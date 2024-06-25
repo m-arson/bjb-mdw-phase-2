@@ -105,7 +105,7 @@ CREATE COMPUTE MODULE MF_TX_MDW_CIM_Mapping_Req_Core
 		SET outRef.MPI.BG0010 = COALESCE(inRef.JOB_TYPE, '');
 		SET outRef.MPI.BG0011 = COALESCE(inRef.JOB_ADDR, '');
 		
-		SET outRef.MPI.BG0014 = COALESCE(inRef.OTHR_BANK_NAME, '');
+		SET outRef.MPI.BG0014 = COALESCE(inRef.INCM_SUM, '');
 		
 		SET outRef.MPI.BG0015 = COALESCE(inRef.OTHR_BANK_NAME, '');
 		SET outRef.MPI.BG0016 = COALESCE(inRef.OPN_DTE, '');
@@ -136,6 +136,9 @@ CREATE COMPUTE MODULE MF_TX_MDW_CIM_Mapping_Req_Core
 		SET outRef.MPI.BG0204 = COALESCE(inRef.RSDN_CODE, '');
 		SET outRef.MPI.BG0212 = COALESCE(inRef.PANGSA, '');
 		SET outRef.MPI.BG0220 = COALESCE(inRef.PRTNR_BRTH_DTE, '');
+		SET outRef.MPI.BG0221 = COALESCE(inRef.JOB_CODE, '');
+		SET outRef.MPI.BG0229 = COALESCE(inRef.CITY_RGNCY, '');
+		SET outRef.MPI.BG0230 = COALESCE(inRef.BSNS_FLD_CODE, '');
 
 		SET outRef.MT = COALESCE(Environment.Split[4], '');
 		SET outRef.SID = COALESCE(InputLocalEnvironment.UUID, '');

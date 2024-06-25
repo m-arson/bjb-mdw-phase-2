@@ -1,0 +1,16 @@
+CREATE FUNCTION GetSessionIndex(IN session REFERENCE, IN ipAddress CHARACTER) RETURNS INTEGER
+	BEGIN
+		DECLARE I, J INTEGER;
+		SET I = 1;
+		SET J = CARDINALITY(session.Data[]);
+		
+		WHILE I <= J DO
+			
+			IF session.Data[I].IP = ipAddress THEN
+				RETURN I;
+			END IF;
+			
+			SET I = I + 1;
+		END WHILE;
+		
+	END;

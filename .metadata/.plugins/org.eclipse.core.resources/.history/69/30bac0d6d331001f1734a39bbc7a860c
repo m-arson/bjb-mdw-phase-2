@@ -1,0 +1,31 @@
+
+
+CREATE COMPUTE MODULE MF_TX_JSON_PAY_PKS_Map_and_Send_Req_Message
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		
+		-- Token
+		SET OutputRoot.JSON.Data.grant_type = 'client_credentials';
+		SET OutputRoot.JSON.Data.client_id = CAST(result.Identity.client_id AS INTEGER);
+		SET OutputRoot.JSON.Data.client_secret = result.Identity.client_secret;
+		
+		
+		DECLARE iRef REFERENCE InputRoot.JSON.Data;
+		CREATE LASTCHILD OF OutputRoot DOMAIN 'JSON';
+		CREATE FIELD OutputRoot.JSON.Data IDENTITY (JSON.Object)Data;
+		DECLARE oRef REFERENCE TO OutputRoot.JSON.Data;
+		
+		-- Inquiry
+		SET OutputRoot.JSON.Data.channelid = channelID;
+		SET OutputRoot.JSON.Data.nik = '';
+		SET OutputRoot.JSON.Data.phonenbr = '';
+		SET OutputRoot.JSON.Data.mailaddr = '';
+		SET OutputRoot.JSON.Data.vaccount = InputRoot.JSON.Data.Message.BILL_NO;
+		SET OutputRoot.JSON.Data.billingid = InputRoot.JSON.Data.Message.BILL_NO;
+		SET OutputRoot.JSON.Data.caid = InputRoot.JSON.Data.Message.REF_TRX;
+		SET OutputRoot.JSON.Data.merchantid = InputRoot.JSON.Data.Message.REF_TRX;
+		SET OutputRoot.JSON.Data.clientid = InputLocalEnvironment.client_id;
+		
+		RETURN TRUE;
+	END;
+END MODULE;

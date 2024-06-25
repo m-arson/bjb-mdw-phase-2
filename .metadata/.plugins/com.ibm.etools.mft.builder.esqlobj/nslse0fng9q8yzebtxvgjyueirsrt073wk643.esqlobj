@@ -1,0 +1,27 @@
+CREATE COMPUTE MODULE MF_MAIN_TCP_ADAPTER_CORE_TIMEOUT
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		
+		IF Environment.Variables.ResponseId = 'ECHO'
+		THEN
+			RETURN FALSE;
+		END IF;
+		
+		SET OutputLocalEnvironment = InputLocalEnvironment;
+		
+		CALL PrepareLogMessage(OutputRoot, ApplicationLabel, MessageFlowLabel, NodeLabel, 'input', 'debug', InputExceptionList, InputLocalEnvironment, InputRoot);
+		PROPAGATE TO TERMINAL 'out1' DELETE NONE;
+		DELETE FIELD OutputRoot.BLOB;
+		
+		SET OutputRoot.MQMD.CorrelId = CAST(Environment.Variables.CorrelId AS BLOB);
+		SET OutputLocalEnvironment.Destination.MQDestinationList.DestinationData[1].queueName = Environment.Variables.ReplyToQ;
+		SET OutputLocalEnvironment.MQ.GET.QueueName = ADAPTER_Q;
+		SET OutputLocalEnvironment.MQ.GET.MQGMO.WaitInterval = CAST(Environment.Variables.CoreTimeout AS INTEGER);
+
+		CALL PrepareLogMessage(OutputRoot, ApplicationLabel, MessageFlowLabel, NodeLabel, 'output', 'debug', OutputExceptionList, OutputLocalEnvironment, OutputRoot);
+		PROPAGATE TO TERMINAL 'out1' DELETE NONE;
+		DELETE FIELD OutputRoot.BLOB;
+		
+		RETURN TRUE;
+	END;
+END MODULE;

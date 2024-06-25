@@ -1,0 +1,68 @@
+/*EATE FUNCTION Main() RETURNS BOOLE*/
+	BEGIN
+		
+		-- Declare TCP In and TCP Out Properties
+		DECLARE tcpInRef REFERENCE TO InputLocalEnvironment.TCPIP.Input.ConnectionDetails;
+		CREATE FIELD OutputLocalEnvironment.Destination.TCPIP.Output;
+		DECLARE tcpOutRef REFERENCE TO OutputLocalEnvironment.Destination.TCPIP.Output;
+		DECLARE cnt INTEGER;
+		
+		-- Load Session from database if not exists
+		IF FIELDNAME(SESSION.Data) IS NULL THEN		
+			CALL PopulateSessionRow(SESSION, Environment);
+		END IF;
+		
+		-- Count number of row from database
+		SET cnt = CARDINALITY(SESSION.Data[]);
+		
+		-- Close TCP Connection if table if null
+		IF cnt = 0 THEN
+			SET tcpOutRef.Id = tcpInRef.Id;
+			SET tcpOutRef.Port = tcpInRef.Port;
+			PROPAGATE TO TERMINAL 'out';	
+		END IF;
+		
+		-- Validate IP Address and Close connection if IP Address not registered
+		IF IsValidIPAddress(SESSION, tcpInRef.ClientDetails.Address) THEN
+			DECLARE sessionIndex INTEGER;
+		ELSE
+			SET tcpOutRef.Id = tcpInRef.Id;
+			SET tcpOutRef.Port = tcpInRef.Port;
+			PROPAGATE TO TERMINAL 'out';
+		END IF;
+			
+		RETURN FALSE;
+	END;
+	
+	CREATE PROCEDURE PopulateSessionRow(IN sess REFERENCE, IN env REFERENCE)
+	BEGIN
+		CREATE FIELD Environment.SESSION.Data;
+		SET Environment.SESSION.Data[] =
+			SELECT
+				T.ID, T.IP, T.CONN_ID, T.MDW_PORT, T.SYSNAME, T.PARAM1, T.PARAM2,T.PARAM3
+			FROM
+				Database.{'T_CONN_ID'} AS T;
+		
+		DECLARE I, J INTEGER;
+		SET I = 1;
+		SET J = CARDINALITY(Environment.SESSION.Data[]);
+		
+		WHILE I <= J DO
+			SET SESSION.Data[I] = Environment.SESSION.Data[I];
+			SET SESSION.Data[I].IS_ACTIVE = FALSE;
+			SET I = I + 1;
+		END WHILE;
+	END;
+	
+	CREATE FUNCTION IsValidIPAddress(IN sess REFERENCE, IN ip CHARACTER) RETURNS BOOLEAN
+	BEGIN
+		DECLARE rowCount INTEGER;
+		SET rowCount = SELECT COUNT(T.*) FROM sess.Data[] AS T WHERE T.IP = ip;
+		
+		IF rowCount > 0 THEN
+			RETURN TRUE;
+		END IF;
+		
+		RETURN FALSE;
+	END;
+	

@@ -32,7 +32,6 @@ CREATE COMPUTE MODULE MF_TX_JSON_PAY_PKB_Calc_Amt_and_Call_AB
 		DECLARE iRef REFERENCE TO evRef.inMessage;
 		
 		-- Declare and sanity amount
-		
 		SET evRef.CHARGE_FEE = COALESCE(TRIM(iRef.CHARGE_FEE), '0');
 		SET evRef.TOTAL_PKB = SanityAndTotalIntToChar(iRef.TOTAL_PKB, iRef.TOTAL_PENALTY_PKB, 'ADD');
 		SET evRef.TOTAL_SWD = SanityAndTotalIntToChar(iRef.TOTAL_SWD, iRef.TOTAL_PENALTY_SWD, 'ADD');
@@ -47,31 +46,40 @@ CREATE COMPUTE MODULE MF_TX_JSON_PAY_PKB_Calc_Amt_and_Call_AB
 			WHEN '6010' THEN
 				SET evRef.DEBIT_CODE = '019';
 				SET evRef.CREDIT_CODE = '519';
+				SET evRef.CHANNEL_CODE = 'TLR';
 			WHEN '6011' THEN
 				SET evRef.DEBIT_CODE = '426';
 				SET evRef.CREDIT_CODE = '926';
+				SET evRef.CHANNEL_CODE = 'ATM';
 			WHEN '6025' THEN
 				SET evRef.DEBIT_CODE = '445';
 				SET evRef.CREDIT_CODE = '945';
+				SET evRef.CHANNEL_CODE = 'SAM';
 			WHEN '6012' THEN
 				SET evRef.DEBIT_CODE = '437';
 				SET evRef.CREDIT_CODE = '937';
+				SET evRef.CHANNEL_CODE = 'EDC';
 			WHEN '6016' THEN
 				SET evRef.DEBIT_CODE = '436';
 				SET evRef.CREDIT_CODE = '936';
+				SET evRef.CHANNEL_CODE = 'SMS';
 			WHEN '6014' THEN
 				SET evRef.DEBIT_CODE = '435';
 				SET evRef.CREDIT_CODE = '935';
+				SET evRef.CHANNEL_CODE = 'NET';
 			WHEN '6017' THEN
 				IF t_id = '7790' THEN
 					SET evRef.DEBIT_CODE = '447';
 					SET evRef.CREDIT_CODE = '947';
+					SET evRef.CHANNEL_CODE = 'MBL';
 				ELSEIF t_id = '7777' THEN
 					SET evRef.DEBIT_CODE = '424';
 					SET evRef.CREDIT_CODE = '924';
+					SET evRef.CHANNEL_CODE = 'MBL';
 				ELSEIF t_id = '7789' THEN
 					SET evRef.DEBIT_CODE = '235';
 					SET evRef.CREDIT_CODE = '735';
+					SET evRef.CHANNEL_CODE = 'MBL';
 				END IF;
 		END CASE;
 		
@@ -80,13 +88,13 @@ CREATE COMPUTE MODULE MF_TX_JSON_PAY_PKB_Calc_Amt_and_Call_AB
 			-- Generating ITA Multipost Message
 			DECLARE msg1, msg2, msg3 CHARACTER;
 			IF evRef.CHARGE_FEE = '0' THEN
-				SET msg1 = GenerateItaString(iRef, evRef.TOTAL_PKB, evRef.BUFFER_BALANCE_PKB, evRef.DEBIT_CODE, evRef.CREDIT_CODE);
-				SET msg2 = GenerateItaString(iRef, evRef.TOTAL_SWD, evRef.BUFFER_BALANCE_SWD, evRef.DEBIT_CODE, evRef.CREDIT_CODE);
+				SET msg1 = GenerateItaString(iRef, evRef.TOTAL_PKB, evRef.BUFFER_BALANCE_PKB, evRef.DEBIT_CODE, evRef.CREDIT_CODE, evRef.CHANNEL_CODE, 2);
+				SET msg2 = GenerateItaString(iRef, evRef.TOTAL_SWD, evRef.BUFFER_BALANCE_SWD, evRef.DEBIT_CODE, evRef.CREDIT_CODE, evRef.CHANNEL_CODE, 3);
 				SET msg3 = NULL;
 			ELSE
-				SET msg1 = GenerateItaString(iRef, evRef.CHARGE_FEE, evRef.BUFFER_BALANCE_CHARGE_FEE, evRef.DEBIT_CODE, evRef.CREDIT_CODE);
-				SET msg2 = GenerateItaString(iRef, evRef.TOTAL_PKB, evRef.BUFFER_BALANCE_PKB, evRef.DEBIT_CODE, evRef.CREDIT_CODE);
-				SET msg3 = GenerateItaString(iRef, evRef.TOTAL_SWD, evRef.BUFFER_BALANCE_SWD, evRef.DEBIT_CODE, evRef.CREDIT_CODE);
+				SET msg1 = GenerateItaString(iRef, evRef.CHARGE_FEE, evRef.BUFFER_BALANCE_CHARGE_FEE, evRef.DEBIT_CODE, evRef.CREDIT_CODE, evRef.CHANNEL_CODE, 1);
+				SET msg2 = GenerateItaString(iRef, evRef.TOTAL_PKB, evRef.BUFFER_BALANCE_PKB, evRef.DEBIT_CODE, evRef.CREDIT_CODE, evRef.CHANNEL_CODE, 2);
+				SET msg3 = GenerateItaString(iRef, evRef.TOTAL_SWD, evRef.BUFFER_BALANCE_SWD, evRef.DEBIT_CODE, evRef.CREDIT_CODE, evRef.CHANNEL_CODE, 3);
 			END IF;
 			
 			-- Set Output Message & Propagate to ITA MULTIPOSTING Queue
@@ -105,7 +113,7 @@ CREATE COMPUTE MODULE MF_TX_JSON_PAY_PKB_Calc_Amt_and_Call_AB
 			SET oRef.MESSAGE1 = msg1;
 			SET oRef.MESSAGE2 = msg2;
 			
-			IF oRef.MESSAGE IS NOT NULL THEN
+			IF msg3 IS NOT NULL THEN
 				SET oRef.MESSAGE3 = msg3;
 			END IF;
 			
@@ -165,10 +173,6 @@ CREATE COMPUTE MODULE MF_TX_JSON_PAY_PKB_Calc_Amt_and_Call_AB
 			SET OutputLocalEnvironment.MQ.GET.QueueName = destResQ;
 			SET OutputLocalEnvironment.MQ.GET.MQGMO.WaitInterval = waitTime;
 			
-			CREATE FIELD Environment.Variables.outMessage;
-			CREATE LASTCHILD OF Environment.Variables.outMessage DOMAIN 'JSON';
-			CREATE FIELD Environment.Variables.outMessage.JSON.Data IDENTITY (JSON.Object)Data;
-			
 			SET Environment.Variables.outMessage.JSON.Data = oRef;
 			
 			-- Logging Output
@@ -187,10 +191,29 @@ CREATE COMPUTE MODULE MF_TX_JSON_PAY_PKB_Calc_Amt_and_Call_AB
 		RETURN FALSE;
 	END;
 	
-	CREATE FUNCTION GenerateItaString (IN iRef REFERENCE, IN amount CHARACTER, IN bblc CHARACTER, IN debitCode CHARACTER, IN creditCode CHARACTER) RETURNS CHARACTER
+	CREATE FUNCTION GenerateItaString (IN iRef REFERENCE, IN amount CHARACTER, IN bblc CHARACTER, IN debitCode CHARACTER, IN creditCode CHARACTER, IN chl CHARACTER, IN msgType INTEGER) RETURNS CHARACTER
 	BEGIN
-		DECLARE outBuf, docRef CHARACTER;
-		SET docRef = iRef.CHANNEL || '-' || iRef.USER_ID || '-' || iRef.REF_TRX;
+		DECLARE outBuf, docRef, ntrvRef CHARACTER;
+		
+		SET docRef = LEFT(chl || '-' || iRef.USER_ID || '-' || iRef.REF_TRX || SPACE(16), 16);
+--		CASE msgType
+--			WHEN 1 THEN
+--				SET ntrvRef = LEFT('BY ' || iRef.NARATIVE || SPACE(35), 35) || LEFT('BY ' || iRef.NARATIVE || SPACE(35), 35);
+--			WHEN 2 THEN
+--				SET ntrvRef = LEFT(iRef.NARATIVE || SPACE(35), 35) || LEFT(iRef.NARATIVE || SPACE(35), 35);
+--			WHEN 3 THEN
+--				SET ntrvRef = LEFT(iRef.NARATIVE2 || SPACE(35), 35) || LEFT(iRef.NARATIVE2 || SPACE(35), 35);
+--		END CASE;
+		
+		CASE msgType
+			WHEN 1 THEN
+				SET ntrvRef = LEFT('BY ' || iRef.NARATIVE || SPACE(35), 35) || LEFT(iRef.BILL_NO || SPACE(35), 35);
+			WHEN 2 THEN
+				SET ntrvRef = LEFT(iRef.NARATIVE || SPACE(35), 35) || LEFT(iRef.BILL_NO || SPACE(35), 35);
+			WHEN 3 THEN
+				SET ntrvRef = LEFT(iRef.NARATIVE2 || SPACE(35), 35) || LEFT(iRef.BILL_NO || SPACE(35), 35);
+		END CASE;
+
 		SET outBuf = SPACE(38) ||
 					 CAST(CURRENT_TIMESTAMP AS CHARACTER FORMAT 'yyMMddHHmmssSSSSSS') ||
 					 SPACE(8) || 
@@ -200,10 +223,11 @@ CREATE COMPUTE MODULE MF_TX_JSON_PAY_PKB_Calc_Amt_and_Call_AB
 					 RIGHT(REPLICATE('0', 15) || amount, 15) ||
 					 LEFT(iRef.REF_TRX || SPACE(16), 16) ||
 					 docRef ||
-					 docRef || 
-					 LEFT(iRef.NARATIVE || SPACE(35), 35) ||
-					 LEFT(iRef.NARATIVE2 || SPACE(35), 35) ||
-					 SPACE(226) ||
+					 docRef ||
+					 ntrvRef ||
+					 SPACE(70) ||
+					 ntrvRef ||
+					 SPACE(86) ||
 					 debitCode ||
 					 creditCode;
 		RETURN outBuf;

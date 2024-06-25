@@ -15,6 +15,7 @@ CREATE COMPUTE MODULE MF_TX_JSON_PAY_PKB_Validate_and_Map_Res
 		DELETE FIELD OutputRoot.BLOB;
 		
 		DECLARE iRef REFERENCE TO InputRoot.XMLNSC.isomsg;
+		DECLARE oriMsgRef REFERENCE TO Environment.Variables.inMessage;
 		
 		IF iRef.Field039 = '00' THEN
 			
@@ -68,13 +69,13 @@ CREATE COMPUTE MODULE MF_TX_JSON_PAY_PKB_Validate_and_Map_Res
 			DECLARE msg1, msg2, msg3 CHARACTER;
 			
 			IF evRef.CHARGE_FEE = '0' THEN
-				SET msg1 = GenerateItaReversalString(iRef, evRef.TOTAL_PKB, evRef.BUFFER_BALANCE_PKB, evRef.DEBIT_CODE, evRef.CREDIT_CODE);
-				SET msg2 = GenerateItaReversalString(iRef, evRef.TOTAL_SWD, evRef.BUFFER_BALANCE_SWD, evRef.DEBIT_CODE, evRef.CREDIT_CODE);
+				SET msg1 = GenerateItaReversalString(oriMsgRef, evRef.TOTAL_PKB, evRef.BUFFER_BALANCE_PKB, evRef.DEBIT_CODE, evRef.CREDIT_CODE, evRef.CHANNEL_CODE, 2);
+				SET msg2 = GenerateItaReversalString(oriMsgRef, evRef.TOTAL_SWD, evRef.BUFFER_BALANCE_SWD, evRef.DEBIT_CODE, evRef.CREDIT_CODE, evRef.CHANNEL_CODE, 3);
 				SET msg3 = NULL;
 			ELSE
-				SET msg1 = GenerateItaReversalString(iRef, evRef.CHARGE_FEE, evRef.BUFFER_BALANCE_CHARGE_FEE, evRef.DEBIT_CODE, evRef.CREDIT_CODE);
-				SET msg2 = GenerateItaReversalString(iRef, evRef.TOTAL_PKB, evRef.BUFFER_BALANCE_PKB, evRef.DEBIT_CODE, evRef.CREDIT_CODE);
-				SET msg3 = GenerateItaReversalString(iRef, evRef.TOTAL_SWD, evRef.BUFFER_BALANCE_SWD, evRef.DEBIT_CODE, evRef.CREDIT_CODE);
+				SET msg1 = GenerateItaReversalString(oriMsgRef, evRef.CHARGE_FEE, evRef.BUFFER_BALANCE_CHARGE_FEE, evRef.DEBIT_CODE, evRef.CREDIT_CODE, evRef.CHANNEL_CODE, 1);
+				SET msg2 = GenerateItaReversalString(oriMsgRef, evRef.TOTAL_PKB, evRef.BUFFER_BALANCE_PKB, evRef.DEBIT_CODE, evRef.CREDIT_CODE, evRef.CHANNEL_CODE, 2);
+				SET msg3 = GenerateItaReversalString(oriMsgRef, evRef.TOTAL_SWD, evRef.BUFFER_BALANCE_SWD, evRef.DEBIT_CODE, evRef.CREDIT_CODE, evRef.CHANNEL_CODE, 3);
 			END IF;
 			
 			-- Set Output Message & Propagate to ITA MULTIPOSTING REVERSAL Queue
@@ -93,7 +94,7 @@ CREATE COMPUTE MODULE MF_TX_JSON_PAY_PKB_Validate_and_Map_Res
 			SET oRef.MESSAGE1 = msg1;
 			SET oRef.MESSAGE2 = msg2;
 			
-			IF oRef.MESSAGE IS NOT NULL THEN
+			IF msg3 IS NOT NULL THEN
 				SET oRef.MESSAGE3 = msg3;
 			END IF;
 			
@@ -107,10 +108,6 @@ CREATE COMPUTE MODULE MF_TX_JSON_PAY_PKB_Validate_and_Map_Res
 			SET OutputLocalEnvironment.Destination.MQ.DestinationData[1].queueName = destReqQ;
 			SET OutputLocalEnvironment.MQ.GET.QueueName = destResQ;
 			SET OutputLocalEnvironment.MQ.GET.MQGMO.WaitInterval = waitTime;
-			
-			CREATE FIELD Environment.Variables.outMessage;
-			CREATE LASTCHILD OF Environment.Variables.outMessage DOMAIN 'JSON';
-			CREATE FIELD Environment.Variables.outMessage.JSON.Data IDENTITY (JSON.Object)Data;
 			
 			SET Environment.Variables.outMessage.JSON.Data = oRef;
 			
@@ -130,25 +127,34 @@ CREATE COMPUTE MODULE MF_TX_JSON_PAY_PKB_Validate_and_Map_Res
 		RETURN FALSE;
 	END;
 	
-	CREATE FUNCTION GenerateItaReversalString (IN iRef REFERENCE, IN amount CHARACTER, IN bblc CHARACTER, IN debitCode CHARACTER, IN creditCode CHARACTER) RETURNS CHARACTER
+	CREATE FUNCTION GenerateItaReversalString (IN iRef REFERENCE, IN amount CHARACTER, IN bblc CHARACTER, IN debitCode CHARACTER, IN creditCode CHARACTER, IN chl CHARACTER, IN msgType INTEGER) RETURNS CHARACTER
 	BEGIN
-		DECLARE outBuf, docRef CHARACTER;
-		SET docRef = iRef.CHANNEL || '-' || iRef.USER_ID || '-' || iRef.REF_TRX;
+		DECLARE outBuf, docRef, ntrvRef CHARACTER;
+		
+		SET docRef = LEFT(chl || '-' || iRef.USER_ID || '-' || iRef.REF_TRX || SPACE(16), 16);
+		CASE msgType
+			WHEN 1 THEN
+				SET ntrvRef = LEFT('KOR BY ' || iRef.NARATIVE || SPACE(35), 35) || LEFT('KOR BY ' || iRef.NARATIVE || SPACE(35), 35);
+			WHEN 2 THEN
+				SET ntrvRef = LEFT('KOR ' || iRef.NARATIVE || SPACE(35), 35) || LEFT('KOR ' || iRef.NARATIVE || SPACE(35), 35);
+			WHEN 3 THEN
+				SET ntrvRef = LEFT('KOR ' || iRef.NARATIVE2 || SPACE(35), 35) || LEFT('KOR ' || iRef.NARATIVE2 || SPACE(35), 35);
+		END CASE;
 		SET outBuf = SPACE(38) ||
 					 CAST(CURRENT_TIMESTAMP AS CHARACTER FORMAT 'yyMMddHHmmssSSSSSS') ||
-					 SPACE(8) || 
-					 LEFT(iRef.SENDER_ACCOUNT || SPACE(20), 20) ||
-					 SPACE(33) ||
-					 bblc ||
+					 SPACE(28) ||
+					 iRef.SENDER_ACCOUNT ||
+					 LEFT(bblc || SPACE(20), 20) ||
+					 SPACE(13) ||
 					 RIGHT(REPLICATE('0', 15) || amount, 15) ||
 					 LEFT(iRef.REF_TRX || SPACE(16), 16) ||
 					 docRef ||
-					 docRef || 
-					 LEFT('KOR ' || iRef.NARATIVE || SPACE(35), 35) ||
-					 LEFT('KOR ' || iRef.NARATIVE2 || SPACE(35), 35) ||
-					 SPACE(226) ||
-					 creditCode ||
-					 debitCode;
+					 docRef ||
+					 ntrvRef ||
+					 LEFT(iRef.BILL_NO || SPACE(35), 35) ||
+					 SPACE(191) ||
+					 debitCode ||
+					 creditCode;
 		RETURN outBuf;
 	END;
 END MODULE;

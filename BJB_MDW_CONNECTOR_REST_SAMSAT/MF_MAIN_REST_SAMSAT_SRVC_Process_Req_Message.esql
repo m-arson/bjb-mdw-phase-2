@@ -84,8 +84,7 @@ CREATE COMPUTE MODULE MF_MAIN_REST_SAMSAT_SRVC_Process_Req_Message
 					T."""Param3""" AS Param3
 				FROM Database.{'T_PARAMETER'} AS T
 				WHERE
-					T."""SourceSystem""" = SOURCE_SYSTEM AND
-					T."""TargetSystem""" = TARGET_SYSTEM);
+					T."""SourceSystem""" = SOURCE_SYSTEM);
 			
 			DECLARE I INTEGER 1;
 			DECLARE J INTEGER CARDINALITY(Environment.Variables.DB.SAMSAT.Field[]);

@@ -1,0 +1,94 @@
+
+DECLARE SESSION SHARED ROW;
+
+CREATE COMPUTE MODULE MF_MAIN_Manage_Session
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		
+		-- Declare TCP In and TCP Out Properties
+		DECLARE tcpInRef REFERENCE TO InputLocalEnvironment.TCPIP.Input.ConnectionDetails;
+		CREATE FIELD OutputLocalEnvironment.Destination.TCPIP.Output;
+		DECLARE tcpOutRef REFERENCE TO OutputLocalEnvironment.Destination.TCPIP.Output;
+		DECLARE cnt INTEGER;
+		
+		-- Load Session from database if not exists
+		IF FIELDNAME(SESSION.Data) IS NULL THEN		
+			CALL PopulateSessionRow(SESSION, Environment);
+		END IF;
+		
+		-- Count number of row from database
+		SET cnt = CARDINALITY(SESSION.Data[]);
+		
+		-- Close TCP Connection if table if null
+		IF cnt = 0 THEN
+			SET tcpOutRef.Id = tcpInRef.Id;
+			SET tcpOutRef.Port = tcpInRef.Port;
+			
+			PROPAGATE TO TERMINAL 'out';	
+		END IF;
+		
+		-- Validate IP Address and Close connection if IP Address not registered
+		IF NOT IsValidIPAddress(SESSION, tcpInRef.ClientDetails.Address) THEN
+			SET tcpOutRef.Id = tcpInRef.Id;
+			SET tcpOutRef.Port = tcpInRef.Port;
+			
+			PROPAGATE TO TERMINAL 'out';
+		END IF;
+		
+		-- Get Session index from shared row
+		DECLARE sessionIndex INTEGER;
+		SET sessionIndex = GetSessionIndex(SESSION, tcpInRef.ClientDetails.Address);
+		
+		RETURN FALSE;
+	END;
+	
+	CREATE FUNCTION GetSessionIndex(IN session REFERENCE, IN ipAddress CHARACTER) RETURNS INTEGER
+	BEGIN
+		DECLARE I, J INTEGER;
+		SET I = 1;
+		SET J = CARDINALITY(session.Data[]);
+		
+		WHILE I <= J DO
+			
+			IF session.Data[I].IP = ipAddress THEN
+				RETURN I;
+			END IF;
+			
+			SET I = I + 1;
+		END WHILE;
+		
+	END;
+	
+	CREATE PROCEDURE PopulateSessionRow(IN session REFERENCE, IN env REFERENCE)
+	BEGIN
+		CREATE FIELD Environment.SESSION.Data;
+		SET Environment.SESSION.Data[] =
+			SELECT
+				T.ID, T.IP, T.CONN_ID, T.MDW_PORT, T.SYSNAME, T.PARAM1, T.PARAM2,T.PARAM3
+			FROM
+				Database.{'T_CONN_ID'} AS T;
+		
+		DECLARE I, J INTEGER;
+		SET I = 1;
+		SET J = CARDINALITY(Environment.SESSION.Data[]);
+		
+		WHILE I <= J DO
+			SET session.Data[I] = Environment.SESSION.Data[I];
+			SET session.Data[I].IS_ACTIVE = FALSE;
+			SET I = I + 1;
+		END WHILE;
+	END;
+	
+	CREATE FUNCTION IsValidIPAddress(IN session REFERENCE, IN ipAddress CHARACTER) RETURNS BOOLEAN
+	BEGIN
+		DECLARE rowCount INTEGER;
+		SET rowCount = SELECT COUNT(T.*) FROM session.Data[] AS T WHERE T.IP = ipAddress;
+		
+		IF rowCount > 0 THEN
+			RETURN TRUE;
+		END IF;
+		
+		RETURN FALSE;
+	END;
+	
+END MODULE;

@@ -1,0 +1,42 @@
+CREATE COMPUTE MODULE MF_MAIN_TCP_ADAPTER_PREPARING_REQUEST
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		
+		-------------------- KEEP THE UUID --------------------
+		SET InputLocalEnvironment.UUID = InputRoot.MQRFH2.usr.vs.uuid;
+		SET OutputLocalEnvironment.UUID = InputLocalEnvironment.UUID;
+		-------------------- KEEP THE UUID --------------------
+		
+		-------------------- LOGGING INPUT --------------------
+		CALL PrepareLogMessage(OutputRoot, ApplicationLabel, MessageFlowLabel, NodeLabel, 'input', 'info', InputExceptionList, InputLocalEnvironment, InputRoot);
+		PROPAGATE TO TERMINAL 'out1' DELETE NONE;
+		DELETE FIELD OutputRoot.BLOB;
+		-------------------- LOGGING INPUT --------------------
+		
+		-------------------- PREPARE OUTPUT MESSAGE --------------------
+		SET OutputRoot.BLOB.BLOB = CAST(ASBITSTREAM(InputRoot.JSON.Data CCSID 1208) AS BLOB CCSID 819) || X'03';
+		-------------------- PREPARE OUTPUT MESSAGE --------------------
+		
+		-------------------- LOGGING OUTPUT --------------------
+		CALL PrepareLogMessage(OutputRoot, ApplicationLabel, MessageFlowLabel, NodeLabel, 'output', 'debug', OutputExceptionList, OutputLocalEnvironment, OutputRoot);
+		PROPAGATE TO TERMINAL 'out1' DELETE NONE;
+		DELETE FIELD OutputRoot.BLOB;
+		-------------------- LOGGING OUTPUT --------------------
+		
+		-------------------- REASSIGN OUTPUT MESSAGE AND PROPERTIES --------------------
+		SET OutputRoot.BLOB.BLOB = CAST(ASBITSTREAM(InputRoot.JSON.Data CCSID 1208) AS BLOB CCSID 819) || X'03';
+		
+		SET Environment.Variables.ResponseId =
+			CAST(InputRoot.MQMD.CorrelId AS CHARACTER CCSID 1208) || '|'
+			|| ADAPTER_Q || '|'
+			|| InputRoot.MQRFH2.usr.vs.uuid;
+			
+		SET Environment.Variables.CorrelId = InputRoot.MQMD.CorrelId;
+		SET Environment.Variables.ReplyToQ = InputRoot.MQMD.ReplyToQ;
+		SET Environment.Variables.UUID = InputLocalEnvironment.UUID;
+		SET Environment.Variables.CoreTimeout = CAST(InputRoot.MQRFH2.usr.vs.coreTimeout AS INTEGER) * 1000;
+		-------------------- REASSIGN OUTPUT MESSAGE AND PROPERTIES -------------------- 
+		
+		RETURN TRUE;
+	END;
+END MODULE;

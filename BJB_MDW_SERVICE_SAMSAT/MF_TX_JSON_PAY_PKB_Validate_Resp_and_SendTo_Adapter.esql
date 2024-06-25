@@ -16,10 +16,10 @@ CREATE COMPUTE MODULE MF_TX_JSON_PAY_PKB_Validate_Resp_and_SendTo_Adapter
 		DECLARE oriMsgRef REFERENCE TO Environment.Variables.inMessage;
 		DECLARE iRef REFERENCE TO InputRoot.JSON.Data;
 		
+		SET OutputRoot.MQMD.CorrelId = CAST(Environment.Variables.details.correlId AS BLOB);
+		SET OutputRoot.MQMD.Expiry = Q_EXPIRY;
 		
 		IF iRef.RESPONSE_CODE = '0000' THEN
-			SET OutputRoot.MQMD.CorrelId = CAST(Environment.Variables.details.correlId AS BLOB);
-			SET OutputRoot.MQMD.Expiry = Q_EXPIRY;
 			SET OutputRoot.MQMD.ReplyToQ = Environment.Variables.details.dbParam.DestResponseQ;
 			SET OutputRoot.MQRFH2.usr.vs.coreTimeout = Environment.Variables.details.dbParam.Timeout;
 			SET OutputRoot.MQRFH2.usr.vs.uuid = InputLocalEnvironment.UUID;
@@ -34,7 +34,7 @@ CREATE COMPUTE MODULE MF_TX_JSON_PAY_PKB_Validate_Resp_and_SendTo_Adapter
 			
 			SET oRef.MTI = '0200';
 			SET oRef.Field002 = '622011444444444444';
-			SET oRef.Field003 = '541099';
+			SET oRef.Field003 = '541096';
 			SET oRef.Field004 = RIGHT(REPLICATE('0', 12) || Environment.Variables.ADAPTER_PROPS.TOTAL_PAY, 12);
 			SET oRef.Field007 = LEFT(gmtts,10);
 			SET oRef.Field011 = RIGHT(dtts,6);
@@ -119,10 +119,6 @@ CREATE COMPUTE MODULE MF_TX_JSON_PAY_PKB_Validate_Resp_and_SendTo_Adapter
 			DECLARE txQueueRes CHARACTER;
 			SET txQueueRes = SUBSTRING(Environment.Variables.details.dbParam.TxQueue AFTER '|');
 			SET OutputLocalEnvironment.Destination.MQ.DestinationData[1].queueName = txQueueRes;
-			
-			CREATE FIELD Environment.Variables.outMessage;
-			CREATE LASTCHILD OF Environment.Variables.outMessage DOMAIN 'JSON';
-			CREATE FIELD Environment.Variables.outMessage.JSON.Data IDENTITY (JSON.Object)Data;
 			
 			SET Environment.Variables.outMessage.JSON.Data = OutputRoot.JSON.Data;
 			

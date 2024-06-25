@@ -1,0 +1,24 @@
+CREATE COMPUTE MODULE MF_MAIN_Manage_Session
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		
+		DECLARE tcpInRef REFERENCE TO InputLocalEnvironment.TCPIP.Input.ConnectionDetails;
+		DECLARE tcpOutRef REFERENCE TO OutputLocalEnvironment.Destination.TCPIP.Output;
+		DECLARE cnt INTEGER;
+		
+		IF FIELDNAME(SESSION.Data) IS NULL THEN		
+			CALL PopulateSessionRow(SESSION, Environment);
+		END IF;
+		
+		SET cnt = CARDINALITY(SESSION.Data[]);
+		
+		IF cnt = 0 THEN
+			SET tcpOutRef.Id = tcpInRef.Id;
+			SET tcpOutRef.Port = tcpInRef.Port;
+			PROPAGATE TO TERMINAL 'out';	
+		END IF;
+		
+		IF IsValidIPAddress(SESSION, tcpInRef.ClientDetails.Address) THEN
+			DECLARE sessionIndex INTEGER;
+			END X;
+		ELSE

@@ -1,0 +1,43 @@
+/*EATE FUNCTION Main() RETURNS BOOLE*/
+	BEGIN
+		
+		-- Keep the UUID
+		SET OutputLocalEnvironment.UUID = InputLocalEnvironment.UUID;
+		
+		-- Logging Input
+		CALL PrepareLogMessage(OutputRoot, ApplicationLabel, MessageFlowLabel, NodeLabel, 'input', 'debug', InputExceptionList, InputLocalEnvironment, InputRoot);
+		PROPAGATE TO TERMINAL 'out1' DELETE NONE;
+		DELETE FIELD OutputRoot.BLOB;
+		
+		-- Set Correl ID Output
+		SET OutputRoot.MQMD.CorrelId = CAST(Environment.Variables.details.correlId AS BLOB);
+		
+		-- Set output message
+		CREATE LASTCHILD OF OutputRoot DOMAIN 'JSON';
+		CREATE FIELD OutputRoot.JSON.Data IDENTITY (JSON.Object)Data;
+		DECLARE oRef REFERENCE TO OutputRoot.JSON.Data;
+		
+		SET oRef = Environment.Variables.inMessage;
+		SET oRef.RESPONSE_TIME = CAST(CURRENT_TIMESTAMP AS CHARACTER FORMAT 'yyyyMMddHHmmss');
+		SET oRef.RESPONSE_CODE = '0068';
+		SET oRef.RESPONSE_MESSAGE = 'Timeout Backend';
+		
+		-- Set Destination Queue
+		DECLARE txQueueRes CHARACTER;
+		SET txQueueRes = SUBSTRING(Environment.Variables.details.dbParam.TxQueue AFTER '|');
+		SET OutputLocalEnvironment.Destination.MQ.DestinationData[1].queueName = txQueueRes;
+		
+		SET Environment.Variables.outMessage.JSON.Data = oRef;
+		
+		-- Logging Output
+		CALL PrepareLogMessage(OutputRoot, ApplicationLabel, MessageFlowLabel, NodeLabel, 'output', 'info', OutputExceptionList, OutputLocalEnvironment, OutputRoot);
+		PROPAGATE TO TERMINAL 'out1' DELETE NONE;
+		DELETE FIELD OutputRoot.BLOB;
+		
+		CREATE LASTCHILD OF OutputRoot DOMAIN 'JSON';
+		CREATE FIELD OutputRoot.JSON.Data IDENTITY (JSON.Object)Data;
+		
+		SET OutputRoot.JSON.Data = Environment.Variables.outMessage.JSON.Data;
+		
+		RETURN TRUE;
+	END;

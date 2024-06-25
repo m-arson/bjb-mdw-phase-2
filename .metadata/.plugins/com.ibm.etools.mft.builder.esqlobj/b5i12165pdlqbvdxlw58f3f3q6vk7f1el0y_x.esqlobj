@@ -1,0 +1,28 @@
+/*EATE FUNCTION Main() RETURNS BOOLE*/
+	BEGIN
+		
+		DECLARE iRef REFERENCE InputRoot.JSON.Data;
+		CREATE LASTCHILD OF OutputRoot DOMAIN 'JSON';
+		CREATE FIELD OutputRoot.JSON.Data IDENTITY (JSON.Object)Data;
+		DECLARE oRef REFERENCE TO OutputRoot.JSON.Data;
+		
+		-- Token
+		SET OutputRoot.JSON.Data.grant_type = 'client_credentials';
+		SET OutputRoot.JSON.Data.client_id = CAST(result.Identity.client_id AS INTEGER);
+		SET OutputRoot.JSON.Data.client_secret = result.Identity.client_secret;
+		
+		-- Inquiry
+		SET oRef.channelid = channelID;
+		SET oRef.nik = '';
+		SET oRef.phonenbr = '';
+		SET oRef.mailaddr = '';
+		SET oRef.vaccount = iRef.Message.BILL_NO;
+		SET oRef.billingid = iRef.Message.BILL_NO;
+		SET oRef.caid = iRef.REF_TRX;
+		SET oRef.merchantid = iRef.Message.REF_TRX;
+		SET oRef.clientid = InputLocalEnvironment.client_id;
+		
+		
+		
+		RETURN TRUE;
+	END;

@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<MessageBroker name="SIMPLE_TMP">
+  <XSDCollection href="platform:/resource/SIMPLE_TMP/ISO8583Format.xsd" prefix="tns" targetNamespace="http://www.ibm.com/dfdl/ISO8583Format"/>
+  <XSDCollection href="platform:/resource/SIMPLE_TMP/ISO8583Types.xsd" prefix="tns" targetNamespace="http://www.ibm.com/dfdl/ISO8583Types">
+    <simpleType href="platform:/resource/SIMPLE_TMP/ISO8583Types.xsd#//Type_Bit;XSDSimpleTypeDefinition" name="Type_Bit" variety="atomic"/>
+    <simpleType href="platform:/resource/SIMPLE_TMP/ISO8583Types.xsd#//Type_Bit_Unpacked;XSDSimpleTypeDefinition=1" name="Type_Bit_Unpacked" variety="atomic"/>
+    <simpleType href="platform:/resource/SIMPLE_TMP/ISO8583Types.xsd#//Type_n_string;XSDSimpleTypeDefinition=2" name="Type_n_string" variety="atomic"/>
+    <simpleType href="platform:/resource/SIMPLE_TMP/ISO8583Types.xsd#//Type_a_string;XSDSimpleTypeDefinition=3" name="Type_a_string" variety="atomic"/>
+    <simpleType href="platform:/resource/SIMPLE_TMP/ISO8583Types.xsd#//Type_an_string;XSDSimpleTypeDefinition=4" name="Type_an_string" variety="atomic"/>
+    <simpleType href="platform:/resource/SIMPLE_TMP/ISO8583Types.xsd#//Type_n_or_a_string;XSDSimpleTypeDefinition=5" name="Type_n_or_a_string" variety="atomic"/>
+    <simpleType href="platform:/resource/SIMPLE_TMP/ISO8583Types.xsd#//Type_ans_string;XSDSimpleTypeDefinition=6" name="Type_ans_string" variety="atomic"/>
+    <simpleType href="platform:/resource/SIMPLE_TMP/ISO8583Types.xsd#//Type_ns_string;XSDSimpleTypeDefinition=7" name="Type_ns_string" variety="atomic"/>
+    <simpleType href="platform:/resource/SIMPLE_TMP/ISO8583Types.xsd#//Type_anp_string;XSDSimpleTypeDefinition=8" name="Type_anp_string" variety="atomic"/>
+    <simpleType href="platform:/resource/SIMPLE_TMP/ISO8583Types.xsd#//Type_b_hexBinary;XSDSimpleTypeDefinition=9" name="Type_b_hexBinary" variety="atomic"/>
+    <simpleType baseType="mlib://SIMPLE_TMP#/-/simpleType{http://www.ibm.com/dfdl/ISO8583Types}Type_an_string" href="platform:/resource/SIMPLE_TMP/ISO8583Types.xsd#//Type_an_LL;XSDSimpleTypeDefinition=10" name="Type_an_LL" variety="atomic"/>
+    <simpleType baseType="mlib://SIMPLE_TMP#/-/simpleType{http://www.ibm.com/dfdl/ISO8583Types}Type_an_string" href="platform:/resource/SIMPLE_TMP/ISO8583Types.xsd#//Type_an_LLL;XSDSimpleTypeDefinition=11" name="Type_an_LLL" variety="atomic"/>
+    <simpleType baseType="mlib://SIMPLE_TMP#/-/simpleType{http://www.ibm.com/dfdl/ISO8583Types}Type_ans_string" href="platform:/resource/SIMPLE_TMP/ISO8583Types.xsd#//Type_ans_LL;XSDSimpleTypeDefinition=12" name="Type_ans_LL" variety="atomic"/>
+    <simpleType baseType="mlib://SIMPLE_TMP#/-/simpleType{http://www.ibm.com/dfdl/ISO8583Types}Type_ans_string" href="platform:/resource/SIMPLE_TMP/ISO8583Types.xsd#//Type_ans_LLL;XSDSimpleTypeDefinition=13" name="Type_ans_LLL" variety="atomic"/>
+    <simpleType baseType="mlib://SIMPLE_TMP#/-/simpleType{http://www.ibm.com/dfdl/ISO8583Types}Type_ans_string" href="platform:/resource/SIMPLE_TMP/ISO8583Types.xsd#//Type_z_LL;XSDSimpleTypeDefinition=14" name="Type_z_LL" variety="atomic"/>
+    <simpleType baseType="mlib://SIMPLE_TMP#/-/simpleType{http://www.ibm.com/dfdl/ISO8583Types}Type_ans_string" href="platform:/resource/SIMPLE_TMP/ISO8583Types.xsd#//Type_z_LLL;XSDSimpleTypeDefinition=15" name="Type_z_LLL" variety="atomic"/>
+    <simpleType baseType="mlib://SIMPLE_TMP#/-/simpleType{http://www.ibm.com/dfdl/ISO8583Types}Type_n_string" href="platform:/resource/SIMPLE_TMP/ISO8583Types.xsd#//Type_n_LL;XSDSimpleTypeDefinition=16" name="Type_n_LL" variety="atomic"/>
+    <simpleType baseType="mlib://SIMPLE_TMP#/-/simpleType{http://www.ibm.com/dfdl/ISO8583Types}Type_n_string" href="platform:/resource/SIMPLE_TMP/ISO8583Types.xsd#//Type_n_LLL;XSDSimpleTypeDefinition=17" name="Type_n_LLL" variety="atomic"/>
+    <simpleType baseType="mlib://SIMPLE_TMP#/-/simpleType{http://www.ibm.com/dfdl/ISO8583Types}Type_ns_string" href="platform:/resource/SIMPLE_TMP/ISO8583Types.xsd#//Type_ns_LL;XSDSimpleTypeDefinition=18" name="Type_ns_LL" variety="atomic"/>
+    <simpleType baseType="mlib://SIMPLE_TMP#/-/simpleType{http://www.ibm.com/dfdl/ISO8583Types}Type_ns_string" href="platform:/resource/SIMPLE_TMP/ISO8583Types.xsd#//Type_ns_LLL;XSDSimpleTypeDefinition=19" name="Type_ns_LLL" variety="atomic"/>
+    <simpleType baseType="mlib://SIMPLE_TMP#/-/simpleType{http://www.ibm.com/dfdl/ISO8583Types}Type_b_hexBinary" href="platform:/resource/SIMPLE_TMP/ISO8583Types.xsd#//Type_b_LL;XSDSimpleTypeDefinition=20" name="Type_b_LL" variety="atomic"/>
+    <simpleType baseType="mlib://SIMPLE_TMP#/-/simpleType{http://www.ibm.com/dfdl/ISO8583Types}Type_b_hexBinary" href="platform:/resource/SIMPLE_TMP/ISO8583Types.xsd#//Type_b_LLL;XSDSimpleTypeDefinition=21" name="Type_b_LLL" variety="atomic"/>
+    <simpleType href="platform:/resource/SIMPLE_TMP/ISO8583Types.xsd#//Type_n_decimal;XSDSimpleTypeDefinition=22" name="Type_n_decimal" variety="atomic"/>
+    <simpleType baseType="mlib://SIMPLE_TMP#/-/simpleType{http://www.ibm.com/dfdl/ISO8583Types}Type_n_string" href="platform:/resource/SIMPLE_TMP/ISO8583Types.xsd#//Type_n_dateTimeNoYear;XSDSimpleTypeDefinition=23" name="Type_n_dateTimeNoYear" variety="atomic"/>
+    <simpleType href="platform:/resource/SIMPLE_TMP/ISO8583Types.xsd#//Type_n_dateTime;XSDSimpleTypeDefinition=24" name="Type_n_dateTime" variety="atomic"/>
+    <simpleType href="platform:/resource/SIMPLE_TMP/ISO8583Types.xsd#//Type_n_time;XSDSimpleTypeDefinition=25" name="Type_n_time" variety="atomic"/>
+    <simpleType baseType="mlib://SIMPLE_TMP#/-/simpleType{http://www.ibm.com/dfdl/ISO8583Types}Type_n_string" href="platform:/resource/SIMPLE_TMP/ISO8583Types.xsd#//Type_n_monthDay;XSDSimpleTypeDefinition=26" name="Type_n_monthDay" variety="atomic"/>
+    <simpleType baseType="mlib://SIMPLE_TMP#/-/simpleType{http://www.ibm.com/dfdl/ISO8583Types}Type_n_string" href="platform:/resource/SIMPLE_TMP/ISO8583Types.xsd#//Type_n_yearMonth;XSDSimpleTypeDefinition=27" name="Type_n_yearMonth" variety="atomic"/>
+    <simpleType href="platform:/resource/SIMPLE_TMP/ISO8583Types.xsd#//Type_n_date;XSDSimpleTypeDefinition=28" name="Type_n_date" variety="atomic"/>
+    <simpleType href="platform:/resource/SIMPLE_TMP/ISO8583Types.xsd#//PrefixLength3;XSDSimpleTypeDefinition=29" name="PrefixLength3" variety="atomic"/>
+    <simpleType href="platform:/resource/SIMPLE_TMP/ISO8583Types.xsd#//PrefixLength2;XSDSimpleTypeDefinition=30" name="PrefixLength2" variety="atomic"/>
+  </XSDCollection>
+  <XSDCollection href="platform:/resource/SIMPLE_TMP/ISO8583_1987_Unpacked.xsd" prefix="" targetNamespace="">
+    <element href="platform:/resource/SIMPLE_TMP/ISO8583_1987_Unpacked.xsd#//isomsg;XSDElementDeclaration" name="isomsg"/>
+    <complexType baseType="mlib://SIMPLE_TMP#/-/complexType{http://www.w3.org/2001/XMLSchema}anyType" href="platform:/resource/SIMPLE_TMP/ISO8583_1987_Unpacked.xsd#//PrimaryBitmapTypeUnpacked;XSDComplexTypeDefinition" name="PrimaryBitmapTypeUnpacked"/>
+    <complexType baseType="mlib://SIMPLE_TMP#/-/complexType{http://www.w3.org/2001/XMLSchema}anyType" href="platform:/resource/SIMPLE_TMP/ISO8583_1987_Unpacked.xsd#//SecondaryBitmapTypeUnpacked;XSDComplexTypeDefinition=1" name="SecondaryBitmapTypeUnpacked"/>
+    <group href="platform:/resource/SIMPLE_TMP/ISO8583_1987_Unpacked.xsd#//Bitmaps_Group_Unpacked;XSDModelGroupDefinition" name="Bitmaps_Group_Unpacked"/>
+  </XSDCollection>
+  <XSDCollection href="platform:/resource/SIMPLE_TMP/ISO8583_STD.xsd" prefix="iso" targetNamespace="http://www.ibm.com/dfdl/ISO8583STD">
+    <element href="platform:/resource/SIMPLE_TMP/ISO8583_STD.xsd#//ISO8583STD;XSDElementDeclaration" name="ISO8583STD"/>
+    <complexType baseType="mlib://SIMPLE_TMP#/-/complexType{http://www.w3.org/2001/XMLSchema}anyType" href="platform:/resource/SIMPLE_TMP/ISO8583_STD.xsd#//PrimaryBitmapTypeUnpacked;XSDComplexTypeDefinition" name="PrimaryBitmapTypeUnpacked"/>
+    <complexType baseType="mlib://SIMPLE_TMP#/-/complexType{http://www.w3.org/2001/XMLSchema}anyType" href="platform:/resource/SIMPLE_TMP/ISO8583_STD.xsd#//SecondaryBitmapTypeUnpacked;XSDComplexTypeDefinition=1" name="SecondaryBitmapTypeUnpacked"/>
+    <group href="platform:/resource/SIMPLE_TMP/ISO8583_STD.xsd#//Bitmaps_Group_Unpacked;XSDModelGroupDefinition" name="Bitmaps_Group_Unpacked"/>
+  </XSDCollection>
+</MessageBroker>

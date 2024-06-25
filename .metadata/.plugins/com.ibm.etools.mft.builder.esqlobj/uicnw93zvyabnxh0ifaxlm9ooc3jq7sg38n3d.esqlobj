@@ -1,0 +1,65 @@
+CREATE COMPUTE MODULE MF_MAIN_Manage_Session
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		
+		DECLARE tcpInRef REFERENCE TO InputLocalEnvironment.TCPIP.Input.ConnectionDetails;
+		CREATE FIELD OutputLocalEnvironment.Destination.TCPIP.Output;
+		DECLARE tcpOutRef REFERENCE TO OutputLocalEnvironment.Destination.TCPIP.Output;
+		DECLARE cnt INTEGER;
+		
+		IF FIELDNAME(SESSION.Data) IS NULL THEN		
+			CALL PopulateSessionRow(SESSION, Environment);
+		END IF;
+		
+		SET cnt = CARDINALITY(SESSION.Data[]);
+		
+		IF cnt = 0 THEN
+			SET tcpOutRef.Id = tcpInRef.Id;
+			SET OutputLocalEnvironment.Destination.TCPIP.Output.Port = tcpInRef.Port;
+			PROPAGATE TO TERMINAL 'out';	
+		END IF;
+		
+		IF IsValidIPAddress(SESSION, tcpInRef.ClientDetails.Address) THEN
+			DECLARE sessionIndex INTEGER;
+		ELSE
+			SET OutputLocalEnvironment.Destination.TCPIP.Output.Id = tcpInRef.Id;
+			SET OutputLocalEnvironment.Destination.TCPIP.Output.Port = tcpInRef.Port;
+			PROPAGATE TO TERMINAL 'out';
+		END IF;
+			
+		RETURN FALSE;
+	END;
+	
+	CREATE PROCEDURE PopulateSessionRow(IN sess REFERENCE, IN env REFERENCE)
+	BEGIN
+		CREATE FIELD Environment.SESSION.Data;
+		SET Environment.SESSION.Data[] =
+			SELECT
+				T.ID, T.IP, T.CONN_ID, T.MDW_PORT, T.SYSNAME, T.PARAM1, T.PARAM2,T.PARAM3
+			FROM
+				Database.{'T_CONN_ID'} AS T;
+		
+		DECLARE I, J INTEGER;
+		SET I = 1;
+		SET J = CARDINALITY(Environment.SESSION.Data[]);
+		
+		WHILE I <= J DO
+			SET SESSION.Data[I] = Environment.SESSION.Data[I];
+			SET SESSION.Data[I].IS_ACTIVE = FALSE;
+			SET I = I + 1;
+		END WHILE;
+	END;
+	
+	CREATE FUNCTION IsValidIPAddress(IN sess REFERENCE, IN ip CHARACTER) RETURNS BOOLEAN
+	BEGIN
+		DECLARE rowCount INTEGER;
+		SET rowCount = SELECT COUNT(T.*) FROM sess.Data[] AS T WHERE T.IP = ip;
+		
+		IF rowCount > 0 THEN
+			RETURN TRUE;
+		END IF;
+		
+		RETURN FALSE;
+	END;
+	
+END MODULE;

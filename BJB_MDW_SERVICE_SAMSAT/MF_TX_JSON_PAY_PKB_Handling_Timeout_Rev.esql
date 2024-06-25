@@ -30,10 +30,6 @@ CREATE COMPUTE MODULE MF_TX_JSON_PAY_PKB_Handling_Timeout_Rev
 		SET txQueueRes = SUBSTRING(Environment.Variables.details.dbParam.TxQueue AFTER '|');
 		SET OutputLocalEnvironment.Destination.MQ.DestinationData[1].queueName = txQueueRes;
 		
-		CREATE FIELD Environment.Variables.outMessage;
-		CREATE LASTCHILD OF Environment.Variables.outMessage DOMAIN 'JSON';
-		CREATE FIELD Environment.Variables.outMessage.JSON.Data IDENTITY (JSON.Object)Data;
-		
 		SET Environment.Variables.outMessage.JSON.Data = oRef;
 		
 		-- Logging Output

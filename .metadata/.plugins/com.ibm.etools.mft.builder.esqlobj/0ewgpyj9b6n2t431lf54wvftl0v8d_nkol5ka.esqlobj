@@ -1,0 +1,11 @@
+CREATE FUNCTION IsValidIPAddress(IN session REFERENCE, IN ipAddress CHARACTER) RETURNS BOOLEAN
+	BEGIN
+		DECLARE rowCount INTEGER;
+		SET rowCount = SELECT COUNT(T.*) FROM session.Data[] AS T WHERE T.IP = ipAddress;
+		
+		IF rowCount > 0 THEN
+			RETURN TRUE;
+		END IF;
+		
+		RETURN FALSE;
+	END;

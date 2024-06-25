@@ -1917,3 +1917,207 @@ BIP9326I<<The source 'BJB_MDW_SERVICE_SAMSATproject.generated.bar' has been succ
 BJB_MDW_CONNECTOR_REST_SAMSAT>>CHANNELSERVICE>>EG.SAMSAT_CONNECTOR>>SUCCESS>>1719043838565
 BIP9332I<<Application 'BJB_MDW_CONNECTOR_REST_SAMSAT' has been changed successfully. <<1719043838565
 BIP9326I<<The source 'BJB_MDW_CONNECTOR_REST_SAMSATproject.generated.bar' has been successfully deployed. <<1719043838565
+SIMPLE_TMP>>BILLERSERVICE>>EG.ADAPTER_TEST>>WARNING>>1719118606727
+BIP9318E<<Request to 'PreSetupValidate' resource 'SIMPLE_TMP', 'SIMPLE_TMP' of type 'Application' failed. <<1719118606727
+BIP2432E<<(.MF_MAIN_Manage_Session.PopulateSessionRow, 6.11) : The correlation name 'C.IP' is not valid. Those in scope are: SESSION, Environment, InputLocalEnvironment, OutputLocalEnvironment, InputRoot, InputBody, InputProperties, OutputRoot, InputExceptionList, OutputExceptionList, InputDestinationList, OutputDestinationList, sess, env, eRef, T_CONN_ID. <<1719118606727
+BIP9333W<<Application 'SIMPLE_TMP' has been changed but contains errors which has prevented some resources from starting. <<1719118606727
+BIP1096E<<The source 'SIMPLE_TMPproject.generated.bar' has been deployed but there were one or more failures which may mean the deployed resources will be unable to execute. <<1719118606727
+SIMPLE_TMP>>BILLERSERVICE>>EG.ADAPTER_TEST>>SUCCESS>>1719118635664
+BIP9332I<<Application 'SIMPLE_TMP' has been changed successfully. <<1719118635664
+BIP9326I<<The source 'SIMPLE_TMPproject.generated.bar' has been successfully deployed. <<1719118635664
+SIMPLE_TMP>>BILLERSERVICE>>EG.ADAPTER_TEST>>SUCCESS>>1719118775018
+BIP9332I<<Application 'SIMPLE_TMP' has been created successfully. <<1719118775018
+BIP9326I<<The source 'SIMPLE_TMPproject.generated.bar' has been successfully deployed. <<1719118775018
+SIMPLE_TMP>>BILLERSERVICE>>EG.ADAPTER_TEST>>SUCCESS>>1719199491081
+BIP9332I<<Application 'SIMPLE_TMP' has been changed successfully. <<1719199491081
+BIP9326I<<The source 'SIMPLE_TMPproject.generated.bar' has been successfully deployed. <<1719199491081
+SIMPLE_TMP>>BILLERSERVICE>>EG.ADAPTER_TEST>>SUCCESS>>1719200265371
+BIP9332I<<Application 'SIMPLE_TMP' has been changed successfully. <<1719200265371
+BIP9326I<<The source 'SIMPLE_TMPproject.generated.bar' has been successfully deployed. <<1719200265371
+SIMPLE_TMP>>BILLERSERVICE>>EG.ADAPTER_TEST>>SUCCESS>>1719200644551
+BIP9332I<<Application 'SIMPLE_TMP' has been changed successfully. <<1719200644551
+BIP9326I<<The source 'SIMPLE_TMPproject.generated.bar' has been successfully deployed. <<1719200644551
+SIMPLE_TMP>>BILLERSERVICE>>EG.ADAPTER_TEST>>SUCCESS>>1719201168449
+BIP9332I<<Application 'SIMPLE_TMP' has been changed successfully. <<1719201168449
+BIP9326I<<The source 'SIMPLE_TMPproject.generated.bar' has been successfully deployed. <<1719201168449
+SIMPLE_TMP>>BILLERSERVICE>>EG.ADAPTER_TEST>>WARNING>>1719201429109
+BIP9320E<<Message Flow 'MF_MAIN', 'MF_MAIN' encountered a failure and could not start. <<1719201429109
+BIP3550E<<Invalid Connection Details property: '{COMMON_POLICY}:TCP_SERVER_TEST'. <<1719201429109
+BIP3571E<<Invalid port number: 'TCP_SERVER_TEST'. <<1719201429109
+BIP9333W<<Application 'SIMPLE_TMP' has been changed but contains errors which has prevented some resources from starting. <<1719201429109
+BIP1096E<<The source 'SIMPLE_TMPproject.generated.bar' has been deployed but there were one or more failures which may mean the deployed resources will be unable to execute. <<1719201429109
+COMMON_POLICY>>BILLERSERVICE>>EG.ADAPTER_TEST>>SUCCESS>>1719201443426
+BIP9339W<<The values defined in the policy(s) 'QM_GATEWAY, QM_CHANNELSERVICE, QM_BILLERSERVICE, TCP_SERVER_HOPE, TCP_SERVER_ENCRYPT, ...' in policy project 'COMMON_POLICY' match the values of the existing policy(s). Any deployed resources using the policy(s) will not be affected by the redeploy of the policy project. <<1719201443426
+BIP9332I<<Policy 'TCP_SERVER_TEST' has been changed successfully. <<1719201443426
+BIP9326I<<The source 'COMMON_POLICYproject.generated.bar' has been successfully deployed. <<1719201443426
+SIMPLE_TMP>>BILLERSERVICE>>EG.ADAPTER_TEST>>SUCCESS>>1719201457552
+BIP9332I<<Application 'SIMPLE_TMP' has been changed successfully. <<1719201457552
+BIP9326I<<The source 'SIMPLE_TMPproject.generated.bar' has been successfully deployed. <<1719201457552
+SIMPLE_TMP>>BILLERSERVICE>>EG.ADAPTER_TEST>>SUCCESS>>1719202379309
+BIP9332I<<Application 'SIMPLE_TMP' has been changed successfully. <<1719202379309
+BIP9326I<<The source 'SIMPLE_TMPproject.generated.bar' has been successfully deployed. <<1719202379309
+SIMPLE_TMP>>BILLERSERVICE>>EG.ADAPTER_TEST>>SUCCESS>>1719202876652
+BIP9332I<<Application 'SIMPLE_TMP' has been changed successfully. <<1719202876652
+BIP9326I<<The source 'SIMPLE_TMPproject.generated.bar' has been successfully deployed. <<1719202876652
+SIMPLE_TMP>>BILLERSERVICE>>EG.ADAPTER_TEST>>SUCCESS>>1719202900609
+BIP9332I<<Application 'SIMPLE_TMP' has been changed successfully. <<1719202900609
+BIP9326I<<The source 'SIMPLE_TMPproject.generated.bar' has been successfully deployed. <<1719202900609
+SIMPLE_TMP>>BILLERSERVICE>>EG.ADAPTER_TEST>>SUCCESS>>1719203034536
+BIP9332I<<Application 'SIMPLE_TMP' has been changed successfully. <<1719203034536
+BIP9326I<<The source 'SIMPLE_TMPproject.generated.bar' has been successfully deployed. <<1719203034536
+SIMPLE_TMP>>BILLERSERVICE>>EG.ADAPTER_TEST>>WARNING>>1719203631180
+BIP9318E<<Request to 'PreSetupValidate' resource 'SIMPLE_TMP', 'SIMPLE_TMP' of type 'Application' failed. <<1719203631180
+BIP2432E<<(.MF_MAIN_Manage_Session.Main, 9.5) : The correlation name 'T.ID' is not valid. Those in scope are: SESSION, Environment, InputLocalEnvironment, OutputLocalEnvironment, InputRoot, InputBody, InputProperties, OutputRoot, InputExceptionList, OutputExceptionList, InputDestinationList, OutputDestinationList, iRef, cnt, T_CONN_ID. <<1719203631180
+BIP9333W<<Application 'SIMPLE_TMP' has been changed but contains errors which has prevented some resources from starting. <<1719203631180
+BIP1096E<<The source 'SIMPLE_TMPproject.generated.bar' has been deployed but there were one or more failures which may mean the deployed resources will be unable to execute. <<1719203631180
+SIMPLE_TMP>>BILLERSERVICE>>EG.ADAPTER_TEST>>SUCCESS>>1719203656056
+BIP9332I<<Application 'SIMPLE_TMP' has been changed successfully. <<1719203656056
+BIP9326I<<The source 'SIMPLE_TMPproject.generated.bar' has been successfully deployed. <<1719203656056
+BJB_MDW_SERVICE_COB>>CHANNELSERVICE>>EG.COB_SERVICE>>SUCCESS>>1719204006326
+BIP9332I<<Application 'BJB_MDW_SERVICE_COB' has been created successfully. <<1719204006326
+BIP9326I<<The source 'BJB_MDW_SERVICE_COBproject.generated.bar' has been successfully deployed. <<1719204006326
+BJB_MDW_SERVICE_COB>>CHANNELSERVICE>>EG.COB_SERVICE>>SUCCESS>>1719204031460
+BIP9332I<<Application 'BJB_MDW_SERVICE_COB' has been created successfully. <<1719204031460
+BIP9326I<<The source 'BJB_MDW_SERVICE_COBproject.generated.bar' has been successfully deployed. <<1719204031460
+SIMPLE_TMP>>BILLERSERVICE>>EG.ADAPTER_TEST>>SUCCESS>>1719204183822
+BIP9332I<<Application 'SIMPLE_TMP' has been changed successfully. <<1719204183822
+BIP9326I<<The source 'SIMPLE_TMPproject.generated.bar' has been successfully deployed. <<1719204183822
+SIMPLE_TMP>>BILLERSERVICE>>EG.ADAPTER_TEST>>SUCCESS>>1719204268451
+BIP9332I<<Application 'SIMPLE_TMP' has been changed successfully. <<1719204268451
+BIP9326I<<The source 'SIMPLE_TMPproject.generated.bar' has been successfully deployed. <<1719204268451
+SIMPLE_TMP>>BILLERSERVICE>>EG.ADAPTER_TEST>>SUCCESS>>1719209015759
+BIP9332I<<Application 'SIMPLE_TMP' has been changed successfully. <<1719209015759
+BIP9326I<<The source 'SIMPLE_TMPproject.generated.bar' has been successfully deployed. <<1719209015759
+SIMPLE_TMP>>BILLERSERVICE>>EG.ADAPTER_TEST>>SUCCESS>>1719209228671
+BIP9332I<<Application 'SIMPLE_TMP' has been changed successfully. <<1719209228671
+BIP9326I<<The source 'SIMPLE_TMPproject.generated.bar' has been successfully deployed. <<1719209228671
+SIMPLE_TMP>>BILLERSERVICE>>EG.ADAPTER_TEST>>SUCCESS>>1719209747078
+BIP9332I<<Application 'SIMPLE_TMP' has been changed successfully. <<1719209747078
+BIP9326I<<The source 'SIMPLE_TMPproject.generated.bar' has been successfully deployed. <<1719209747078
+SIMPLE_TMP>>BILLERSERVICE>>EG.ADAPTER_TEST>>SUCCESS>>1719209774579
+BIP9332I<<Application 'SIMPLE_TMP' has been changed successfully. <<1719209774579
+BIP9326I<<The source 'SIMPLE_TMPproject.generated.bar' has been successfully deployed. <<1719209774579
+SIMPLE_TMP>>BILLERSERVICE>>EG.ADAPTER_TEST>>SUCCESS>>1719209803154
+BIP9332I<<Application 'SIMPLE_TMP' has been changed successfully. <<1719209803154
+BIP9326I<<The source 'SIMPLE_TMPproject.generated.bar' has been successfully deployed. <<1719209803154
+SIMPLE_TMP>>BILLERSERVICE>>EG.ADAPTER_TEST>>SUCCESS>>1719210096196
+BIP9332I<<Application 'SIMPLE_TMP' has been changed successfully. <<1719210096196
+BIP9326I<<The source 'SIMPLE_TMPproject.generated.bar' has been successfully deployed. <<1719210096196
+SIMPLE_TMP>>BILLERSERVICE>>EG.ADAPTER_TEST>>SUCCESS>>1719210233119
+BIP9332I<<Application 'SIMPLE_TMP' has been changed successfully. <<1719210233119
+BIP9326I<<The source 'SIMPLE_TMPproject.generated.bar' has been successfully deployed. <<1719210233119
+SIMPLE_TMP>>BILLERSERVICE>>EG.ADAPTER_TEST>>SUCCESS>>1719211401342
+BIP9332I<<Application 'SIMPLE_TMP' has been changed successfully. <<1719211401342
+BIP9326I<<The source 'SIMPLE_TMPproject.generated.bar' has been successfully deployed. <<1719211401342
+SIMPLE_TMP>>BILLERSERVICE>>EG.ADAPTER_TEST>>SUCCESS>>1719211612410
+BIP9332I<<Application 'SIMPLE_TMP' has been changed successfully. <<1719211612410
+BIP9326I<<The source 'SIMPLE_TMPproject.generated.bar' has been successfully deployed. <<1719211612410
+SIMPLE_TMP>>BILLERSERVICE>>EG.ADAPTER_TEST>>SUCCESS>>1719211818406
+BIP9332I<<Application 'SIMPLE_TMP' has been changed successfully. <<1719211818406
+BIP9326I<<The source 'SIMPLE_TMPproject.generated.bar' has been successfully deployed. <<1719211818406
+SIMPLE_TMP>>BILLERSERVICE>>EG.ADAPTER_TEST>>SUCCESS>>1719211935233
+BIP9332I<<Application 'SIMPLE_TMP' has been changed successfully. <<1719211935233
+BIP9326I<<The source 'SIMPLE_TMPproject.generated.bar' has been successfully deployed. <<1719211935233
+BJB_MDW_SERVICE_SAMSAT>>CHANNELSERVICE>>EG.SAMSAT_SERVICE>>WARNING>>1719213653706
+BIP9320E<<Message Flow 'MF_TX_JSON_INQ_PKS', 'MF_TX_JSON_INQ_PKS' encountered a failure and could not start. <<1719213653706
+BIP2211E<<Invalid configuration attribute value 'TOBEOVERIDEN', is not valid for target attribute 'URLSpecifier', object 'SAMSAT SUMUT'; valid values are 'http://host[:port][/path]'. <<1719213653706
+BIP9333W<<Application 'BJB_MDW_SERVICE_SAMSAT' has been created but contains errors which has prevented some resources from starting. <<1719213653706
+BIP1096E<<The source 'BJB_MDW_SERVICE_SAMSATproject.generated.bar' has been deployed but there were one or more failures which may mean the deployed resources will be unable to execute. <<1719213653706
+BJB_MDW_SERVICE_SAMSAT>>CHANNELSERVICE>>EG.SAMSAT_SERVICE>>WARNING>>1719213665366
+BIP9320E<<Message Flow 'MF_TX_JSON_INQ_PKS', 'MF_TX_JSON_INQ_PKS' encountered a failure and could not start. <<1719213665366
+BIP2211E<<Invalid configuration attribute value 'TOBEOVERIDEN', is not valid for target attribute 'URLSpecifier', object 'SAMSAT SUMUT'; valid values are 'http://host[:port][/path]'. <<1719213665366
+BIP9333W<<Application 'BJB_MDW_SERVICE_SAMSAT' has been changed but contains errors which has prevented some resources from starting. <<1719213665366
+BIP1096E<<The source 'BJB_MDW_SERVICE_SAMSATproject.generated.bar' has been deployed but there were one or more failures which may mean the deployed resources will be unable to execute. <<1719213665366
+BJB_MDW_SERVICE_SAMSAT>>CHANNELSERVICE>>EG.SAMSAT_SERVICE>>SUCCESS>>1719213687012
+BIP9332I<<Application 'BJB_MDW_SERVICE_SAMSAT' has been changed successfully. <<1719213687012
+BIP9326I<<The source 'BJB_MDW_SERVICE_SAMSATproject.generated.bar' has been successfully deployed. <<1719213687012
+BJB_MDW_SERVICE_SAMSAT>>CHANNELSERVICE>>EG.SAMSAT_SERVICE>>SUCCESS>>1719213870955
+BIP9332I<<Application 'BJB_MDW_SERVICE_SAMSAT' has been changed successfully. <<1719213870955
+BIP9326I<<The source 'BJB_MDW_SERVICE_SAMSATproject.generated.bar' has been successfully deployed. <<1719213870955
+BJB_MDW_SERVICE_SAMSAT>>CHANNELSERVICE>>EG.SAMSAT_SERVICE>>SUCCESS>>1719214066219
+BIP9332I<<Application 'BJB_MDW_SERVICE_SAMSAT' has been changed successfully. <<1719214066219
+BIP9326I<<The source 'BJB_MDW_SERVICE_SAMSATproject.generated.bar' has been successfully deployed. <<1719214066219
+BJB_MDW_SERVICE_SAMSAT>>CHANNELSERVICE>>EG.SAMSAT_SERVICE>>SUCCESS>>1719214218736
+BIP9332I<<Application 'BJB_MDW_SERVICE_SAMSAT' has been changed successfully. <<1719214218736
+BIP9326I<<The source 'BJB_MDW_SERVICE_SAMSATproject.generated.bar' has been successfully deployed. <<1719214218736
+BJB_MDW_ADAPTER_SAMSAT_PKC>>BILLERSERVICE>>EG.PKC_ADAPTER>>SUCCESS>>1719215203397
+BIP9332I<<Application 'BJB_MDW_ADAPTER_SAMSAT_PKC' has been created successfully. <<1719215203397
+BIP9326I<<The source 'BJB_MDW_ADAPTER_SAMSAT_PKCproject.generated.bar' has been successfully deployed. <<1719215203397
+BJB_MDW_ADAPTER_SAMSAT_PKE>>BILLERSERVICE>>EG.PKE_ADAPTER>>SUCCESS>>1719215237359
+BIP9332I<<Application 'BJB_MDW_ADAPTER_SAMSAT_PKE' has been created successfully. <<1719215237359
+BIP9326I<<The source 'BJB_MDW_ADAPTER_SAMSAT_PKEproject.generated.bar' has been successfully deployed. <<1719215237359
+BJB_MDW_SERVICE_COB>>CHANNELSERVICE>>EG.COB_SERVICE>>SUCCESS>>1719217868276
+BIP9332I<<Application 'BJB_MDW_SERVICE_COB' has been changed successfully. <<1719217868276
+BIP9326I<<The source 'BJB_MDW_SERVICE_COBproject.generated.bar' has been successfully deployed. <<1719217868276
+BJB_MDW_SERVICE_COB>>CHANNELSERVICE>>EG.COB_SERVICE>>SUCCESS>>1719217903029
+BIP9332I<<Application 'BJB_MDW_SERVICE_COB' has been changed successfully. <<1719217903029
+BIP9326I<<The source 'BJB_MDW_SERVICE_COBproject.generated.bar' has been successfully deployed. <<1719217903029
+BJB_MDW_CONNECTOR_REST_SAMSAT>>CHANNELSERVICE>>EG.SAMSAT_CONNECTOR>>SUCCESS>>1719221998379
+BIP9332I<<Application 'BJB_MDW_CONNECTOR_REST_SAMSAT' has been changed successfully. <<1719221998379
+BIP9326I<<The source 'BJB_MDW_CONNECTOR_REST_SAMSATproject.generated.bar' has been successfully deployed. <<1719221998379
+BJB_MDW_SERVICE_SAMSAT>>CHANNELSERVICE>>EG.SAMSAT_SERVICE>>SUCCESS>>1719222624734
+BIP9332I<<Application 'BJB_MDW_SERVICE_SAMSAT' has been changed successfully. <<1719222624734
+BIP9326I<<The source 'BJB_MDW_SERVICE_SAMSATproject.generated.bar' has been successfully deployed. <<1719222624734
+BJB_MDW_SERVICE_SAMSAT>>CHANNELSERVICE>>EG.SAMSAT_SERVICE>>SUCCESS>>1719224347085
+BIP9332I<<Application 'BJB_MDW_SERVICE_SAMSAT' has been changed successfully. <<1719224347085
+BIP9326I<<The source 'BJB_MDW_SERVICE_SAMSATproject.generated.bar' has been successfully deployed. <<1719224347085
+BJB_MDW_SERVICE_SAMSAT>>CHANNELSERVICE>>EG.SAMSAT_SERVICE>>SUCCESS>>1719224701973
+BIP9332I<<Application 'BJB_MDW_SERVICE_SAMSAT' has been changed successfully. <<1719224701973
+BIP9326I<<The source 'BJB_MDW_SERVICE_SAMSATproject.generated.bar' has been successfully deployed. <<1719224701973
+BJB_MDW_SERVICE_SAMSAT>>CHANNELSERVICE>>EG.SAMSAT_SERVICE>>SUCCESS>>1719225370480
+BIP9332I<<Application 'BJB_MDW_SERVICE_SAMSAT' has been changed successfully. <<1719225370480
+BIP9326I<<The source 'BJB_MDW_SERVICE_SAMSATproject.generated.bar' has been successfully deployed. <<1719225370480
+BJB_MDW_SERVICE_SAMSAT>>CHANNELSERVICE>>EG.SAMSAT_SERVICE>>SUCCESS>>1719225459426
+BIP9332I<<Application 'BJB_MDW_SERVICE_SAMSAT' has been changed successfully. <<1719225459426
+BIP9326I<<The source 'BJB_MDW_SERVICE_SAMSATproject.generated.bar' has been successfully deployed. <<1719225459426
+BJB_MDW_SERVICE_COB>>CHANNELSERVICE>>EG.COB_SERVICE>>SUCCESS>>1719226036321
+BIP9332I<<Application 'BJB_MDW_SERVICE_COB' has been changed successfully. <<1719226036321
+BIP9326I<<The source 'BJB_MDW_SERVICE_COBproject.generated.bar' has been successfully deployed. <<1719226036321
+BJB_MDW_SERVICE_COB>>CHANNELSERVICE>>EG.COB_SERVICE>>SUCCESS>>1719226052722
+BIP9332I<<Application 'BJB_MDW_SERVICE_COB' has been changed successfully. <<1719226052722
+BIP9326I<<The source 'BJB_MDW_SERVICE_COBproject.generated.bar' has been successfully deployed. <<1719226052722
+BJB_MDW_SERVICE_COB>>CHANNELSERVICE>>EG.COB_SERVICE>>SUCCESS>>1719226063008
+BIP9332I<<Application 'BJB_MDW_SERVICE_COB' has been changed successfully. <<1719226063008
+BIP9326I<<The source 'BJB_MDW_SERVICE_COBproject.generated.bar' has been successfully deployed. <<1719226063008
+BJB_MDW_SERVICE_SAMSAT>>CHANNELSERVICE>>EG.SAMSAT_SERVICE>>SUCCESS>>1719284590330
+BIP9332I<<Application 'BJB_MDW_SERVICE_SAMSAT' has been changed successfully. <<1719284590330
+BIP9326I<<The source 'BJB_MDW_SERVICE_SAMSATproject.generated.bar' has been successfully deployed. <<1719284590330
+BJB_MDW_SERVICE_SAMSAT>>CHANNELSERVICE>>EG.SAMSAT_SERVICE>>ERROR>>1719284962011
+BIP1921S<<The integration node or integration server cannot be reached. Check that the integration node or integration server is running. Check that the TCP/IP address '192.168.239.59' matches the address of the machine where the integration node or integration server is running,and that port '4414' matches the Administration REST API port that is configured for the integration node or integration server. See the following messages for details of the error.<<1719284962011
+BIP8032E<<Unable to connect to the integration node or integration server. <<1719284962011
+BJB_MDW_SERVICE_SAMSAT>>CHANNELSERVICE>>EG.SAMSAT_SERVICE>>SUCCESS>>1719285039965
+BIP9332I<<Application 'BJB_MDW_SERVICE_SAMSAT' has been changed successfully. <<1719285039965
+BIP9326I<<The source 'BJB_MDW_SERVICE_SAMSATproject.generated.bar' has been successfully deployed. <<1719285039965
+BJB_MDW_SERVICE_SAMSAT>>CHANNELSERVICE>>EG.SAMSAT_SERVICE>>SUCCESS>>1719285247176
+BIP9332I<<Application 'BJB_MDW_SERVICE_SAMSAT' has been changed successfully. <<1719285247176
+BIP9326I<<The source 'BJB_MDW_SERVICE_SAMSATproject.generated.bar' has been successfully deployed. <<1719285247176
+BJB_MDW_SERVICE_SAMSAT>>CHANNELSERVICE>>EG.SAMSAT_SERVICE>>SUCCESS>>1719285339496
+BIP9332I<<Application 'BJB_MDW_SERVICE_SAMSAT' has been changed successfully. <<1719285339496
+BIP9326I<<The source 'BJB_MDW_SERVICE_SAMSATproject.generated.bar' has been successfully deployed. <<1719285339496
+BJB_MDW_SERVICE_SAMSAT>>CHANNELSERVICE>>EG.SAMSAT_SERVICE>>SUCCESS>>1719285380494
+BIP9332I<<Application 'BJB_MDW_SERVICE_SAMSAT' has been changed successfully. <<1719285380494
+BIP9326I<<The source 'BJB_MDW_SERVICE_SAMSATproject.generated.bar' has been successfully deployed. <<1719285380494
+BJB_MDW_SERVICE_SAMSAT>>CHANNELSERVICE>>EG.SAMSAT_SERVICE>>SUCCESS>>1719285661112
+BIP9332I<<Application 'BJB_MDW_SERVICE_SAMSAT' has been changed successfully. <<1719285661112
+BIP9326I<<The source 'BJB_MDW_SERVICE_SAMSATproject.generated.bar' has been successfully deployed. <<1719285661112
+BJB_MDW_SERVICE_SAMSAT>>CHANNELSERVICE>>EG.SAMSAT_SERVICE>>SUCCESS>>1719286050349
+BIP9332I<<Application 'BJB_MDW_SERVICE_SAMSAT' has been changed successfully. <<1719286050349
+BIP9326I<<The source 'BJB_MDW_SERVICE_SAMSATproject.generated.bar' has been successfully deployed. <<1719286050349
+BJB_MDW_SERVICE_SAMSAT>>CHANNELSERVICE>>EG.SAMSAT_SERVICE>>SUCCESS>>1719286177792
+BIP9332I<<Application 'BJB_MDW_SERVICE_SAMSAT' has been changed successfully. <<1719286177792
+BIP9326I<<The source 'BJB_MDW_SERVICE_SAMSATproject.generated.bar' has been successfully deployed. <<1719286177792
+BJB_MDW_SERVICE_SAMSAT>>CHANNELSERVICE>>EG.SAMSAT_SERVICE>>SUCCESS>>1719286441077
+BIP9332I<<Application 'BJB_MDW_SERVICE_SAMSAT' has been changed successfully. <<1719286441077
+BIP9326I<<The source 'BJB_MDW_SERVICE_SAMSATproject.generated.bar' has been successfully deployed. <<1719286441077
+BJB_MDW_SERVICE_SAMSAT>>CHANNELSERVICE>>EG.SAMSAT_SERVICE>>SUCCESS>>1719286785901
+BIP9332I<<Application 'BJB_MDW_SERVICE_SAMSAT' has been changed successfully. <<1719286785901
+BIP9326I<<The source 'BJB_MDW_SERVICE_SAMSATproject.generated.bar' has been successfully deployed. <<1719286785901
+BJB_MDW_SERVICE_SAMSAT>>CHANNELSERVICE>>EG.SAMSAT_SERVICE>>SUCCESS>>1719288393614
+BIP9332I<<Application 'BJB_MDW_SERVICE_SAMSAT' has been changed successfully. <<1719288393614
+BIP9326I<<The source 'BJB_MDW_SERVICE_SAMSATproject.generated.bar' has been successfully deployed. <<1719288393614
+BJB_MDW_SERVICE_SAMSAT>>CHANNELSERVICE>>EG.SAMSAT_SERVICE>>SUCCESS>>1719289623605
+BIP9332I<<Application 'BJB_MDW_SERVICE_SAMSAT' has been changed successfully. <<1719289623605
+BIP9326I<<The source 'BJB_MDW_SERVICE_SAMSATproject.generated.bar' has been successfully deployed. <<1719289623605
+BJB_MDW_SERVICE_SAMSAT>>CHANNELSERVICE>>EG.SAMSAT_SERVICE>>SUCCESS>>1719289928432
+BIP9332I<<Application 'BJB_MDW_SERVICE_SAMSAT' has been changed successfully. <<1719289928432
+BIP9326I<<The source 'BJB_MDW_SERVICE_SAMSATproject.generated.bar' has been successfully deployed. <<1719289928432
